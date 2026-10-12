@@ -260,3 +260,42 @@ body {
 .btn-primary:hover {
   background: var(--primary-hover);
 }
+
+
+/* Custom Scrollbar for Description textarea */
+.form-group textarea {
+  resize: vertical;
+  min-height: 110px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.form-group textarea::-webkit-scrollbar {
+  width: 7px;
+}
+
+.form-group textarea::-webkit-scrollbar-track {
+  background: rgba(15, 17, 21, 0.6);
+  border-radius: 8px;
+  margin: 4px 0;
+}
+
+.form-group textarea::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.form-group textarea::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(45, 212, 191, 1), rgba(38, 222, 90, 1));
+}
+
+.task-list {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.task-list::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}

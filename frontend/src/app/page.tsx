@@ -397,6 +397,7 @@ export default function Home() {
                   <label>Description</label>
                   <textarea 
                     rows={4} 
+                    placeholder="Add a detailed description..." 
                     value={editDescription} 
                     onChange={(e) => setEditDescription(e.target.value)}
                   />
