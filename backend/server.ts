@@ -5,7 +5,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { db, initDb } from './db';
+import { db, initDb } from './db.js';
 
 dotenv.config();
 
