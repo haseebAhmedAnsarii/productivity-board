@@ -92,7 +92,7 @@ A full-stack, real-time Kanban productivity web application with per-user persis
 - **Real-time Sync & Audit Trail:**
   - Moves made from the modal log a `moved` audit history entry (`Moved card from "<Source>" to "<Destination>"`).
   - Broadcasts via WebSocket (`task_updated`) to sync all open clients immediately.
-- **Restore Destination Selection:** When viewing deleted cards, the modal selector functions as "Restore to Column", allowing users to restore directly into any chosen active column.
+- **Read-Only on Deleted Cards:** When viewing a soft-deleted card, the column dropdown is disabled with `cursor: not-allowed` styling, displaying the card's original column.
 
 ---
 

@@ -10,6 +10,7 @@ interface Task {
   description: string;
   columnId?: string;
   originalColumnId?: string | null;
+  originalColumnTitle?: string | null;
 }
 
 interface HistoryItem {
@@ -816,14 +817,20 @@ export default function Home() {
 
                 <div className="form-group">
                   <label htmlFor="task-column-select">
-                    {isModalDeletedTask ? 'Restore to Column' : 'Move to Column'}
+                    {isModalDeletedTask ? 'Column' : 'Move to Column'}
                   </label>
                   <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                     <select
                       id="task-column-select"
                       value={editColumnId}
-                      onChange={(e) => setEditColumnId(e.target.value)}
-                      style={{ flex: 1 }}
+                      disabled={isModalDeletedTask}
+                      onChange={(e) => {
+                        if (!isModalDeletedTask) setEditColumnId(e.target.value);
+                      }}
+                      style={{
+                        flex: 1,
+                        ...(isModalDeletedTask ? { opacity: 0.8, cursor: 'not-allowed' } : {})
+                      }}
                     >
                       {columns.map(col => {
                         const isCurrent = !isModalDeletedTask && !('isNew' in selectedTask) && col.id === (columns.find(c => c.tasks.some(t => t.id === selectedTask?.id))?.id);
@@ -833,6 +840,11 @@ export default function Home() {
                           </option>
                         );
                       })}
+                      {isModalDeletedTask && !columns.some(col => col.id === editColumnId) && (
+                        <option value={editColumnId}>
+                          {(selectedTask && 'originalColumnTitle' in selectedTask && selectedTask.originalColumnTitle) ? selectedTask.originalColumnTitle : 'Original Column'}
+                        </option>
+                      )}
                     </select>
                     {!isModalDeletedTask && !('isNew' in selectedTask) && editColumnId && editColumnId !== (columns.find(c => c.tasks.some(t => t.id === selectedTask?.id))?.id) && (
                       <button
@@ -919,7 +931,7 @@ export default function Home() {
                       className="btn-primary" 
                       onClick={() => {
                         if (selectedTask && 'id' in selectedTask) {
-                          restoreTask(selectedTask.id, editColumnId);
+                          restoreTask(selectedTask.id);
                         }
                       }} 
                       style={{ flex: 1 }}

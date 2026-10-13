@@ -125,11 +125,15 @@ app.get('/api/boards', authenticateToken, async (req: any, res: any) => {
       }))
     }));
 
+    const allBoardColumns = await db.all('SELECT id, title FROM columns WHERE board_id = ?', [board.id]);
+    const colTitleMap = new Map(allBoardColumns.map(c => [c.id, c.title]));
+
     const formattedDeletedTasks = deletedTasks.map(t => ({
       id: t.id.toString(),
       title: t.title,
       description: t.description,
-      originalColumnId: t.original_column_id ? t.original_column_id.toString() : null
+      originalColumnId: t.original_column_id ? t.original_column_id.toString() : null,
+      originalColumnTitle: t.original_column_id ? (colTitleMap.get(t.original_column_id) || null) : null
     }));
     
     res.json({ 
