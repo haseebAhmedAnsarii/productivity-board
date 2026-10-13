@@ -137,6 +137,53 @@ app.delete('/api/tasks/:id', authenticateToken, async (req: any, res: any) => {
   }
 });
 
+
+app.post('/api/columns', authenticateToken, async (req: any, res: any) => {
+  try {
+    const { boardId, title } = req.body;
+    if (!title || !title.trim()) {
+      return res.status(400).json({ error: 'Column title is required' });
+    }
+    if (!boardId) {
+      return res.status(400).json({ error: 'Board ID is required' });
+    }
+
+    const board = await db.get('SELECT * FROM boards WHERE id = ? AND user_id = ?', [boardId, req.user.userId]);
+    if (!board) {
+      return res.status(404).json({ error: 'Board not found' });
+    }
+
+    const maxOrderRes = await db.get('SELECT MAX(order_index) as maxOrder FROM columns WHERE board_id = ?', [boardId]);
+    const nextOrder = (maxOrderRes?.maxOrder ?? -1) + 1;
+
+    const result = await db.run('INSERT INTO columns (board_id, title, order_index) VALUES (?, ?, ?)', [boardId, title.trim(), nextOrder]);
+    res.json({ success: true, columnId: result.lastID, title: title.trim(), order_index: nextOrder });
+  } catch (err) {
+    console.error('Error creating column:', err);
+    res.status(500).json({ error: 'Failed to create column' });
+  }
+});
+
+app.delete('/api/columns/:id', authenticateToken, async (req: any, res: any) => {
+  try {
+    const column = await db.get(`
+      SELECT columns.* FROM columns 
+      JOIN boards ON columns.board_id = boards.id 
+      WHERE columns.id = ? AND boards.user_id = ?
+    `, [req.params.id, req.user.userId]);
+
+    if (!column) {
+      return res.status(404).json({ error: 'Column not found' });
+    }
+
+    await db.run('DELETE FROM columns WHERE id = ?', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error deleting column:', err);
+    res.status(500).json({ error: 'Failed to delete column' });
+  }
+});
+
 app.put('/api/tasks/:id', authenticateToken, async (req: any, res: any) => {
   try {
     const { title, description } = req.body;
@@ -175,6 +222,10 @@ io.on('connection', (socket: any) => {
     }
   });
   
+  socket.on('column_updated', (data: any) => {
+    socket.to(`board_${data.boardId}`).emit('task_updated');
+  });
+
   socket.on('task_updated', (data: any) => {
     socket.to(`board_${data.boardId}`).emit('task_updated');
   });

@@ -35,6 +35,9 @@ export default function Home() {
   const [editDescription, setEditDescription] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [titleError, setTitleError] = useState(false);
+  const [isAddingColumn, setIsAddingColumn] = useState(false);
+  const [newColumnTitle, setNewColumnTitle] = useState('');
+  const [columnTitleError, setColumnTitleError] = useState(false);
 
   useEffect(() => {
     setIsBrowser(true);
@@ -160,6 +163,45 @@ export default function Home() {
     });
   };
 
+  const handleCreateColumn = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!newColumnTitle.trim()) {
+      setColumnTitleError(true);
+      return;
+    }
+    if (!boardId || !token) return;
+
+    try {
+      const response = await fetch('http://localhost:4000/api/columns', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ boardId, title: newColumnTitle.trim() })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const newCol: Column = {
+          id: data.columnId.toString(),
+          title: data.title,
+          tasks: []
+        };
+        setColumns(prev => [...prev, newCol]);
+        setNewColumnTitle('');
+        setIsAddingColumn(false);
+        setColumnTitleError(false);
+
+        if (socket) {
+          socket.emit('task_updated', { boardId });
+        }
+      }
+    } catch (err) {
+      console.error('Failed to create column', err);
+    }
+  };
+
   const openTaskModal = (task: Task) => {
     setSelectedTask(task);
     setEditTitle(task.title);
@@ -272,7 +314,18 @@ export default function Home() {
     <div className="app-container">
       <header className="header">
         <h1>Productivity Board</h1>
-        <div className="user-profile" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+        <div className="user-profile" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+          <button 
+            className="btn-primary" 
+            onClick={() => {
+              setIsAddingColumn(true);
+              setNewColumnTitle('');
+              setColumnTitleError(false);
+            }}
+            style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem' }}
+          >
+            + Add Column
+          </button>
           <button onClick={logout} style={{ background: 'transparent', color: 'var(--text-muted)', border: 'none', cursor: 'pointer', fontSize: '0.875rem', transition: 'color 0.2s ease' }} onMouseOver={e => e.currentTarget.style.color = 'var(--text-main)'} onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}>Logout</button>
           <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(90deg, rgba(45, 212, 191, 1) 50%, rgba(38, 222, 90, 1) 100%)' }}></div>
         </div>
@@ -280,7 +333,7 @@ export default function Home() {
 
       {loading ? (
         <div style={{ padding: '2rem' }}>Loading your board...</div>
-      ) : columns.length === 0 ? (
+      ) : !boardId ? (
         <div style={{ padding: '2rem' }}>
           <p>No board found. Registering automatically creates one. You might need to log out and register a new account to see the full demo.</p>
         </div>
@@ -340,6 +393,67 @@ export default function Home() {
                 </button>
               </div>
             ))}
+            {/* Add Column Component */}
+            <div className="add-column-wrapper">
+              {!isAddingColumn ? (
+                <button 
+                  className="add-column-btn" 
+                  onClick={() => {
+                    setIsAddingColumn(true);
+                    setNewColumnTitle('');
+                    setColumnTitleError(false);
+                  }}
+                >
+                  <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>+</span>
+                  <span>Add another column</span>
+                </button>
+              ) : (
+                <form className="add-column-card" onSubmit={handleCreateColumn}>
+                  <input
+                    type="text"
+                    placeholder="Enter column title..."
+                    value={newColumnTitle}
+                    onChange={(e) => {
+                      setNewColumnTitle(e.target.value);
+                      if (columnTitleError) setColumnTitleError(false);
+                    }}
+                    autoFocus
+                    style={columnTitleError ? { borderColor: '#ef4444' } : {}}
+                  />
+                  {columnTitleError && (
+                    <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500 }}>
+                      Column title is required
+                    </span>
+                  )}
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <button type="submit" className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>
+                      Add Column
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setIsAddingColumn(false);
+                        setColumnTitleError(false);
+                      }}
+                      style={{ 
+                        background: 'transparent', 
+                        border: 'none', 
+                        color: 'var(--text-muted)', 
+                        fontSize: '1.25rem', 
+                        cursor: 'pointer',
+                        padding: '0.25rem 0.5rem',
+                        lineHeight: 1
+                      }}
+                      onMouseOver={e => e.currentTarget.style.color = 'var(--text-main)'}
+                      onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}
+                      title="Cancel"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
           </main>
         </DragDropContext>
       )}
