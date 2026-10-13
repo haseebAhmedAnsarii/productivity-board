@@ -74,7 +74,7 @@ A full-stack, real-time Kanban productivity web application with per-user persis
 - **Root Cause Fixed:** SQLite stores `CURRENT_TIMESTAMP` as UTC string without timezone offset (`YYYY-MM-DD HH:MM:SS`), which browsers previously misparsed as local time (causing a 5-hour offset in UTC+5).
 - **Backend Fix:** Writes standard ISO strings (`new Date().toISOString()`) for new `task_history` rows.
 - **Frontend Normalizer:** `formatHistoryTime` uses regex `/[Zz]$|[+-]\d{2}(:?\d{2})?$/` to detect missing offsets and parse as UTC.
-- **AM/PM Formatting:** Formatted via `toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })` yielding clean timestamps like `Oct 13, 3:44 PM`.
+- **AM/PM Formatting with Seconds:** Formatted via `toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true })` yielding clean, precise timestamps like `Oct 13, 3:44:12 PM`.
 
 ### F. Unique Card ID / Number Badges
 - **Style:** Clean numeric badge (e.g. `#4`, `#12`) using the task's unique auto-increment identifier.
