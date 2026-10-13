@@ -34,6 +34,7 @@ export default function Home() {
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [titleError, setTitleError] = useState(false);
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [newColumnTitle, setNewColumnTitle] = useState('');
@@ -326,7 +327,7 @@ export default function Home() {
           >
             + Add Column
           </button>
-          <button onClick={logout} style={{ background: 'transparent', color: 'var(--text-muted)', border: 'none', cursor: 'pointer', fontSize: '0.875rem', transition: 'color 0.2s ease' }} onMouseOver={e => e.currentTarget.style.color = 'var(--text-main)'} onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}>Logout</button>
+          <button onClick={() => setShowLogoutConfirm(true)} style={{ background: 'transparent', color: 'var(--text-muted)', border: 'none', cursor: 'pointer', fontSize: '0.875rem', transition: 'color 0.2s ease' }} onMouseOver={e => e.currentTarget.style.color = 'var(--text-main)'} onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}>Logout</button>
           <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(90deg, rgba(45, 212, 191, 1) 50%, rgba(38, 222, 90, 1) 100%)' }}></div>
         </div>
       </header>
@@ -534,6 +535,68 @@ export default function Home() {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+      {showLogoutConfirm && (
+        <div className="modal-overlay" onClick={() => setShowLogoutConfirm(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px', textAlign: 'center' }}>
+            <div className="modal-header" style={{ justifyContent: 'center', position: 'relative' }}>
+              <h2>Confirm Logout</h2>
+              <button 
+                className="close-btn" 
+                onClick={() => setShowLogoutConfirm(false)}
+                style={{ position: 'absolute', right: 0, top: 0 }}
+              >
+                &times;
+              </button>
+            </div>
+            
+            <p style={{ color: 'var(--text-muted)', fontSize: '1rem', lineHeight: 1.5, margin: '0.5rem 0 1.25rem' }}>
+              Are you sure you want to log out of your session?
+            </p>
+
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+              <button 
+                onClick={() => setShowLogoutConfirm(false)}
+                style={{ 
+                  flex: 1,
+                  background: 'var(--surface-hover)', 
+                  border: '1px solid var(--border)', 
+                  color: 'var(--text-main)', 
+                  padding: '0.75rem 1.25rem', 
+                  borderRadius: 'var(--radius-md)', 
+                  cursor: 'pointer', 
+                  transition: 'var(--transition)',
+                  fontWeight: 500
+                }}
+                onMouseOver={e => e.currentTarget.style.background = 'var(--surface)'}
+                onMouseOut={e => e.currentTarget.style.background = 'var(--surface-hover)'}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  setShowLogoutConfirm(false);
+                  logout();
+                }}
+                style={{ 
+                  flex: 1,
+                  background: '#ef4444', 
+                  border: 'none', 
+                  color: 'white', 
+                  padding: '0.75rem 1.25rem', 
+                  borderRadius: 'var(--radius-md)', 
+                  cursor: 'pointer', 
+                  fontWeight: 600, 
+                  transition: 'var(--transition)' 
+                }}
+                onMouseOver={e => e.currentTarget.style.background = '#dc2626'}
+                onMouseOut={e => e.currentTarget.style.background = '#ef4444'}
+              >
+                Log Out
+              </button>
+            </div>
           </div>
         </div>
       )}
