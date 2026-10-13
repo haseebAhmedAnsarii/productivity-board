@@ -54,7 +54,20 @@ export const initDb = async () => {
       WHERE board_id IS NULL AND column_id IS NOT NULL;
     `);
 
-    console.log("SQLite Database initialized with User Auth schema and soft-delete migrations.");
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS task_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        task_id INTEGER NOT NULL,
+        user_id INTEGER,
+        username TEXT,
+        change_type TEXT NOT NULL,
+        old_value TEXT,
+        new_value TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_task_history_task_id ON task_history(task_id);
+`);
+    console.log("SQLite Database initialized with User Auth schema, soft-delete, and task_history table.");
   } catch (error) {
     console.error("Error initializing database:", error);
   }

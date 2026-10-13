@@ -11,6 +11,17 @@ interface Task {
   originalColumnId?: string | null;
 }
 
+interface HistoryItem {
+  id: number;
+  task_id: number;
+  user_id: number;
+  username: string;
+  change_type: string;
+  old_value: string | null;
+  new_value: string | null;
+  created_at: string;
+}
+
 interface Column {
   id: string;
   title: string;
@@ -40,6 +51,9 @@ export default function Home() {
   const [deletedTasks, setDeletedTasks] = useState<Task[]>([]);
   const [showDeletedCards, setShowDeletedCards] = useState(false);
   const [isModalDeletedTask, setIsModalDeletedTask] = useState(false);
+  const [taskHistory, setTaskHistory] = useState<HistoryItem[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [titleError, setTitleError] = useState(false);
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [newColumnTitle, setNewColumnTitle] = useState('');
@@ -232,12 +246,73 @@ export default function Home() {
     }
   };
 
+  const fetchTaskHistory = async (taskId: string) => {
+    if (!token) return;
+    setLoadingHistory(true);
+    try {
+      const res = await fetch(`http://localhost:4000/api/tasks/${taskId}/history`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTaskHistory(data.history || []);
+      }
+    } catch (err) {
+      console.error("Failed to load task history", err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const formatHistoryTime = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString(undefined, { 
+        month: 'short', 
+        day: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const renderHistoryDescription = (item: HistoryItem) => {
+    switch (item.change_type) {
+      case 'created':
+        return `Created this card: "${item.new_value}"`;
+      case 'title':
+        return (
+          <span>
+            Renamed title from <span style={{ textDecoration: 'line-through', opacity: 0.7 }}>&ldquo;{item.old_value}&rdquo;</span> to <strong style={{ color: 'var(--text-main)' }}>&ldquo;{item.new_value}&rdquo;</strong>
+          </span>
+        );
+      case 'description':
+        return 'Updated task description';
+      case 'moved':
+        return `Moved from "${item.old_value}" to "${item.new_value}"`;
+      case 'deleted':
+        return 'Moved card to Deleted column';
+      case 'restored':
+        return 'Restored card back to active board';
+      default:
+        return item.new_value || item.change_type;
+    }
+  };
+
   const openTaskModal = (task: Task, isDeleted = false) => {
     setSelectedTask(task);
     setEditTitle(task.title);
     setEditDescription(task.description);
     setTitleError(false);
     setIsModalDeletedTask(isDeleted);
+    setShowHistory(false);
+    if ('id' in task && task.id) {
+      fetchTaskHistory(task.id);
+    } else {
+      setTaskHistory([]);
+    }
   };
 
   const openNewTaskModal = (columnId: string) => {
@@ -246,6 +321,8 @@ export default function Home() {
     setEditDescription('');
     setTitleError(false);
     setIsModalDeletedTask(false);
+    setTaskHistory([]);
+    setShowHistory(false);
   };
 
   const closeTaskModal = () => {
@@ -253,6 +330,8 @@ export default function Home() {
     setShowDeleteConfirm(false);
     setTitleError(false);
     setIsModalDeletedTask(false);
+    setTaskHistory([]);
+    setShowHistory(false);
   };
 
   const handleDeleteClick = () => {
@@ -648,6 +727,54 @@ export default function Home() {
                     style={isModalDeletedTask ? { opacity: 0.8, cursor: 'not-allowed' } : {}}
                   />
                 </div>
+
+                {!('isNew' in selectedTask) && (
+                  <div className="task-history-section">
+                    <div 
+                      className="task-history-header"
+                      onClick={() => setShowHistory(!showHistory)}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span className="task-history-title">Activity & History</span>
+                        {taskHistory.length > 0 && (
+                          <span className="task-count" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
+                            {taskHistory.length}
+                          </span>
+                        )}
+                      </div>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                        {showHistory ? '▲ Hide' : '▼ View History'}
+                      </span>
+                    </div>
+
+                    {showHistory && (
+                      <div className="task-history-timeline">
+                        {loadingHistory ? (
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', padding: '0.5rem 0' }}>
+                            Loading history...
+                          </div>
+                        ) : taskHistory.length === 0 ? (
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', padding: '0.5rem 0', fontStyle: 'italic' }}>
+                            No edit activity recorded yet.
+                          </div>
+                        ) : (
+                          taskHistory.map((item) => (
+                            <div key={item.id} className="history-item">
+                              <div className="history-dot" />
+                              <div className="history-meta">
+                                <span className="history-user">@{item.username || 'user'}</span>
+                                <span className="history-time">{formatHistoryTime(item.created_at)}</span>
+                              </div>
+                              <div className="history-desc">
+                                {renderHistoryDescription(item)}
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
                 
                 {isModalDeletedTask ? (
                   <div style={{ display: 'flex', gap: '0.85rem', marginTop: '0.5rem' }}>

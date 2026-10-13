@@ -81,6 +81,18 @@ const authenticateToken = (req: any, res: any, next: any) => {
   });
 };
 
+// --- TASK HISTORY LOGGING HELPER ---
+const logTaskHistory = async (taskId: number | string, userId: number | string, username: string, changeType: string, oldValue: string | null = null, newValue: string | null = null) => {
+  try {
+    await db.run(
+      'INSERT INTO task_history (task_id, user_id, username, change_type, old_value, new_value) VALUES (?, ?, ?, ?, ?, ?)',
+      [parseInt(taskId.toString()), parseInt(userId.toString()), username, changeType, oldValue, newValue]
+    );
+  } catch (err) {
+    console.error('Error logging task history:', err);
+  }
+};
+
 // --- PROTECTED API ROUTES ---
 
 app.get('/api/boards', authenticateToken, async (req: any, res: any) => {
@@ -145,6 +157,7 @@ app.post('/api/tasks', authenticateToken, async (req: any, res: any) => {
       'INSERT INTO tasks (column_id, board_id, title, description, order_index, is_deleted) VALUES (?, ?, ?, ?, ?, 0)', 
       [columnId, boardId, title, description, nextOrder]
     );
+    await logTaskHistory(result.lastID, req.user.userId, req.user.username, 'created', null, title);
     res.json({ success: true, taskId: result.lastID });
   } catch (err) {
     console.error(err);
@@ -173,6 +186,7 @@ app.delete('/api/tasks/:id', authenticateToken, async (req: any, res: any) => {
       WHERE id = ?
     `, [boardId, req.params.id]);
 
+    await logTaskHistory(req.params.id, req.user.userId, req.user.username, 'deleted', null, 'Moved to Deleted');
     res.json({ success: true });
   } catch (err) {
     console.error(err);
@@ -211,6 +225,7 @@ app.post('/api/tasks/:id/restore', authenticateToken, async (req: any, res: any)
       WHERE id = ?
     `, [targetColumnId, nextOrder, req.params.id]);
 
+    await logTaskHistory(req.params.id, req.user.userId, req.user.username, 'restored', 'Deleted', 'Restored to column');
     res.json({ success: true, columnId: targetColumnId });
   } catch (err) {
     console.error('Error restoring task:', err);
@@ -279,14 +294,36 @@ app.delete('/api/columns/:id', authenticateToken, async (req: any, res: any) => 
 app.put('/api/tasks/:id', authenticateToken, async (req: any, res: any) => {
   try {
     const task = await db.get('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
-    if (task && task.is_deleted === 1) {
+    if (!task) return res.status(404).json({ error: 'Task not found' });
+    if (task.is_deleted === 1) {
       return res.status(400).json({ error: 'Deleted tasks cannot be edited' });
     }
     const { title, description } = req.body;
+
+    if (title && task.title !== title) {
+      await logTaskHistory(req.params.id, req.user.userId, req.user.username, 'title', task.title, title);
+    }
+    if ((task.description || '') !== (description || '')) {
+      await logTaskHistory(req.params.id, req.user.userId, req.user.username, 'description', task.description || '(empty)', description || '(empty)');
+    }
+
     await db.run('UPDATE tasks SET title = ?, description = ? WHERE id = ?', [title, description, req.params.id]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update task' });
+  }
+});
+
+app.get('/api/tasks/:id/history', authenticateToken, async (req: any, res: any) => {
+  try {
+    const history = await db.all(
+      'SELECT * FROM task_history WHERE task_id = ? ORDER BY id DESC',
+      [req.params.id]
+    );
+    res.json({ history });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch task history' });
   }
 });
 
@@ -310,6 +347,14 @@ io.on('connection', (socket: any) => {
     try {
       socket.to(`board_${data.boardId}`).emit('task_moved', data);
       
+      if (data.sourceColumnId !== data.destinationColumnId) {
+        const sourceCol = await db.get('SELECT title FROM columns WHERE id = ?', [data.sourceColumnId]);
+        const destCol = await db.get('SELECT title FROM columns WHERE id = ?', [data.destinationColumnId]);
+        if (sourceCol && destCol) {
+          await logTaskHistory(data.taskId, socket.user?.userId || 0, socket.user?.username || 'User', 'moved', sourceCol.title, destCol.title);
+        }
+      }
+
       await db.run('UPDATE tasks SET order_index = order_index + 1 WHERE column_id = ? AND order_index >= ?', [parseInt(data.destinationColumnId), data.destinationIndex]);
       await db.run('UPDATE tasks SET column_id = ?, order_index = ? WHERE id = ?', [parseInt(data.destinationColumnId), data.destinationIndex, parseInt(data.taskId)]);
       await db.run('UPDATE tasks SET order_index = order_index - 1 WHERE column_id = ? AND order_index > ?', [parseInt(data.sourceColumnId), data.sourceIndex]);
