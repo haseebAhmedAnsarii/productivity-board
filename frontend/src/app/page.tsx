@@ -35,6 +35,7 @@ export default function Home() {
   const [editDescription, setEditDescription] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [columnToDelete, setColumnToDelete] = useState<Column | null>(null);
   const [titleError, setTitleError] = useState(false);
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [newColumnTitle, setNewColumnTitle] = useState('');
@@ -162,6 +163,27 @@ export default function Home() {
       sourceIndex: source.index,
       destinationIndex: destination.index,
     });
+  };
+
+  const confirmDeleteColumn = async () => {
+    if (!columnToDelete || !token || !boardId) return;
+
+    try {
+      const response = await fetch(`http://localhost:4000/api/columns/${columnToDelete.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        setColumns(prev => prev.filter(c => c.id !== columnToDelete.id));
+        setColumnToDelete(null);
+        if (socket) {
+          socket.emit('task_updated', { boardId });
+        }
+      }
+    } catch (err) {
+      console.error('Failed to delete column', err);
+    }
   };
 
   const handleCreateColumn = async (e?: React.FormEvent) => {
@@ -345,7 +367,19 @@ export default function Home() {
               <div key={column.id} className="kanban-column">
                 <div className="column-header">
                   <span>{column.title}</span>
-                  <span className="task-count">{column.tasks.length}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span className="task-count">{column.tasks.length}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setColumnToDelete(column);
+                      }}
+                      title="Delete column"
+                      className="delete-col-btn"
+                    >
+                      &times;
+                    </button>
+                  </div>
                 </div>
                 
                 <Droppable droppableId={column.id}>
@@ -595,6 +629,70 @@ export default function Home() {
                 onMouseOut={e => e.currentTarget.style.background = '#ef4444'}
               >
                 Log Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {columnToDelete && (
+        <div className="modal-overlay" onClick={() => setColumnToDelete(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px', textAlign: 'center' }}>
+            <div className="modal-header" style={{ justifyContent: 'center', position: 'relative' }}>
+              <h2>Delete Column</h2>
+              <button 
+                className="close-btn" 
+                onClick={() => setColumnToDelete(null)}
+                style={{ position: 'absolute', right: 0, top: 0 }}
+              >
+                &times;
+              </button>
+            </div>
+            
+            <p style={{ color: 'var(--text-main)', fontSize: '1rem', lineHeight: 1.5, margin: '0.5rem 0' }}>
+              Are you sure you want to delete <strong>&ldquo;{columnToDelete.title}&rdquo;</strong>?
+            </p>
+            {columnToDelete.tasks.length > 0 && (
+              <p style={{ color: '#ef4444', fontSize: '0.875rem', marginBottom: '1.25rem' }}>
+                Warning: All {columnToDelete.tasks.length} {columnToDelete.tasks.length === 1 ? 'task' : 'tasks'} inside this column will also be permanently deleted.
+              </p>
+            )}
+
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1rem' }}>
+              <button 
+                onClick={() => setColumnToDelete(null)}
+                style={{ 
+                  flex: 1,
+                  background: 'var(--surface-hover)', 
+                  border: '1px solid var(--border)', 
+                  color: 'var(--text-main)', 
+                  padding: '0.75rem 1.25rem', 
+                  borderRadius: 'var(--radius-md)', 
+                  cursor: 'pointer', 
+                  transition: 'var(--transition)',
+                  fontWeight: 500
+                }}
+                onMouseOver={e => e.currentTarget.style.background = 'var(--surface)'}
+                onMouseOut={e => e.currentTarget.style.background = 'var(--surface-hover)'}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDeleteColumn}
+                style={{ 
+                  flex: 1,
+                  background: '#ef4444', 
+                  border: 'none', 
+                  color: 'white', 
+                  padding: '0.75rem 1.25rem', 
+                  borderRadius: 'var(--radius-md)', 
+                  cursor: 'pointer', 
+                  fontWeight: 600, 
+                  transition: 'var(--transition)' 
+                }}
+                onMouseOver={e => e.currentTarget.style.background = '#dc2626'}
+                onMouseOut={e => e.currentTarget.style.background = '#ef4444'}
+              >
+                Delete Column
               </button>
             </div>
           </div>

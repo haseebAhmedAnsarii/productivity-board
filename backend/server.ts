@@ -176,6 +176,7 @@ app.delete('/api/columns/:id', authenticateToken, async (req: any, res: any) => 
       return res.status(404).json({ error: 'Column not found' });
     }
 
+    await db.run('DELETE FROM tasks WHERE column_id = ?', [req.params.id]);
     await db.run('DELETE FROM columns WHERE id = ?', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
