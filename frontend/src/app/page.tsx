@@ -8,6 +8,7 @@ interface Task {
   id: string;
   title: string;
   description: string;
+  columnId?: string;
   originalColumnId?: string | null;
 }
 
@@ -59,6 +60,7 @@ export default function Home() {
   const [newColumnTitle, setNewColumnTitle] = useState('');
   const [columnTitleError, setColumnTitleError] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
+  const [editColumnId, setEditColumnId] = useState('');
 
   useEffect(() => {
     setIsBrowser(true);
@@ -332,13 +334,27 @@ export default function Home() {
     }
   };
 
-  const openTaskModal = (task: Task, isDeleted = false) => {
+  const openTaskModal = (task: Task, isDeleted = false, directColId?: string) => {
     setSelectedTask(task);
     setEditTitle(task.title);
     setEditDescription(task.description);
     setTitleError(false);
     setIsModalDeletedTask(isDeleted);
     setShowHistory(false);
+
+    let currentId = directColId || task.columnId || '';
+    if (!currentId) {
+      const parentCol = columns.find(c => c.tasks.some(t => t.id === task.id));
+      if (parentCol) currentId = parentCol.id;
+    }
+    if (!currentId && isDeleted && task.originalColumnId) {
+      currentId = task.originalColumnId;
+    }
+    if (!currentId && columns.length > 0) {
+      currentId = columns[0].id;
+    }
+    setEditColumnId(currentId);
+
     if ('id' in task && task.id) {
       fetchTaskHistory(task.id);
     } else {
@@ -350,6 +366,7 @@ export default function Home() {
     setSelectedTask({ isNew: true, columnId });
     setEditTitle('');
     setEditDescription('');
+    setEditColumnId(columnId);
     setTitleError(false);
     setIsModalDeletedTask(false);
     setTaskHistory([]);
@@ -370,13 +387,14 @@ export default function Home() {
     setTaskHistory([]);
     setShowHistory(false);
     setCopiedId(false);
+    setEditColumnId('');
   };
 
   const handleDeleteClick = () => {
     setShowDeleteConfirm(true);
   };
 
-  const restoreTask = async (taskId: string) => {
+  const restoreTask = async (taskId: string, targetColId?: string) => {
     if (!token) return;
     try {
       const res = await fetch(`http://localhost:4000/api/tasks/${taskId}/restore`, {
@@ -384,7 +402,8 @@ export default function Home() {
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}` 
-        }
+        },
+        body: JSON.stringify({ targetColumnId: targetColId || editColumnId })
       });
       if (res.ok) {
         fetchBoard(token);
@@ -413,6 +432,28 @@ export default function Home() {
     }
   };
 
+  const handleQuickMove = async (targetColId: string) => {
+    if (!selectedTask || !token || ('isNew' in selectedTask)) return;
+    try {
+      await fetch(`http://localhost:4000/api/tasks/${selectedTask.id}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ columnId: targetColId })
+      });
+      setEditColumnId(targetColId);
+      fetchBoard(token);
+      if (socket) {
+        socket.emit('task_updated', { boardId });
+      }
+      fetchTaskHistory(selectedTask.id);
+    } catch (err) {
+      console.error("Error moving task", err);
+    }
+  };
+
   const saveTaskDetails = async () => {
     if (!selectedTask || !token) return;
     
@@ -429,7 +470,7 @@ export default function Home() {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ columnId: selectedTask.columnId, title: editTitle, description: editDescription })
+          body: JSON.stringify({ columnId: editColumnId || selectedTask.columnId, title: editTitle, description: editDescription })
         });
       } else {
         await fetch(`http://localhost:4000/api/tasks/${selectedTask.id}`, {
@@ -438,12 +479,14 @@ export default function Home() {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ title: editTitle, description: editDescription })
+          body: JSON.stringify({ title: editTitle, description: editDescription, columnId: editColumnId })
         });
       }
       
       fetchBoard(token); // Refetch to get new IDs or latest state
-      socket.emit('task_updated', { boardId });
+      if (socket) {
+        socket.emit('task_updated', { boardId });
+      }
       closeTaskModal();
     } catch (err) {
       console.error("Error saving task", err);
@@ -572,7 +615,7 @@ export default function Home() {
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              onClick={() => openTaskModal(task)}
+                              onClick={() => openTaskModal(task, false, column.id)}
                               style={{
                                 ...provided.draggableProps.style,
                                 opacity: snapshot.isDragging ? 0.9 : 1,
@@ -770,6 +813,40 @@ export default function Home() {
                     style={titleError ? { borderColor: 'var(--danger)' } : (isModalDeletedTask ? { opacity: 0.8, cursor: 'not-allowed' } : {})}
                   />
                 </div>
+
+                <div className="form-group">
+                  <label htmlFor="task-column-select">
+                    {isModalDeletedTask ? 'Restore to Column' : 'Move to Column'}
+                  </label>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <select
+                      id="task-column-select"
+                      value={editColumnId}
+                      onChange={(e) => setEditColumnId(e.target.value)}
+                      style={{ flex: 1 }}
+                    >
+                      {columns.map(col => {
+                        const isCurrent = !isModalDeletedTask && !('isNew' in selectedTask) && col.id === (columns.find(c => c.tasks.some(t => t.id === selectedTask?.id))?.id);
+                        return (
+                          <option key={col.id} value={col.id}>
+                            {col.title}{isCurrent ? ' (Current)' : ''}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    {!isModalDeletedTask && !('isNew' in selectedTask) && editColumnId && editColumnId !== (columns.find(c => c.tasks.some(t => t.id === selectedTask?.id))?.id) && (
+                      <button
+                        type="button"
+                        onClick={() => handleQuickMove(editColumnId)}
+                        className="btn-secondary"
+                        style={{ whiteSpace: 'nowrap', padding: '0.65rem 0.9rem', fontSize: '0.8rem', borderColor: 'var(--accent)', color: 'var(--accent)' }}
+                        title="Move card to selected column immediately"
+                      >
+                        Move Now
+                      </button>
+                    )}
+                  </div>
+                </div>
                 
                 <div className="form-group">
                   <label>Description</label>
@@ -842,7 +919,7 @@ export default function Home() {
                       className="btn-primary" 
                       onClick={() => {
                         if (selectedTask && 'id' in selectedTask) {
-                          restoreTask(selectedTask.id);
+                          restoreTask(selectedTask.id, editColumnId);
                         }
                       }} 
                       style={{ flex: 1 }}

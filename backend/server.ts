@@ -204,11 +204,24 @@ app.post('/api/tasks/:id/restore', authenticateToken, async (req: any, res: any)
     const task = await db.get('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
     if (!task) return res.status(404).json({ error: 'Task not found' });
 
+    const { targetColumnId: requestedColId } = req.body || {};
     let targetColumnId: number | null = null;
     let targetColTitle: string = 'Active Board';
 
+    // 0. If target column was explicitly requested by user (e.g. from modal Move To dropdown)
+    if (requestedColId) {
+      const explicitCol = await db.get(
+        'SELECT * FROM columns WHERE id = ? AND board_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)',
+        [requestedColId, task.board_id]
+      );
+      if (explicitCol) {
+        targetColumnId = explicitCol.id;
+        targetColTitle = explicitCol.title;
+      }
+    }
+
     // 1. Check if original_column_id points to an existing column in DB
-    if (task.original_column_id) {
+    if (!targetColumnId && task.original_column_id) {
       const origCol = await db.get('SELECT * FROM columns WHERE id = ?', [task.original_column_id]);
       if (origCol) {
         if (origCol.is_deleted === 1) {
@@ -390,17 +403,52 @@ app.put('/api/tasks/:id', authenticateToken, async (req: any, res: any) => {
     if (task.is_deleted === 1) {
       return res.status(400).json({ error: 'Deleted tasks cannot be edited' });
     }
-    const { title, description } = req.body;
+    const { title, description, columnId } = req.body;
 
-    if (title && task.title !== title) {
-      await logTaskHistory(req.params.id, req.user.userId, req.user.username, 'title', task.title, title);
+    const newTitle = title !== undefined ? title : task.title;
+    const newDescription = description !== undefined ? description : task.description;
+
+    if (newTitle && task.title !== newTitle) {
+      await logTaskHistory(req.params.id, req.user.userId, req.user.username, 'title', task.title, newTitle);
     }
-    if ((task.description || '') !== (description || '')) {
-      await logTaskHistory(req.params.id, req.user.userId, req.user.username, 'description', task.description || '(empty)', description || '(empty)');
+    if ((task.description || '') !== (newDescription || '')) {
+      await logTaskHistory(req.params.id, req.user.userId, req.user.username, 'description', task.description || '(empty)', newDescription || '(empty)');
     }
 
-    await db.run('UPDATE tasks SET title = ?, description = ? WHERE id = ?', [title, description, req.params.id]);
-    res.json({ success: true });
+    let targetColumnId = task.column_id;
+    let targetOrder = task.order_index;
+
+    if (columnId && parseInt(columnId.toString()) !== task.column_id) {
+      const targetCol = await db.get(
+        'SELECT * FROM columns WHERE id = ? AND board_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)',
+        [columnId, task.board_id]
+      );
+      if (targetCol) {
+        const sourceCol = await db.get('SELECT title FROM columns WHERE id = ?', [task.column_id]);
+        await logTaskHistory(
+          req.params.id,
+          req.user.userId,
+          req.user.username,
+          'moved',
+          sourceCol?.title || 'Previous Column',
+          targetCol.title
+        );
+
+        targetColumnId = targetCol.id;
+        const maxOrderRes = await db.get(
+          'SELECT MAX(order_index) as maxOrder FROM tasks WHERE column_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)',
+          [targetColumnId]
+        );
+        targetOrder = (maxOrderRes?.maxOrder ?? -1) + 1;
+      }
+    }
+
+    await db.run(
+      'UPDATE tasks SET title = ?, description = ?, column_id = ?, order_index = ? WHERE id = ?',
+      [newTitle, newDescription, targetColumnId, targetOrder, req.params.id]
+    );
+
+    res.json({ success: true, columnId: targetColumnId });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update task' });
   }

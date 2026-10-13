@@ -83,6 +83,17 @@ A full-stack, real-time Kanban productivity web application with per-user persis
 - **Task Modal Header:** Displayed alongside the modal title (`#ID`), with a one-click copy button that copies the `#ID` to clipboard with visual "Copied!" feedback.
 - **Bespoke Obsidian Theme Integration:** Subtly shifts to warm amber accent (`--accent`) on card hover for tactile responsiveness.
 
+### G. Move To Column via Task Modal
+- **In-Modal Column Selector:** A bespoke dropdown in the task modal allowing moving active cards to any board column without drag-and-drop.
+- **Current Column Indication:** The card's existing column is marked with `(Current)`.
+- **Dual Move Workflows:**
+  - **Quick Move:** Selecting a new column reveals a tactile "Move Now" shortcut button for instant movement.
+  - **Save Changes:** Users can also edit title, description, and column simultaneously and save them together with "Save Changes".
+- **Real-time Sync & Audit Trail:**
+  - Moves made from the modal log a `moved` audit history entry (`Moved card from "<Source>" to "<Destination>"`).
+  - Broadcasts via WebSocket (`task_updated`) to sync all open clients immediately.
+- **Restore Destination Selection:** When viewing deleted cards, the modal selector functions as "Restore to Column", allowing users to restore directly into any chosen active column.
+
 ---
 
 ## 3. Database Schema (`backend/database.sqlite`)
