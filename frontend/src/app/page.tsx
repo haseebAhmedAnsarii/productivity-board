@@ -8,6 +8,7 @@ interface Task {
   id: string;
   title: string;
   description: string;
+  originalColumnId?: string | null;
 }
 
 interface Column {
@@ -36,6 +37,9 @@ export default function Home() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [columnToDelete, setColumnToDelete] = useState<Column | null>(null);
+  const [deletedTasks, setDeletedTasks] = useState<Task[]>([]);
+  const [showDeletedCards, setShowDeletedCards] = useState(false);
+  const [isModalDeletedTask, setIsModalDeletedTask] = useState(false);
   const [titleError, setTitleError] = useState(false);
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [newColumnTitle, setNewColumnTitle] = useState('');
@@ -55,6 +59,9 @@ export default function Home() {
       if (response.ok) {
         const data = await response.json();
         setColumns(data.columns || []);
+        const dTasks = data.deletedTasks || [];
+        setDeletedTasks(dTasks);
+        if (dTasks.length === 0) setShowDeletedCards(false);
         if (data.boardId) setBoardId(data.boardId);
       } else if (response.status === 401 || response.status === 403) {
         logout();
@@ -225,11 +232,12 @@ export default function Home() {
     }
   };
 
-  const openTaskModal = (task: Task) => {
+  const openTaskModal = (task: Task, isDeleted = false) => {
     setSelectedTask(task);
     setEditTitle(task.title);
     setEditDescription(task.description);
     setTitleError(false);
+    setIsModalDeletedTask(isDeleted);
   };
 
   const openNewTaskModal = (columnId: string) => {
@@ -237,15 +245,40 @@ export default function Home() {
     setEditTitle('');
     setEditDescription('');
     setTitleError(false);
+    setIsModalDeletedTask(false);
   };
 
   const closeTaskModal = () => {
     setSelectedTask(null);
     setShowDeleteConfirm(false);
+    setTitleError(false);
+    setIsModalDeletedTask(false);
   };
 
   const handleDeleteClick = () => {
     setShowDeleteConfirm(true);
+  };
+
+  const restoreTask = async (taskId: string) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`http://localhost:4000/api/tasks/${taskId}/restore`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        }
+      });
+      if (res.ok) {
+        fetchBoard(token);
+        if (socket) {
+          socket.emit('task_updated', { boardId });
+        }
+        closeTaskModal();
+      }
+    } catch (err) {
+      console.error("Error restoring task", err);
+    }
   };
 
   const confirmDeleteTask = async () => {
@@ -342,6 +375,19 @@ export default function Home() {
       <header className="header">
         <h1>Productivity Board</h1>
         <div className="user-profile">
+          {deletedTasks.length > 0 && (
+            <button 
+              onClick={() => setShowDeletedCards(!showDeletedCards)}
+              className={showDeletedCards ? "btn-secondary" : "btn-deleted-cta"}
+              style={{ padding: '0.45rem 0.85rem', fontSize: '0.8rem' }}
+            >
+              {showDeletedCards ? (
+                <>Hide Deleted Cards ({deletedTasks.length})</>
+              ) : (
+                <>Show Deleted Cards ({deletedTasks.length})</>
+              )}
+            </button>
+          )}
           <button 
             className="btn-primary" 
             onClick={() => {
@@ -434,6 +480,48 @@ export default function Home() {
                 </button>
               </div>
             ))}
+            {/* Deleted Column (Only rendered if showDeletedCards is true and deletedTasks has items) */}
+            {showDeletedCards && deletedTasks.length > 0 && (
+              <div className="kanban-column deleted-column">
+                <div className="column-header">
+                  <span className="column-header-title" style={{ color: 'var(--danger)' }}>
+                    Deleted
+                  </span>
+                  <span className="task-count" style={{ borderColor: 'var(--danger-muted)', color: 'var(--danger)' }}>
+                    {deletedTasks.length}
+                  </span>
+                </div>
+                
+                <div className="task-list">
+                  {deletedTasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className="task-card task-card-deleted"
+                      onClick={() => openTaskModal(task, true)}
+                    >
+                      <div className="task-title" style={{ textDecoration: 'line-through', opacity: 0.85 }}>
+                        {task.title}
+                      </div>
+                      {task.description && (
+                        <div className="task-desc">{task.description}</div>
+                      )}
+                      <div style={{ marginTop: '0.65rem', display: 'flex', justifyContent: 'flex-end' }}>
+                        <button
+                          className="btn-restore-mini"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            restoreTask(task.id);
+                          }}
+                        >
+                          Restore
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Add Column Component */}
             <div className="add-column-wrapper">
               {!isAddingColumn ? (
@@ -503,13 +591,13 @@ export default function Home() {
         <div className="modal-overlay" onClick={closeTaskModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Edit Task</h2>
+              <h2>{isModalDeletedTask ? 'Deleted Task' : (('isNew' in selectedTask) ? 'New Task' : 'Edit Task')}</h2>
               <button className="close-btn" onClick={closeTaskModal}>&times;</button>
             </div>
             
             {showDeleteConfirm ? (
               <div style={{ textAlign: 'center', padding: '0.75rem 0' }}>
-                <p style={{ marginBottom: '1.5rem', fontSize: '1.05rem', color: 'var(--text-main)' }}>Are you sure you want to permanently delete this task?</p>
+                <p style={{ marginBottom: '1.5rem', fontSize: '1.05rem', color: 'var(--text-main)' }}>Are you sure you want to delete this task? (It will be moved to the Deleted column).</p>
                 <div style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center' }}>
                   <button 
                     onClick={() => setShowDeleteConfirm(false)}
@@ -535,12 +623,15 @@ export default function Home() {
                   <input 
                     type="text" 
                     value={editTitle} 
+                    readOnly={isModalDeletedTask}
                     onChange={(e) => {
-                      setEditTitle(e.target.value);
-                      if (titleError) setTitleError(false);
+                      if (!isModalDeletedTask) {
+                        setEditTitle(e.target.value);
+                        if (titleError) setTitleError(false);
+                      }
                     }} 
-                    autoFocus 
-                    style={titleError ? { borderColor: 'var(--danger)' } : {}}
+                    autoFocus={!isModalDeletedTask}
+                    style={titleError ? { borderColor: 'var(--danger)' } : (isModalDeletedTask ? { opacity: 0.8, cursor: 'not-allowed' } : {})}
                   />
                 </div>
                 
@@ -550,23 +641,46 @@ export default function Home() {
                     rows={4} 
                     placeholder="Add a detailed description..." 
                     value={editDescription} 
-                    onChange={(e) => setEditDescription(e.target.value)}
+                    readOnly={isModalDeletedTask}
+                    onChange={(e) => {
+                      if (!isModalDeletedTask) setEditDescription(e.target.value);
+                    }}
+                    style={isModalDeletedTask ? { opacity: 0.8, cursor: 'not-allowed' } : {}}
                   />
                 </div>
                 
-                <div style={{ display: 'flex', gap: '0.85rem', marginTop: '0.5rem' }}>
-                  <button className="btn-primary" onClick={saveTaskDetails} style={{ flex: 1 }}>
-                    {('isNew' in selectedTask) ? 'Create Task' : 'Save Changes'}
-                  </button>
-                  {!("isNew" in selectedTask) && (
-                    <button 
-                      onClick={handleDeleteClick}
-                      className="btn-danger-outline"
-                    >
-                      Delete
+                {isModalDeletedTask ? (
+                  <div style={{ display: 'flex', gap: '0.85rem', marginTop: '0.5rem' }}>
+                    <button className="btn-secondary" onClick={closeTaskModal} style={{ flex: 1 }}>
+                      Close
                     </button>
-                  )}
-                </div>
+                    <button 
+                      className="btn-primary" 
+                      onClick={() => {
+                        if (selectedTask && 'id' in selectedTask) {
+                          restoreTask(selectedTask.id);
+                        }
+                      }} 
+                      style={{ flex: 1 }}
+                    >
+                      Restore Task
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', gap: '0.85rem', marginTop: '0.5rem' }}>
+                    <button className="btn-primary" onClick={saveTaskDetails} style={{ flex: 1 }}>
+                      {('isNew' in selectedTask) ? 'Create Task' : 'Save Changes'}
+                    </button>
+                    {!("isNew" in selectedTask) && (
+                      <button 
+                        onClick={handleDeleteClick}
+                        className="btn-danger-outline"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>

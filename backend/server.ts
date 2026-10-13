@@ -87,26 +87,46 @@ app.get('/api/boards', authenticateToken, async (req: any, res: any) => {
   try {
     const userId = req.user.userId;
     const board = await db.get('SELECT * FROM boards WHERE user_id = ? LIMIT 1', [userId]);
-    if (!board) return res.json({ columns: [] });
+    if (!board) return res.json({ columns: [], deletedTasks: [] });
 
     const columns = await db.all('SELECT * FROM columns WHERE board_id = ? ORDER BY order_index ASC', [board.id]);
-    const tasks = await db.all(`
+    const activeTasks = await db.all(`
       SELECT tasks.* FROM tasks 
       JOIN columns ON tasks.column_id = columns.id 
-      WHERE columns.board_id = ? 
+      WHERE columns.board_id = ? AND (tasks.is_deleted = 0 OR tasks.is_deleted IS NULL)
       ORDER BY tasks.order_index ASC
     `, [board.id]);
     
+    const deletedTasks = await db.all(`
+      SELECT * FROM tasks 
+      WHERE (board_id = ? OR column_id IN (SELECT id FROM columns WHERE board_id = ?))
+      AND is_deleted = 1
+      ORDER BY id DESC
+    `, [board.id, board.id]);
+
     const groupedColumns = columns.map(col => ({
       id: col.id.toString(),
       title: col.title,
-      tasks: tasks.filter(t => t.column_id === col.id).map(t => ({
+      tasks: activeTasks.filter(t => t.column_id === col.id).map(t => ({
         id: t.id.toString(), title: t.title, description: t.description
       }))
     }));
+
+    const formattedDeletedTasks = deletedTasks.map(t => ({
+      id: t.id.toString(),
+      title: t.title,
+      description: t.description,
+      originalColumnId: t.original_column_id ? t.original_column_id.toString() : null
+    }));
     
-    res.json({ boardId: board.id.toString(), name: board.name, columns: groupedColumns });
+    res.json({ 
+      boardId: board.id.toString(), 
+      name: board.name, 
+      columns: groupedColumns,
+      deletedTasks: formattedDeletedTasks
+    });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -115,10 +135,16 @@ app.get('/api/boards', authenticateToken, async (req: any, res: any) => {
 app.post('/api/tasks', authenticateToken, async (req: any, res: any) => {
   try {
     const { columnId, title, description } = req.body;
-    const maxOrderRes = await db.get('SELECT MAX(order_index) as maxOrder FROM tasks WHERE column_id = ?', [columnId]);
+    const col = await db.get('SELECT board_id FROM columns WHERE id = ?', [columnId]);
+    const boardId = col ? col.board_id : null;
+
+    const maxOrderRes = await db.get('SELECT MAX(order_index) as maxOrder FROM tasks WHERE column_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)', [columnId]);
     const nextOrder = (maxOrderRes?.maxOrder ?? -1) + 1;
     
-    const result = await db.run('INSERT INTO tasks (column_id, title, description, order_index) VALUES (?, ?, ?, ?)', [columnId, title, description, nextOrder]);
+    const result = await db.run(
+      'INSERT INTO tasks (column_id, board_id, title, description, order_index, is_deleted) VALUES (?, ?, ?, ?, ?, 0)', 
+      [columnId, boardId, title, description, nextOrder]
+    );
     res.json({ success: true, taskId: result.lastID });
   } catch (err) {
     console.error(err);
@@ -129,11 +155,66 @@ app.post('/api/tasks', authenticateToken, async (req: any, res: any) => {
 
 app.delete('/api/tasks/:id', authenticateToken, async (req: any, res: any) => {
   try {
-    await db.run('DELETE FROM tasks WHERE id = ?', [req.params.id]);
+    const task = await db.get('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
+    if (!task) return res.status(404).json({ error: 'Task not found' });
+
+    let boardId = task.board_id;
+    if (!boardId && task.column_id) {
+      const col = await db.get('SELECT board_id FROM columns WHERE id = ?', [task.column_id]);
+      if (col) boardId = col.board_id;
+    }
+
+    await db.run(`
+      UPDATE tasks 
+      SET is_deleted = 1, 
+          original_column_id = column_id,
+          board_id = ?,
+          column_id = NULL
+      WHERE id = ?
+    `, [boardId, req.params.id]);
+
     res.json({ success: true });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to delete task' });
+  }
+});
+
+app.post('/api/tasks/:id/restore', authenticateToken, async (req: any, res: any) => {
+  try {
+    const task = await db.get('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
+    if (!task) return res.status(404).json({ error: 'Task not found' });
+
+    let targetColumnId = task.original_column_id;
+    let colExists = false;
+    if (targetColumnId) {
+      const col = await db.get('SELECT * FROM columns WHERE id = ?', [targetColumnId]);
+      if (col) colExists = true;
+    }
+
+    if (!colExists) {
+      const firstCol = await db.get('SELECT * FROM columns WHERE board_id = ? ORDER BY order_index ASC LIMIT 1', [task.board_id]);
+      if (!firstCol) {
+        return res.status(400).json({ error: 'No column available to restore this task to. Please create a column first.' });
+      }
+      targetColumnId = firstCol.id;
+    }
+
+    const maxOrderRes = await db.get('SELECT MAX(order_index) as maxOrder FROM tasks WHERE column_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)', [targetColumnId]);
+    const nextOrder = (maxOrderRes?.maxOrder ?? -1) + 1;
+
+    await db.run(`
+      UPDATE tasks 
+      SET is_deleted = 0, 
+          column_id = ?, 
+          order_index = ? 
+      WHERE id = ?
+    `, [targetColumnId, nextOrder, req.params.id]);
+
+    res.json({ success: true, columnId: targetColumnId });
+  } catch (err) {
+    console.error('Error restoring task:', err);
+    res.status(500).json({ error: 'Failed to restore task' });
   }
 });
 
@@ -176,7 +257,17 @@ app.delete('/api/columns/:id', authenticateToken, async (req: any, res: any) => 
       return res.status(404).json({ error: 'Column not found' });
     }
 
-    await db.run('DELETE FROM tasks WHERE column_id = ?', [req.params.id]);
+    // Move all active tasks in this column to Deleted
+    await db.run(`
+      UPDATE tasks 
+      SET is_deleted = 1, 
+          original_column_id = ?, 
+          board_id = ?, 
+          column_id = NULL 
+      WHERE column_id = ?
+    `, [req.params.id, column.board_id, req.params.id]);
+
+    // Now safely delete the column record
     await db.run('DELETE FROM columns WHERE id = ?', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
@@ -187,6 +278,10 @@ app.delete('/api/columns/:id', authenticateToken, async (req: any, res: any) => 
 
 app.put('/api/tasks/:id', authenticateToken, async (req: any, res: any) => {
   try {
+    const task = await db.get('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
+    if (task && task.is_deleted === 1) {
+      return res.status(400).json({ error: 'Deleted tasks cannot be edited' });
+    }
     const { title, description } = req.body;
     await db.run('UPDATE tasks SET title = ?, description = ? WHERE id = ?', [title, description, req.params.id]);
     res.json({ success: true });

@@ -572,3 +572,72 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background-color: var(--border-card-hover);
 }
+
+
+/* Deleted Column & Card Styles */
+.deleted-column {
+  border-top: 2px solid var(--danger);
+  border-style: solid;
+  background: var(--bg-column);
+}
+
+.task-card-deleted {
+  opacity: 0.82;
+  cursor: pointer;
+  border-color: var(--border-subtle);
+}
+
+.task-card-deleted::before {
+  background: var(--danger);
+  opacity: 0.7;
+}
+
+.task-card-deleted:hover {
+  opacity: 1;
+  border-color: var(--danger);
+  background: var(--bg-card-hover);
+}
+
+.task-card-deleted:hover::before {
+  opacity: 1;
+}
+
+.btn-deleted-cta {
+  background: var(--danger-muted);
+  border: 1px solid var(--danger);
+  color: #ff7b72;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: var(--radius-btn);
+  cursor: pointer;
+  padding: 0.45rem 0.85rem;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn-deleted-cta:hover {
+  background: var(--danger);
+  color: #ffffff;
+}
+
+.btn-restore-mini {
+  background: transparent;
+  border: 1px solid var(--border-ui);
+  color: var(--accent);
+  padding: 3px 9px;
+  border-radius: var(--radius-btn);
+  font-size: 0.75rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-restore-mini:hover {
+  background: var(--accent-muted);
+  border-color: var(--accent);
+  color: #ffffff;
+}

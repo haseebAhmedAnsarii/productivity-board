@@ -35,7 +35,26 @@ export const initDb = async () => {
         order_index INTEGER NOT NULL
       );
     `);
-    console.log("SQLite Database initialized with User Auth schema.");
+    
+    // Soft-delete and board association migrations
+    try {
+      await db.exec('ALTER TABLE tasks ADD COLUMN is_deleted INTEGER DEFAULT 0;');
+    } catch (e) {}
+    try {
+      await db.exec('ALTER TABLE tasks ADD COLUMN board_id INTEGER;');
+    } catch (e) {}
+    try {
+      await db.exec('ALTER TABLE tasks ADD COLUMN original_column_id INTEGER;');
+    } catch (e) {}
+
+    // Backfill board_id for any existing tasks
+    await db.exec(`
+      UPDATE tasks 
+      SET board_id = (SELECT board_id FROM columns WHERE columns.id = tasks.column_id) 
+      WHERE board_id IS NULL AND column_id IS NOT NULL;
+    `);
+
+    console.log("SQLite Database initialized with User Auth schema and soft-delete migrations.");
   } catch (error) {
     console.error("Error initializing database:", error);
   }
