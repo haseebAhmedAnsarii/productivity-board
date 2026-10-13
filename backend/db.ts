@@ -46,6 +46,9 @@ export const initDb = async () => {
     try {
       await db.exec('ALTER TABLE tasks ADD COLUMN original_column_id INTEGER;');
     } catch (e) {}
+    try {
+      await db.exec('ALTER TABLE columns ADD COLUMN is_deleted INTEGER DEFAULT 0;');
+    } catch (e) {}
 
     // Backfill board_id for any existing tasks
     await db.exec(`

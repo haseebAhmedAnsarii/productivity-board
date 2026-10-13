@@ -40,12 +40,12 @@ A full-stack, real-time Kanban productivity web application with per-user persis
 - Add custom columns to the board.
 - **Delete Column:**
   - Confirmation prompt before deletion.
-  - When a column is deleted, all cards within it are automatically transferred to the **"Deleted"** column (soft deleted) rather than being permanently lost.
+  - When a column is deleted, the column itself is soft-deleted (`is_deleted = 1` in `columns`), and all cards within it are transferred to the **"Deleted"** column (`is_deleted = 1, column_id = NULL, original_column_id = column.id`).
   - Deleting a column creates an audit log for every moved card in `task_history` recording the originating column name (`Column "X" was deleted`).
   - Calls `fetchBoard()` immediately upon column deletion so the Deleted column, its cards, and header badge count update instantly without requiring a page refresh.
   - Syncs via backend `DELETE /api/columns/:id` and broadcasts via WebSocket.
 
-### C. Soft-Delete & Smart "Deleted" Column
+### C. Soft-Delete, Smart "Deleted" Column & Original Column Restoration
 - Cards cannot be permanently deleted from active columns. Deleting a card moves it into a dedicated `"Deleted"` column (`is_deleted = 1`).
 - **Conditional Visibility:**
   - The `"Deleted"` column is hidden by default.
@@ -53,7 +53,11 @@ A full-stack, real-time Kanban productivity web application with per-user persis
   - Even when cards exist, it remains hidden until the user clicks the header button: **"Show Deleted Cards"** (`"Hide Deleted Cards"` once visible).
 - **Column Protections:**
   - Read-only column: cannot add cards directly to it, cannot drag cards into/out of it.
-  - Cards inside have a **"Restore"** action that moves the card back to an active board column.
+  - Cards inside have a **"Restore"** action.
+- **Original Column Restoration:**
+  - When a card whose entire column was deleted is restored, the backend automatically resurrects the original column (`UPDATE columns SET is_deleted = 0`) or recreates it if it was previously hard-deleted.
+  - The card is placed directly back into its original column (rather than falling back to the "To Do" column).
+  - Activity history correctly logs the restored column name (`Restored card back to column "<title>"`).
 
 ### D. Card Edit & Activity History
 - Opening a card displays a comprehensive **Activity & History** log at the bottom of the modal.

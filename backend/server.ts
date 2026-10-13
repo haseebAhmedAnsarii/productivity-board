@@ -102,11 +102,11 @@ app.get('/api/boards', authenticateToken, async (req: any, res: any) => {
     const board = await db.get('SELECT * FROM boards WHERE user_id = ? LIMIT 1', [userId]);
     if (!board) return res.json({ columns: [], deletedTasks: [] });
 
-    const columns = await db.all('SELECT * FROM columns WHERE board_id = ? ORDER BY order_index ASC', [board.id]);
+    const columns = await db.all('SELECT * FROM columns WHERE board_id = ? AND (is_deleted = 0 OR is_deleted IS NULL) ORDER BY order_index ASC', [board.id]);
     const activeTasks = await db.all(`
       SELECT tasks.* FROM tasks 
       JOIN columns ON tasks.column_id = columns.id 
-      WHERE columns.board_id = ? AND (tasks.is_deleted = 0 OR tasks.is_deleted IS NULL)
+      WHERE columns.board_id = ? AND (columns.is_deleted = 0 OR columns.is_deleted IS NULL) AND (tasks.is_deleted = 0 OR tasks.is_deleted IS NULL)
       ORDER BY tasks.order_index ASC
     `, [board.id]);
     
@@ -158,7 +158,7 @@ app.post('/api/tasks', authenticateToken, async (req: any, res: any) => {
       'INSERT INTO tasks (column_id, board_id, title, description, order_index, is_deleted) VALUES (?, ?, ?, ?, ?, 0)', 
       [columnId, boardId, title, description, nextOrder]
     );
-    await logTaskHistory(result.lastID, req.user.userId, req.user.username, 'created', null, title);
+    await logTaskHistory(result.lastID!, req.user.userId, req.user.username, 'created', null, title);
     res.json({ success: true, taskId: result.lastID });
   } catch (err) {
     console.error(err);
@@ -204,22 +204,91 @@ app.post('/api/tasks/:id/restore', authenticateToken, async (req: any, res: any)
     const task = await db.get('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
     if (!task) return res.status(404).json({ error: 'Task not found' });
 
-    let targetColumnId = task.original_column_id;
-    let colExists = false;
-    if (targetColumnId) {
-      const col = await db.get('SELECT * FROM columns WHERE id = ?', [targetColumnId]);
-      if (col) colExists = true;
+    let targetColumnId: number | null = null;
+    let targetColTitle: string = 'Active Board';
+
+    // 1. Check if original_column_id points to an existing column in DB
+    if (task.original_column_id) {
+      const origCol = await db.get('SELECT * FROM columns WHERE id = ?', [task.original_column_id]);
+      if (origCol) {
+        if (origCol.is_deleted === 1) {
+          // Column was deleted: check if an active column with the exact same title exists on this board
+          const duplicateActiveCol = await db.get(
+            'SELECT * FROM columns WHERE board_id = ? AND title = ? AND (is_deleted = 0 OR is_deleted IS NULL) AND id != ?',
+            [task.board_id, origCol.title, origCol.id]
+          );
+
+          if (duplicateActiveCol) {
+            targetColumnId = duplicateActiveCol.id;
+            targetColTitle = duplicateActiveCol.title;
+          } else {
+            // Restore the original column back to the active board
+            await db.run('UPDATE columns SET is_deleted = 0 WHERE id = ?', [origCol.id]);
+            targetColumnId = origCol.id;
+            targetColTitle = origCol.title;
+          }
+        } else {
+          // Column is already active
+          targetColumnId = origCol.id;
+          targetColTitle = origCol.title;
+        }
+      }
     }
 
-    if (!colExists) {
-      const firstCol = await db.get('SELECT * FROM columns WHERE board_id = ? ORDER BY order_index ASC LIMIT 1', [task.board_id]);
+    // 2. If targetColumnId still not resolved (e.g. column was hard-deleted before soft-delete was introduced)
+    if (!targetColumnId) {
+      const lastDeleteHistory = await db.get(`
+        SELECT old_value FROM task_history 
+        WHERE task_id = ? AND change_type = 'deleted' AND old_value IS NOT NULL 
+        ORDER BY id DESC LIMIT 1
+      `, [task.id]);
+
+      const originalName = lastDeleteHistory?.old_value;
+
+      if (originalName) {
+        // Check if an active column with this title already exists on the board
+        const existingCol = await db.get(
+          'SELECT * FROM columns WHERE board_id = ? AND title = ? AND (is_deleted = 0 OR is_deleted IS NULL)',
+          [task.board_id, originalName]
+        );
+
+        if (existingCol) {
+          targetColumnId = existingCol.id;
+          targetColTitle = existingCol.title;
+        } else {
+          // Re-create the original column so the card returns to its original column
+          const maxOrderRes = await db.get(
+            'SELECT MAX(order_index) as maxOrder FROM columns WHERE board_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)',
+            [task.board_id]
+          );
+          const nextColOrder = (maxOrderRes?.maxOrder ?? -1) + 1;
+          const newCol = await db.run(
+            'INSERT INTO columns (board_id, title, order_index, is_deleted) VALUES (?, ?, ?, 0)',
+            [task.board_id, originalName, nextColOrder]
+          );
+          targetColumnId = newCol.lastID!;
+          targetColTitle = originalName;
+        }
+      }
+    }
+
+    // 3. Fallback: if no original column information exists anywhere, restore to first column
+    if (!targetColumnId) {
+      const firstCol = await db.get(
+        'SELECT * FROM columns WHERE board_id = ? AND (is_deleted = 0 OR is_deleted IS NULL) ORDER BY order_index ASC LIMIT 1',
+        [task.board_id]
+      );
       if (!firstCol) {
         return res.status(400).json({ error: 'No column available to restore this task to. Please create a column first.' });
       }
       targetColumnId = firstCol.id;
+      targetColTitle = firstCol.title;
     }
 
-    const maxOrderRes = await db.get('SELECT MAX(order_index) as maxOrder FROM tasks WHERE column_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)', [targetColumnId]);
+    const maxOrderRes = await db.get(
+      'SELECT MAX(order_index) as maxOrder FROM tasks WHERE column_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)',
+      [targetColumnId]
+    );
     const nextOrder = (maxOrderRes?.maxOrder ?? -1) + 1;
 
     await db.run(`
@@ -230,8 +299,8 @@ app.post('/api/tasks/:id/restore', authenticateToken, async (req: any, res: any)
       WHERE id = ?
     `, [targetColumnId, nextOrder, req.params.id]);
 
-    await logTaskHistory(req.params.id, req.user.userId, req.user.username, 'restored', 'Deleted', 'Restored to column');
-    res.json({ success: true, columnId: targetColumnId });
+    await logTaskHistory(req.params.id, req.user.userId, req.user.username, 'restored', 'Deleted', targetColTitle);
+    res.json({ success: true, columnId: targetColumnId, columnTitle: targetColTitle });
   } catch (err) {
     console.error('Error restoring task:', err);
     res.status(500).json({ error: 'Failed to restore task' });
@@ -254,10 +323,10 @@ app.post('/api/columns', authenticateToken, async (req: any, res: any) => {
       return res.status(404).json({ error: 'Board not found' });
     }
 
-    const maxOrderRes = await db.get('SELECT MAX(order_index) as maxOrder FROM columns WHERE board_id = ?', [boardId]);
+    const maxOrderRes = await db.get('SELECT MAX(order_index) as maxOrder FROM columns WHERE board_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)', [boardId]);
     const nextOrder = (maxOrderRes?.maxOrder ?? -1) + 1;
 
-    const result = await db.run('INSERT INTO columns (board_id, title, order_index) VALUES (?, ?, ?)', [boardId, title.trim(), nextOrder]);
+    const result = await db.run('INSERT INTO columns (board_id, title, order_index, is_deleted) VALUES (?, ?, ?, 0)', [boardId, title.trim(), nextOrder]);
     res.json({ success: true, columnId: result.lastID, title: title.trim(), order_index: nextOrder });
   } catch (err) {
     console.error('Error creating column:', err);
@@ -305,8 +374,8 @@ app.delete('/api/columns/:id', authenticateToken, async (req: any, res: any) => 
       );
     }
 
-    // Now safely delete the column record
-    await db.run('DELETE FROM columns WHERE id = ?', [req.params.id]);
+    // Safely soft-delete the column record so it can be restored when its cards are restored
+    await db.run('UPDATE columns SET is_deleted = 1 WHERE id = ?', [req.params.id]);
     res.json({ success: true, affectedTasks: tasksInColumn.length });
   } catch (err) {
     console.error('Error deleting column:', err);
