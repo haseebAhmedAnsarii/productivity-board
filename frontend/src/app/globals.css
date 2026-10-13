@@ -107,7 +107,9 @@ body {
   flex-direction: column;
   gap: 0.75rem;
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
+  min-height: 0;
 }
 
 /* Custom Scrollbar for task lists */
@@ -132,6 +134,7 @@ body {
   box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .task-card::before {
@@ -311,5 +314,5 @@ body {
 }
 
 .task-list::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+  background: linear-gradient(180deg, rgba(45, 212, 191, 1), rgba(38, 222, 90, 1));
 }
