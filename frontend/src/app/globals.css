@@ -228,6 +228,63 @@ body {
   cursor: grabbing;
 }
 
+/* Card Header & Unique Card ID Badge */
+.task-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.45rem;
+}
+
+.task-badge {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-ui);
+  padding: 1px 6px;
+  border-radius: var(--radius-badge);
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  transition: var(--transition);
+  user-select: none;
+}
+
+.task-card:hover .task-badge {
+  color: var(--accent);
+  border-color: var(--border-card-hover);
+}
+
+.task-badge-deleted {
+  color: var(--danger);
+  border-color: var(--danger-muted);
+  background: rgba(207, 79, 68, 0.08);
+}
+
+.modal-task-badge {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-muted);
+  border: 1px solid var(--accent);
+  padding: 2px 8px;
+  border-radius: var(--radius-badge);
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  transition: var(--transition);
+  user-select: none;
+}
+
+.modal-task-badge:hover {
+  background: var(--accent);
+  color: var(--text-inverse);
+}
+
 .task-title {
   font-family: var(--font-body);
   font-weight: 600;

@@ -58,6 +58,7 @@ export default function Home() {
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [newColumnTitle, setNewColumnTitle] = useState('');
   const [columnTitleError, setColumnTitleError] = useState(false);
+  const [copiedId, setCopiedId] = useState(false);
 
   useEffect(() => {
     setIsBrowser(true);
@@ -332,6 +333,12 @@ export default function Home() {
     setShowHistory(false);
   };
 
+  const copyTaskId = (id: string) => {
+    navigator.clipboard.writeText(`#${id}`);
+    setCopiedId(true);
+    setTimeout(() => setCopiedId(false), 1600);
+  };
+
   const closeTaskModal = () => {
     setSelectedTask(null);
     setShowDeleteConfirm(false);
@@ -339,6 +346,7 @@ export default function Home() {
     setIsModalDeletedTask(false);
     setTaskHistory([]);
     setShowHistory(false);
+    setCopiedId(false);
   };
 
   const handleDeleteClick = () => {
@@ -548,8 +556,11 @@ export default function Home() {
                                 boxShadow: snapshot.isDragging ? 'var(--shadow-lg)' : 'var(--shadow-sm)',
                               }}
                             >
+                              <div className="task-card-header">
+                                <span className="task-badge">#{task.id}</span>
+                              </div>
                               <div className="task-title">{task.title}</div>
-                              <div className="task-desc">{task.description}</div>
+                              {task.description && <div className="task-desc">{task.description}</div>}
                             </div>
                           )}
                         </Draggable>
@@ -585,6 +596,9 @@ export default function Home() {
                       className="task-card task-card-deleted"
                       onClick={() => openTaskModal(task, true)}
                     >
+                      <div className="task-card-header">
+                        <span className="task-badge task-badge-deleted">#{task.id}</span>
+                      </div>
                       <div className="task-title" style={{ textDecoration: 'line-through', opacity: 0.85 }}>
                         {task.title}
                       </div>
@@ -677,7 +691,20 @@ export default function Home() {
         <div className="modal-overlay" onClick={closeTaskModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>{isModalDeletedTask ? 'Deleted Task' : (('isNew' in selectedTask) ? 'New Task' : 'Edit Task')}</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <h2>{isModalDeletedTask ? 'Deleted Task' : (('isNew' in selectedTask) ? 'New Task' : 'Edit Task')}</h2>
+                {!('isNew' in selectedTask) && selectedTask?.id && (
+                  <button 
+                    type="button"
+                    className="modal-task-badge"
+                    onClick={() => copyTaskId(selectedTask.id)}
+                    title="Click to copy card ID"
+                  >
+                    <span>#{selectedTask.id}</span>
+                    {copiedId && <span style={{ fontSize: '0.68rem', opacity: 0.85 }}>Copied!</span>}
+                  </button>
+                )}
+              </div>
               <button className="close-btn" onClick={closeTaskModal}>&times;</button>
             </div>
             
@@ -878,8 +905,8 @@ export default function Home() {
               Are you sure you want to delete <strong>&ldquo;{columnToDelete.title}&rdquo;</strong>?
             </p>
             {columnToDelete.tasks.length > 0 && (
-              <p style={{ color: 'var(--danger)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>
-                Warning: All {columnToDelete.tasks.length} {columnToDelete.tasks.length === 1 ? 'task' : 'tasks'} inside this column will also be permanently deleted.
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>
+                Note: All {columnToDelete.tasks.length} {columnToDelete.tasks.length === 1 ? 'task' : 'tasks'} inside this column will be safely moved to the Deleted column.
               </p>
             )}
 

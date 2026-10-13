@@ -1,0 +1,163 @@
+# Productivity Board — Complete Project History & Context Handoff
+
+This document summarizes the full context, architectural evolution, implemented features, and technical details of the **Productivity Board** application. Use this document when starting a new chat session to continue development seamlessly.
+
+---
+
+## 1. Project Overview & Tech Stack
+
+A full-stack, real-time Kanban productivity web application with per-user persistent boards and cards.
+
+- **Frontend:**
+  - **Framework:** Next.js 16 (App Router, React 19)
+  - **Styling:** Vanilla CSS (`globals.css`) with custom CSS variables and utility design tokens (No Tailwind, no generic templates).
+  - **Real-time:** `socket.io-client`
+  - **Drag and Drop:** HTML5 Drag & Drop API with custom drop indicators and state management.
+  - **Location:** `d:\practice\productivity-board\frontend` (running on `http://localhost:3000` / `http://localhost:3001`).
+
+- **Backend:**
+  - **Framework:** Node.js with Express & TypeScript (`server.ts` executed via `tsx`).
+  - **Real-time:** `socket.io` broadcasting column, card, and history changes.
+  - **Database:** SQLite (`database.sqlite`) via `sqlite3` and `sqlite` promise wrapper (`db.ts`).
+  - **Authentication:** JWT tokens (`jsonwebtoken`) stored in `localStorage`, bcrypt password hashing.
+  - **Location:** `d:\practice\productivity-board\backend` (running on `http://localhost:4000`).
+
+---
+
+## 2. Key Features & Implementation Details
+
+### A. Bespoke Architectural Design System (Anti "AI Slop")
+- **Palette:** Warm Obsidian Architectural aesthetic:
+  - Deep carbon base: `#121316` (background)
+  - Elevated surfaces: `#181a1f`, `#1e2128`
+  - Subtle architectural borders: `#282c35`, `#333844`
+  - High-contrast warm text: `#edece6`, `#9ca3af` (no text gradients)
+  - Warm amber/gold accents: `#d97706`, `#f59e0b` (removed all generic cyan, purple, and aurora glows)
+- **Geometry & Hierarchy:** Dynamic, varied border-radii (4px for tags, 6px for buttons, 10px for cards, 14px for modals/columns) instead of uniform rounded corners.
+- **Card Layout:** Fixed text-overflow protection with CSS ellipsis, robust flex constraints preventing cards from collapsing or shrinking horizontally.
+
+### B. Dynamic Column Management
+- Add custom columns to the board.
+- **Delete Column:**
+  - Confirmation prompt before deletion.
+  - When a column is deleted, all cards within it are automatically transferred to the **"Deleted"** column (soft deleted) rather than being permanently lost.
+  - Syncs via backend `DELETE /api/columns/:id` and broadcasts via WebSocket.
+
+### C. Soft-Delete & Smart "Deleted" Column
+- Cards cannot be permanently deleted from active columns. Deleting a card moves it into a dedicated `"Deleted"` column (`is_deleted = 1`).
+- **Conditional Visibility:**
+  - The `"Deleted"` column is hidden by default.
+  - It only becomes available when at least one deleted card exists.
+  - Even when cards exist, it remains hidden until the user clicks the header button: **"Show Deleted Cards"** (`"Hide Deleted Cards"` once visible).
+- **Column Protections:**
+  - Read-only column: cannot add cards directly to it, cannot drag cards into/out of it.
+  - Cards inside have a **"Restore"** action that moves the card back to an active board column.
+
+### D. Card Edit & Activity History
+- Opening a card displays a comprehensive **Activity & History** log at the bottom of the modal.
+- Logs events:
+  - Card creation (`created`)
+  - Title edits (`title`)
+  - Description changes (`description`)
+  - Column transfers (`moved`)
+  - Soft deletions (`deleted`)
+  - Restorations (`restored`)
+- Displays author username, exact before-and-after values, and local timestamps.
+
+### E. Timezone Accuracy & AM/PM Formatting
+- **Root Cause Fixed:** SQLite stores `CURRENT_TIMESTAMP` as UTC string without timezone offset (`YYYY-MM-DD HH:MM:SS`), which browsers previously misparsed as local time (causing a 5-hour offset in UTC+5).
+- **Backend Fix:** Writes standard ISO strings (`new Date().toISOString()`) for new `task_history` rows.
+- **Frontend Normalizer:** `formatHistoryTime` uses regex `/[Zz]$|[+-]\d{2}(:?\d{2})?$/` to detect missing offsets and parse as UTC.
+- **AM/PM Formatting:** Formatted via `toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })` yielding clean timestamps like `Oct 13, 3:44 PM`.
+
+### F. Unique Card ID / Number Badges
+- **Style:** Clean numeric badge (e.g. `#4`, `#12`) using the task's unique auto-increment identifier.
+- **Card Header:** Displayed at the top-left of each task card in a monospace badge (`var(--font-mono)`).
+- **Deleted Cards:** Displayed in red-accented badge style for soft-deleted cards.
+- **Task Modal Header:** Displayed alongside the modal title (`#ID`), with a one-click copy button that copies the `#ID` to clipboard with visual "Copied!" feedback.
+- **Bespoke Obsidian Theme Integration:** Subtly shifts to warm amber accent (`--accent`) on card hover for tactile responsiveness.
+
+---
+
+## 3. Database Schema (`backend/database.sqlite`)
+
+```sql
+-- Users
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL
+);
+
+-- Boards
+CREATE TABLE IF NOT EXISTS boards (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  user_id INTEGER NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+-- Columns
+CREATE TABLE IF NOT EXISTS columns (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  board_id INTEGER NOT NULL,
+  title TEXT NOT NULL,
+  position INTEGER NOT NULL,
+  FOREIGN KEY (board_id) REFERENCES boards (id)
+);
+
+-- Tasks
+CREATE TABLE IF NOT EXISTS tasks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  column_id INTEGER NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  position INTEGER NOT NULL,
+  is_deleted INTEGER DEFAULT 0,
+  deleted_at DATETIME,
+  original_column_id INTEGER,
+  FOREIGN KEY (column_id) REFERENCES columns (id)
+);
+
+-- Task History / Activity Log
+CREATE TABLE IF NOT EXISTS task_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  task_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  username TEXT NOT NULL,
+  change_type TEXT NOT NULL,
+  old_value TEXT,
+  new_value TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users (id)
+);
+```
+
+---
+
+## 4. API & Socket Overview
+
+### Backend Endpoints (`server.ts`):
+- `POST /api/auth/register` & `POST /api/auth/login`
+- `GET /api/boards` — returns board columns and any deleted tasks.
+- `POST /api/columns` & `DELETE /api/columns/:id`
+- `POST /api/tasks` — creates task & logs `created` history.
+- `PUT /api/tasks/:id` — updates title/description & logs changes.
+- `PUT /api/tasks/:id/move` — updates column/position & logs `moved` history.
+- `DELETE /api/tasks/:id` — soft deletes (moves to deleted, sets `is_deleted = 1`) & logs `deleted`.
+- `POST /api/tasks/:id/restore` — restores soft-deleted task & logs `restored`.
+- `GET /api/tasks/:id/history` — fetches chronological audit log for a card.
+
+### Socket.io Events:
+- `board-updated` — emitted on column or task changes to update all clients in real-time.
+- `history-updated` — emitted when a task activity occurs.
+
+---
+
+## 5. Important Environment Gotchas & Conventions
+1. **Workspace Path:** The folder on disk is `d:\practice\productivity-board`.
+2. **File Edits in Current Session:** Direct IDE file modification tools hit permission restrictions if the IDE was opened with the old path `d:\practice\New folder`. To modify files in this workspace, use Node.js scripts executed via terminal commands (`run_command`), or open a New Chat after opening `d:\practice\productivity-board` directly in the IDE.
+3. **Running Terminals:**
+   - Frontend dev server running on port 3000 / 3001.
+   - Backend running on port 4000 via `npx tsx server.ts`.
