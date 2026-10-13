@@ -273,11 +273,12 @@ export default function Home() {
       const normalized = hasTimezone ? dateStr.trim() : dateStr.trim().replace(' ', 'T') + 'Z';
       const d = new Date(normalized);
       if (isNaN(d.getTime())) return dateStr;
-      return d.toLocaleDateString(undefined, { 
+      return d.toLocaleString('en-US', { 
         month: 'short', 
         day: 'numeric', 
-        hour: '2-digit', 
-        minute: '2-digit' 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
       });
     } catch {
       return dateStr;
