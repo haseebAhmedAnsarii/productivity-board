@@ -304,26 +304,30 @@ export default function Home() {
 
   if (!token) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--background)' }}>
-        <div style={{ background: 'var(--surface)', padding: '2.5rem', borderRadius: 'var(--radius-lg)', width: '380px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}>
-          <h2 style={{ marginBottom: '1.5rem', textAlign: 'center', fontSize: '1.5rem', fontWeight: 600 }}>{isLoginMode ? 'Welcome Back' : 'Create Account'}</h2>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-canvas)' }}>
+        <div style={{ background: 'var(--bg-column)', padding: '2.5rem', borderRadius: 'var(--radius-modal)', width: '380px', border: '1px solid var(--border-ui)', boxShadow: 'var(--shadow-modal)' }}>
+          <h2 style={{ marginBottom: '1.5rem', textAlign: 'center', fontSize: '1.35rem', fontWeight: 700, fontFamily: 'var(--font-heading)', letterSpacing: '-0.02em', color: 'var(--text-main)', textTransform: 'uppercase' }}>
+            {isLoginMode ? 'Welcome Back' : 'Create Account'}
+          </h2>
           <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            {authError && <p style={{ color: '#ef4444', fontSize: '0.875rem', textAlign: 'center' }}>{authError}</p>}
+            {authError && <p style={{ color: 'var(--danger)', fontSize: '0.85rem', textAlign: 'center' }}>{authError}</p>}
             <input 
               type="text" 
               placeholder="Username" 
               value={authUsername} 
               onChange={e => setAuthUsername(e.target.value)} 
-              style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--background)', color: 'white', fontSize: '1rem', outline: 'none' }} 
+              style={{ padding: '0.75rem', borderRadius: 'var(--radius-input)', border: '1px solid var(--border-ui)', background: 'var(--bg-input)', color: 'var(--text-main)', fontSize: '0.925rem', outline: 'none', fontFamily: 'var(--font-body)' }} 
             />
             <input 
               type="password" 
               placeholder="Password" 
               value={authPassword} 
               onChange={e => setAuthPassword(e.target.value)} 
-              style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--background)', color: 'white', fontSize: '1rem', outline: 'none' }} 
+              style={{ padding: '0.75rem', borderRadius: 'var(--radius-input)', border: '1px solid var(--border-ui)', background: 'var(--bg-input)', color: 'var(--text-main)', fontSize: '0.925rem', outline: 'none', fontFamily: 'var(--font-body)' }} 
             />
-            <button type="submit" className="btn-primary" style={{ padding: '0.875rem', fontSize: '1rem' }}>{isLoginMode ? 'Login' : 'Sign Up'}</button>
+            <button type="submit" className="btn-primary" style={{ padding: '0.8rem', fontSize: '0.925rem' }}>
+              {isLoginMode ? 'Login' : 'Sign Up'}
+            </button>
           </form>
           <p style={{ marginTop: '1.5rem', textAlign: 'center', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.875rem', transition: 'color 0.2s ease' }} onClick={() => setIsLoginMode(!isLoginMode)} onMouseOver={e => e.currentTarget.style.color = 'var(--text-main)'} onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}>
             {isLoginMode ? "Don't have an account? Register" : "Already have an account? Login"}
@@ -337,7 +341,7 @@ export default function Home() {
     <div className="app-container">
       <header className="header">
         <h1>Productivity Board</h1>
-        <div className="user-profile" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+        <div className="user-profile">
           <button 
             className="btn-primary" 
             onClick={() => {
@@ -345,12 +349,16 @@ export default function Home() {
               setNewColumnTitle('');
               setColumnTitleError(false);
             }}
-            style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem' }}
+            style={{ padding: '0.45rem 0.85rem', fontSize: '0.8rem' }}
           >
             + Add Column
           </button>
-          <button onClick={() => setShowLogoutConfirm(true)} style={{ background: 'transparent', color: 'var(--text-muted)', border: 'none', cursor: 'pointer', fontSize: '0.875rem', transition: 'color 0.2s ease' }} onMouseOver={e => e.currentTarget.style.color = 'var(--text-main)'} onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}>Logout</button>
-          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(90deg, rgba(45, 212, 191, 1) 50%, rgba(38, 222, 90, 1) 100%)' }}></div>
+          <button onClick={() => setShowLogoutConfirm(true)} className="logout-btn">
+            Logout
+          </button>
+          <div className="user-avatar">
+            {authUsername ? authUsername.charAt(0).toUpperCase() : 'U'}
+          </div>
         </div>
       </header>
 
@@ -366,7 +374,7 @@ export default function Home() {
             {columns.map((column) => (
               <div key={column.id} className="kanban-column">
                 <div className="column-header">
-                  <span>{column.title}</span>
+                  <span className="column-header-title">{column.title}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span className="task-count">{column.tasks.length}</span>
                     <button
@@ -420,9 +428,7 @@ export default function Home() {
                 </Droppable>
                 <button 
                   onClick={() => openNewTaskModal(column.id)}
-                  style={{ margin: '0 1.25rem 1.25rem', padding: '0.75rem', background: 'transparent', border: '1px dashed var(--border)', color: 'var(--text-muted)', borderRadius: 'var(--radius-md)', cursor: 'pointer', transition: 'var(--transition)', textAlign: 'left', fontWeight: 500 }}
-                  onMouseOver={e => { e.currentTarget.style.color = 'var(--text-main)'; e.currentTarget.style.borderColor = 'var(--text-muted)'; }}
-                  onMouseOut={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+                  className="add-task-btn"
                 >
                   + Add Task
                 </button>
@@ -453,10 +459,10 @@ export default function Home() {
                       if (columnTitleError) setColumnTitleError(false);
                     }}
                     autoFocus
-                    style={columnTitleError ? { borderColor: '#ef4444' } : {}}
+                    style={columnTitleError ? { borderColor: 'var(--danger)' } : {}}
                   />
                   {columnTitleError && (
-                    <span style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500 }}>
+                    <span style={{ color: 'var(--danger)', fontSize: '0.75rem', fontWeight: 500 }}>
                       Column title is required
                     </span>
                   )}
@@ -502,22 +508,18 @@ export default function Home() {
             </div>
             
             {showDeleteConfirm ? (
-              <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-                <p style={{ marginBottom: '1.5rem', fontSize: '1.1rem', color: 'var(--text-main)' }}>Are you sure you want to permanently delete this task?</p>
-                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+              <div style={{ textAlign: 'center', padding: '0.75rem 0' }}>
+                <p style={{ marginBottom: '1.5rem', fontSize: '1.05rem', color: 'var(--text-main)' }}>Are you sure you want to permanently delete this task?</p>
+                <div style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center' }}>
                   <button 
                     onClick={() => setShowDeleteConfirm(false)}
-                    style={{ background: 'var(--surface-hover)', border: '1px solid var(--border)', color: 'var(--text-main)', padding: '0.75rem 1.5rem', borderRadius: 'var(--radius-md)', cursor: 'pointer', transition: 'var(--transition)' }}
-                    onMouseOver={e => e.currentTarget.style.background = 'var(--surface)'}
-                    onMouseOut={e => e.currentTarget.style.background = 'var(--surface-hover)'}
+                    className="btn-secondary"
                   >
                     Cancel
                   </button>
                   <button 
                     onClick={confirmDeleteTask}
-                    style={{ background: '#ef4444', border: 'none', color: 'white', padding: '0.75rem 1.5rem', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 500, transition: 'var(--transition)' }}
-                    onMouseOver={e => e.currentTarget.style.background = '#dc2626'}
-                    onMouseOut={e => e.currentTarget.style.background = '#ef4444'}
+                    className="btn-danger"
                   >
                     Yes, Delete Task
                   </button>
@@ -528,7 +530,7 @@ export default function Home() {
                 <div className="form-group">
                   <label style={{ display: 'flex', alignItems: 'center' }}>
                     Title 
-                    {titleError && <span style={{ color: '#ef4444', marginLeft: '0.5rem', fontSize: '0.75rem', fontWeight: 600 }}>*Required</span>}
+                    {titleError && <span style={{ color: 'var(--danger)', marginLeft: '0.5rem', fontSize: '0.75rem', fontWeight: 600 }}>*Required</span>}
                   </label>
                   <input 
                     type="text" 
@@ -538,7 +540,7 @@ export default function Home() {
                       if (titleError) setTitleError(false);
                     }} 
                     autoFocus 
-                    style={titleError ? { borderColor: '#ef4444' } : {}}
+                    style={titleError ? { borderColor: 'var(--danger)' } : {}}
                   />
                 </div>
                 
@@ -552,16 +554,14 @@ export default function Home() {
                   />
                 </div>
                 
-                <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.85rem', marginTop: '0.5rem' }}>
                   <button className="btn-primary" onClick={saveTaskDetails} style={{ flex: 1 }}>
                     {('isNew' in selectedTask) ? 'Create Task' : 'Save Changes'}
                   </button>
                   {!("isNew" in selectedTask) && (
                     <button 
                       onClick={handleDeleteClick}
-                      style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '0.75rem 1.5rem', borderRadius: 'var(--radius-md)', cursor: 'pointer', transition: 'var(--transition)', fontWeight: 500 }}
-                      onMouseOver={e => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = 'white'; }}
-                      onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ef4444'; }}
+                      className="btn-danger-outline"
                     >
                       Delete
                     </button>
@@ -590,22 +590,11 @@ export default function Home() {
               Are you sure you want to log out of your session?
             </p>
 
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center' }}>
               <button 
                 onClick={() => setShowLogoutConfirm(false)}
-                style={{ 
-                  flex: 1,
-                  background: 'var(--surface-hover)', 
-                  border: '1px solid var(--border)', 
-                  color: 'var(--text-main)', 
-                  padding: '0.75rem 1.25rem', 
-                  borderRadius: 'var(--radius-md)', 
-                  cursor: 'pointer', 
-                  transition: 'var(--transition)',
-                  fontWeight: 500
-                }}
-                onMouseOver={e => e.currentTarget.style.background = 'var(--surface)'}
-                onMouseOut={e => e.currentTarget.style.background = 'var(--surface-hover)'}
+                className="btn-secondary"
+                style={{ flex: 1 }}
               >
                 Cancel
               </button>
@@ -614,19 +603,8 @@ export default function Home() {
                   setShowLogoutConfirm(false);
                   logout();
                 }}
-                style={{ 
-                  flex: 1,
-                  background: '#ef4444', 
-                  border: 'none', 
-                  color: 'white', 
-                  padding: '0.75rem 1.25rem', 
-                  borderRadius: 'var(--radius-md)', 
-                  cursor: 'pointer', 
-                  fontWeight: 600, 
-                  transition: 'var(--transition)' 
-                }}
-                onMouseOver={e => e.currentTarget.style.background = '#dc2626'}
-                onMouseOut={e => e.currentTarget.style.background = '#ef4444'}
+                className="btn-danger"
+                style={{ flex: 1 }}
               >
                 Log Out
               </button>
@@ -652,45 +630,23 @@ export default function Home() {
               Are you sure you want to delete <strong>&ldquo;{columnToDelete.title}&rdquo;</strong>?
             </p>
             {columnToDelete.tasks.length > 0 && (
-              <p style={{ color: '#ef4444', fontSize: '0.875rem', marginBottom: '1.25rem' }}>
+              <p style={{ color: 'var(--danger)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>
                 Warning: All {columnToDelete.tasks.length} {columnToDelete.tasks.length === 1 ? 'task' : 'tasks'} inside this column will also be permanently deleted.
               </p>
             )}
 
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1rem' }}>
+            <div style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center', marginTop: '1rem' }}>
               <button 
                 onClick={() => setColumnToDelete(null)}
-                style={{ 
-                  flex: 1,
-                  background: 'var(--surface-hover)', 
-                  border: '1px solid var(--border)', 
-                  color: 'var(--text-main)', 
-                  padding: '0.75rem 1.25rem', 
-                  borderRadius: 'var(--radius-md)', 
-                  cursor: 'pointer', 
-                  transition: 'var(--transition)',
-                  fontWeight: 500
-                }}
-                onMouseOver={e => e.currentTarget.style.background = 'var(--surface)'}
-                onMouseOut={e => e.currentTarget.style.background = 'var(--surface-hover)'}
+                className="btn-secondary"
+                style={{ flex: 1 }}
               >
                 Cancel
               </button>
               <button 
                 onClick={confirmDeleteColumn}
-                style={{ 
-                  flex: 1,
-                  background: '#ef4444', 
-                  border: 'none', 
-                  color: 'white', 
-                  padding: '0.75rem 1.25rem', 
-                  borderRadius: 'var(--radius-md)', 
-                  cursor: 'pointer', 
-                  fontWeight: 600, 
-                  transition: 'var(--transition)' 
-                }}
-                onMouseOver={e => e.currentTarget.style.background = '#dc2626'}
-                onMouseOut={e => e.currentTarget.style.background = '#ef4444'}
+                className="btn-danger"
+                style={{ flex: 1 }}
               >
                 Delete Column
               </button>
