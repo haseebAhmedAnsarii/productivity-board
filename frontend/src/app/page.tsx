@@ -266,7 +266,13 @@ export default function Home() {
 
   const formatHistoryTime = (dateStr: string) => {
     try {
-      const d = new Date(dateStr);
+      if (!dateStr) return '';
+      // SQLite CURRENT_TIMESTAMP is stored in UTC without timezone offset ('YYYY-MM-DD HH:MM:SS').
+      // Normalize timestamps missing an explicit timezone offset to UTC so the browser accurately converts to the user's local time.
+      const hasTimezone = /[Zz]$|[+-]\d{2}(:?\d{2})?$/.test(dateStr.trim());
+      const normalized = hasTimezone ? dateStr.trim() : dateStr.trim().replace(' ', 'T') + 'Z';
+      const d = new Date(normalized);
+      if (isNaN(d.getTime())) return dateStr;
       return d.toLocaleDateString(undefined, { 
         month: 'short', 
         day: 'numeric', 
