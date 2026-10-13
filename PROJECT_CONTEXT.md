@@ -41,6 +41,8 @@ A full-stack, real-time Kanban productivity web application with per-user persis
 - **Delete Column:**
   - Confirmation prompt before deletion.
   - When a column is deleted, all cards within it are automatically transferred to the **"Deleted"** column (soft deleted) rather than being permanently lost.
+  - Deleting a column creates an audit log for every moved card in `task_history` recording the originating column name (`Column "X" was deleted`).
+  - Calls `fetchBoard()` immediately upon column deletion so the Deleted column, its cards, and header badge count update instantly without requiring a page refresh.
   - Syncs via backend `DELETE /api/columns/:id` and broadcasts via WebSocket.
 
 ### C. Soft-Delete & Smart "Deleted" Column

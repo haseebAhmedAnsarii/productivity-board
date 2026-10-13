@@ -173,9 +173,13 @@ app.delete('/api/tasks/:id', authenticateToken, async (req: any, res: any) => {
     if (!task) return res.status(404).json({ error: 'Task not found' });
 
     let boardId = task.board_id;
-    if (!boardId && task.column_id) {
-      const col = await db.get('SELECT board_id FROM columns WHERE id = ?', [task.column_id]);
-      if (col) boardId = col.board_id;
+    let colTitle: string | null = null;
+    if (task.column_id) {
+      const col = await db.get('SELECT board_id, title FROM columns WHERE id = ?', [task.column_id]);
+      if (col) {
+        boardId = col.board_id;
+        colTitle = col.title;
+      }
     }
 
     await db.run(`
@@ -187,7 +191,7 @@ app.delete('/api/tasks/:id', authenticateToken, async (req: any, res: any) => {
       WHERE id = ?
     `, [boardId, req.params.id]);
 
-    await logTaskHistory(req.params.id, req.user.userId, req.user.username, 'deleted', null, 'Moved to Deleted');
+    await logTaskHistory(req.params.id, req.user.userId, req.user.username, 'deleted', colTitle, 'Moved to Deleted');
     res.json({ success: true });
   } catch (err) {
     console.error(err);
@@ -273,6 +277,12 @@ app.delete('/api/columns/:id', authenticateToken, async (req: any, res: any) => 
       return res.status(404).json({ error: 'Column not found' });
     }
 
+    // Find all active tasks in this column before moving them
+    const tasksInColumn = await db.all(`
+      SELECT id FROM tasks 
+      WHERE column_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)
+    `, [req.params.id]);
+
     // Move all active tasks in this column to Deleted
     await db.run(`
       UPDATE tasks 
@@ -283,9 +293,21 @@ app.delete('/api/columns/:id', authenticateToken, async (req: any, res: any) => 
       WHERE column_id = ?
     `, [req.params.id, column.board_id, req.params.id]);
 
+    // Log history for every task moved to Deleted due to column deletion
+    for (const t of tasksInColumn) {
+      await logTaskHistory(
+        t.id, 
+        req.user.userId, 
+        req.user.username, 
+        'deleted', 
+        column.title, 
+        `Column "${column.title}" was deleted`
+      );
+    }
+
     // Now safely delete the column record
     await db.run('DELETE FROM columns WHERE id = ?', [req.params.id]);
-    res.json({ success: true });
+    res.json({ success: true, affectedTasks: tasksInColumn.length });
   } catch (err) {
     console.error('Error deleting column:', err);
     res.status(500).json({ error: 'Failed to delete column' });

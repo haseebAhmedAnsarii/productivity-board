@@ -197,8 +197,8 @@ export default function Home() {
       });
 
       if (response.ok) {
-        setColumns(prev => prev.filter(c => c.id !== columnToDelete.id));
         setColumnToDelete(null);
+        await fetchBoard(token);
         if (socket) {
           socket.emit('task_updated', { boardId });
         }
@@ -301,8 +301,31 @@ export default function Home() {
       case 'moved':
         return `Moved from "${item.old_value}" to "${item.new_value}"`;
       case 'deleted':
+        if (item.old_value) {
+          const isColumnDeletion = item.new_value?.includes('Column');
+          return (
+            <span>
+              {isColumnDeletion ? (
+                <>
+                  Column <strong style={{ color: 'var(--text-main)' }}>&ldquo;{item.old_value}&rdquo;</strong> was deleted (card moved to Deleted column)
+                </>
+              ) : (
+                <>
+                  Moved card to Deleted column from <strong style={{ color: 'var(--text-main)' }}>&ldquo;{item.old_value}&rdquo;</strong>
+                </>
+              )}
+            </span>
+          );
+        }
         return 'Moved card to Deleted column';
       case 'restored':
+        if (item.new_value && item.new_value !== 'Restored to column') {
+          return (
+            <span>
+              Restored card back to column <strong style={{ color: 'var(--text-main)' }}>&ldquo;{item.new_value}&rdquo;</strong>
+            </span>
+          );
+        }
         return 'Restored card back to active board';
       default:
         return item.new_value || item.change_type;
