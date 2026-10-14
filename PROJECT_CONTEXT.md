@@ -94,6 +94,11 @@ A full-stack, real-time Kanban productivity web application with per-user persis
   - Broadcasts via WebSocket (`task_updated`) to sync all open clients immediately.
 - **Read-Only on Deleted Cards:** When viewing a soft-deleted card, the column dropdown is disabled with `cursor: not-allowed` styling, displaying the card's original column.
 
+### H. Modal Height Bounds & Resizable Textarea Scroll Constraints
+- **Modal Overflow Protection:** `.modal-content` is capped with `max-height: calc(100vh - 3rem)` and `overflow-y: auto`, preventing the modal from expanding beyond the viewport when inner elements grow.
+- **Textarea Resize Handling:** Resizing the textarea via its bottom-right handle expands content within the modal; once the modal hits its viewport boundary, a custom scrollbar appears instead of pushing header or action buttons off-screen.
+- **Persistent Header & Button Rows:** `.modal-header` and action button rows have `flex-shrink: 0` so they never collapse or become unclickable.
+
 ---
 
 ## 3. Database Schema (`backend/database.sqlite`)

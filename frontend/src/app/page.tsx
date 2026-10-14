@@ -924,7 +924,7 @@ export default function Home() {
                 )}
                 
                 {isModalDeletedTask ? (
-                  <div style={{ display: 'flex', gap: '0.85rem', marginTop: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '0.85rem', marginTop: '0.5rem', flexShrink: 0 }}>
                     <button className="btn-secondary" onClick={closeTaskModal} style={{ flex: 1 }}>
                       Close
                     </button>
@@ -941,7 +941,7 @@ export default function Home() {
                     </button>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', gap: '0.85rem', marginTop: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '0.85rem', marginTop: '0.5rem', flexShrink: 0 }}>
                     <button className="btn-primary" onClick={saveTaskDetails} style={{ flex: 1 }}>
                       {('isNew' in selectedTask) ? 'Create Task' : 'Save Changes'}
                     </button>

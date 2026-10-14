@@ -526,6 +526,7 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 1.5rem;
 }
 
 .modal-content {
@@ -535,16 +536,21 @@ body {
   padding: 2rem;
   width: 92%;
   max-width: 480px;
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
   box-shadow: var(--shadow-modal);
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-ui) transparent;
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .modal-header h2 {
@@ -630,6 +636,7 @@ body {
 .form-group textarea {
   resize: vertical;
   min-height: 110px;
+  max-height: 400px;
   scrollbar-width: thin;
   scrollbar-color: var(--border-ui) transparent;
 }
