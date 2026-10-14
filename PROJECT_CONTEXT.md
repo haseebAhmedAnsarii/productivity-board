@@ -51,6 +51,7 @@ A full-stack, real-time Kanban productivity web application with per-user persis
   - The `"Deleted"` column is hidden by default.
   - It only becomes available when at least one deleted card exists.
   - Even when cards exist, it remains hidden until the user clicks the header button: **"Show Deleted Cards"** (`"Hide Deleted Cards"` once visible).
+  - **Auto-Scroll to Deleted Column:** Clicking the "Show Deleted Cards" CTA triggers a smooth horizontal scroll to the far right of the board area, immediately bringing the newly revealed `"Deleted"` column into full view.
 - **Column Protections:**
   - Read-only column: cannot add cards directly to it, cannot drag cards into/out of it.
   - Cards inside have a **"Restore"** action.

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { io, Socket } from 'socket.io-client';
 
@@ -62,6 +62,29 @@ export default function Home() {
   const [columnTitleError, setColumnTitleError] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
   const [editColumnId, setEditColumnId] = useState('');
+
+  const deletedColumnRef = useRef<HTMLDivElement>(null);
+  const boardAreaRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (showDeletedCards && deletedTasks.length > 0) {
+      const timer = setTimeout(() => {
+        if (boardAreaRef.current) {
+          boardAreaRef.current.scrollTo({
+            left: boardAreaRef.current.scrollWidth,
+            behavior: 'smooth'
+          });
+        } else if (deletedColumnRef.current) {
+          deletedColumnRef.current.scrollIntoView({
+            behavior: 'smooth',
+            inline: 'end',
+            block: 'nearest'
+          });
+        }
+      }, 60);
+      return () => clearTimeout(timer);
+    }
+  }, [showDeletedCards]);
 
   useEffect(() => {
     setIsBrowser(true);
@@ -578,7 +601,7 @@ export default function Home() {
         </div>
       ) : (
         <DragDropContext onDragEnd={onDragEnd}>
-          <main className="board-area">
+          <main ref={boardAreaRef} className="board-area">
             {columns.map((column) => (
               <div key={column.id} className="kanban-column">
                 <div className="column-header">
@@ -647,7 +670,7 @@ export default function Home() {
             ))}
             {/* Deleted Column (Only rendered if showDeletedCards is true and deletedTasks has items) */}
             {showDeletedCards && deletedTasks.length > 0 && (
-              <div className="kanban-column deleted-column">
+              <div ref={deletedColumnRef} className="kanban-column deleted-column">
                 <div className="column-header">
                   <span className="column-header-title" style={{ color: 'var(--danger)' }}>
                     Deleted
