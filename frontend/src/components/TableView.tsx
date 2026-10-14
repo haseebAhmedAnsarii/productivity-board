@@ -152,28 +152,28 @@ export const TableView: React.FC<TableViewProps> = ({
           <thead>
             <tr>
               <th 
-                style={{ width: '80px', cursor: 'pointer' }}
+                style={{ width: '75px', cursor: 'pointer' }}
                 onClick={() => handleSort('id')}
                 title="Click to sort by ID"
               >
                 #ID {sortBy === 'id' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </th>
               <th 
-                style={{ cursor: 'pointer' }}
+                style={{ width: '28%', cursor: 'pointer' }}
                 onClick={() => handleSort('title')}
                 title="Click to sort by Title"
               >
                 Title {sortBy === 'title' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </th>
               <th 
-                style={{ width: '180px', cursor: 'pointer' }}
+                style={{ width: '170px', cursor: 'pointer' }}
                 onClick={() => handleSort('column')}
                 title="Click to sort by Column"
               >
                 Column {sortBy === 'column' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </th>
               <th>Description</th>
-              <th style={{ width: '100px', textAlign: 'right' }}>Actions</th>
+              <th style={{ width: '95px', textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -196,7 +196,7 @@ export const TableView: React.FC<TableViewProps> = ({
                       <span className="task-badge">#{task.id}</span>
                     </td>
                     <td>
-                      <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{task.title}</span>
+                      <span className="table-task-title" title={task.title}>{task.title}</span>
                     </td>
                     <td onClick={(e) => e.stopPropagation()}>
                       <select
@@ -213,7 +213,7 @@ export const TableView: React.FC<TableViewProps> = ({
                       </select>
                     </td>
                     <td>
-                      <span style={{ color: 'var(--text-muted)', fontSize: '0.825rem' }}>
+                      <span className="table-task-desc" title={task.description || ''}>
                         {task.description ? task.description : <span style={{ opacity: 0.5 }}>—</span>}
                       </span>
                     </td>
@@ -242,7 +242,7 @@ export const TableView: React.FC<TableViewProps> = ({
                       <span className="task-badge task-badge-deleted">#{task.id}</span>
                     </td>
                     <td>
-                      <span style={{ textDecoration: 'line-through', color: 'var(--text-main)' }}>
+                      <span className="table-task-title table-task-title-deleted" title={task.title}>
                         {task.title}
                       </span>
                     </td>
@@ -252,7 +252,7 @@ export const TableView: React.FC<TableViewProps> = ({
                       </span>
                     </td>
                     <td>
-                      <span style={{ color: 'var(--text-muted)', fontSize: '0.825rem' }}>
+                      <span className="table-task-desc" title={task.description || ''}>
                         {task.description ? task.description : <span style={{ opacity: 0.5 }}>—</span>}
                       </span>
                     </td>

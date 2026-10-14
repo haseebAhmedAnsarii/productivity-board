@@ -90,7 +90,7 @@ export const ListView: React.FC<ListViewProps> = ({
                         <div className="list-task-main">
                           <span className="task-badge">#{task.id}</span>
                           <div className="list-task-content">
-                            <span className="list-task-title">{task.title}</span>
+                            <span className="list-task-title" title={task.title}>{task.title}</span>
                             {task.description && (
                               <span className="list-task-desc">{task.description}</span>
                             )}
@@ -165,7 +165,7 @@ export const ListView: React.FC<ListViewProps> = ({
                     <div className="list-task-main">
                       <span className="task-badge task-badge-deleted">#{task.id}</span>
                       <div className="list-task-content">
-                        <span className="list-task-title" style={{ textDecoration: 'line-through' }}>
+                        <span className="list-task-title" style={{ textDecoration: 'line-through' }} title={task.title}>
                           {task.title}
                         </span>
                         {task.description && (
