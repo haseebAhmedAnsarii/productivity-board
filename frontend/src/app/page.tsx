@@ -17,6 +17,7 @@ import {
   RestoreTaskModal,
   ListView,
   TableView,
+  BoardMinimap,
 } from '../components';
 
 let socket: Socket;
@@ -392,41 +393,54 @@ export default function Home() {
           <p>No board found. Registering automatically creates one. You might need to log out and register a new account to see the full demo.</p>
         </div>
       ) : viewMode === 'board' ? (
-        <DragDropContext onDragEnd={onDragEnd}>
-          <main ref={boardAreaRef} className="board-area">
-            {columns.map((column) => (
-              <KanbanColumn
-                key={column.id}
-                column={column}
-                onDeleteColumn={(col) => setColumnToDelete(col)}
-                onTaskClick={(task, colId) => openTaskModal(task, false, colId)}
-                onAddTask={(colId) => openNewTaskModal(colId)}
-              />
-            ))}
+        <div className="board-view-wrapper">
+          <DragDropContext onDragEnd={onDragEnd}>
+            <main ref={boardAreaRef} className="board-area">
+              {columns.map((column) => (
+                <KanbanColumn
+                  key={column.id}
+                  column={column}
+                  onDeleteColumn={(col) => setColumnToDelete(col)}
+                  onTaskClick={(task, colId) => openTaskModal(task, false, colId)}
+                  onAddTask={(colId) => openNewTaskModal(colId)}
+                />
+              ))}
 
-            {/* Deleted Column (Only rendered if showDeletedCards is true and deletedTasks has items) */}
-            {showDeletedCards && deletedTasks.length > 0 && (
-              <DeletedColumn
-                ref={deletedColumnRef}
-                deletedTasks={deletedTasks}
-                onTaskClick={(task) => openTaskModal(task, true)}
-                onRestoreTask={(task) => setTaskToRestore(task)}
-              />
-            )}
+              {/* Deleted Column (Only rendered if showDeletedCards is true and deletedTasks has items) */}
+              {showDeletedCards && deletedTasks.length > 0 && (
+                <DeletedColumn
+                  ref={deletedColumnRef}
+                  deletedTasks={deletedTasks}
+                  onTaskClick={(task) => openTaskModal(task, true)}
+                  onRestoreTask={(task) => setTaskToRestore(task)}
+                />
+              )}
 
-            {/* Add Column Component */}
-            <AddColumn
-              ref={addColumnRef}
-              isAdding={isAddingColumn}
-              onStartAdd={() => {
-                setIsAddingColumn(true);
-                scrollToAddColumn();
-              }}
-              onCancel={() => setIsAddingColumn(false)}
-              onSubmit={handleCreateColumn}
-            />
-          </main>
-        </DragDropContext>
+              {/* Add Column Component */}
+              <AddColumn
+                ref={addColumnRef}
+                isAdding={isAddingColumn}
+                onStartAdd={() => {
+                  setIsAddingColumn(true);
+                  scrollToAddColumn();
+                }}
+                onCancel={() => setIsAddingColumn(false)}
+                onSubmit={handleCreateColumn}
+              />
+            </main>
+          </DragDropContext>
+
+          <BoardMinimap
+            boardAreaRef={boardAreaRef}
+            columns={columns}
+            deletedTasksCount={deletedTasks.length}
+            showDeletedCards={showDeletedCards}
+            onAddColumnClick={() => {
+              setIsAddingColumn(true);
+              scrollToAddColumn();
+            }}
+          />
+        </div>
       ) : viewMode === 'list' ? (
         <ListView
           columns={columns}

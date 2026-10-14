@@ -227,6 +227,18 @@ CREATE TABLE IF NOT EXISTS task_history (
   - Clicking "+ Add Column" in the header or in-view CTA now works consistently across all views (Board, List, Table).
   - Automatically scrolls to the column creation form (`block: 'center'` for vertical views, `inline: 'end'` for horizontal board) and auto-focuses the input, with full Escape key cancel support.
 
+### K. Board View Minimap Horizontal Scroller
+- **Purpose:** Replaced the browser's default horizontal scrollbar on `.board-area` with an interactive, gaming/IDE-style horizontal minimap navigator.
+- **Component:** [`BoardMinimap.tsx`](file:///d:/practice/productivity-board/frontend/src/components/BoardMinimap.tsx) mounted inside `.board-view-wrapper`.
+- **Key Features:**
+  - **Live Miniature Column Previews:** Displays scaled micro-representations of every active board column, showing column accents, titles, task density indicators (mini card bars + overflow badge count), the soft-deleted column (when visible), and the "+ Add Column" slot.
+  - **Interactive Viewport Lens:** A translucent amber viewport slider representing the visible proportion of the board canvas (`clientWidth / scrollWidth`).
+  - **Fluid Real-time Dragging:** Dragging the lens pans the board smoothly in real-time, clamping precisely to the board's bounds.
+  - **Click-to-Jump Navigation:** Clicking anywhere on the minimap track or directly on a mini column immediately scrolls the board canvas smoothly to that exact column position.
+  - **Step Scrolling Buttons:** Tactile left/right stepper buttons (`◀` and `▶`) scroll by one column width (`350px`) with disabled states when at the scroll boundaries.
+  - **Collapsible Minimap Pill:** Users can collapse the full minimap into a sleek floating pill (`[🗺️ Minimap <count>]`) and expand it on demand, with a close button (`✕`) on the bar.
+  - **Hidden Native Scrollbar & Clearance:** The native scrollbar on `.board-area` is hidden via `scrollbar-width: none; ::-webkit-scrollbar { display: none; }` and `.board-area` has `padding-bottom: 5.5rem;` ensuring cards and column buttons are never obscured.
+
 ---
 
 ## 4. API & Socket Overview

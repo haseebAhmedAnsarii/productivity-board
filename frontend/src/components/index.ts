@@ -10,3 +10,4 @@ export * from './LogoutModal';
 export * from './RestoreTaskModal';
 export * from './ListView';
 export * from './TableView';
+export * from './BoardMinimap';
