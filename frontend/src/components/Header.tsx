@@ -19,7 +19,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <header className="header">
-      <h1>Productivity Board</h1>
+      <h1>Bento Board</h1>
       <div className="user-profile">
         {deletedTasksCount > 0 && (
           <button 

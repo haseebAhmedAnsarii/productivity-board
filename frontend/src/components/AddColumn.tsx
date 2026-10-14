@@ -7,12 +7,8 @@ interface AddColumnProps {
   onSubmit: (title: string) => Promise<void>;
 }
 
-export const AddColumn: React.FC<AddColumnProps> = ({
-  isAdding,
-  onStartAdd,
-  onCancel,
-  onSubmit,
-}) => {
+export const AddColumn = React.forwardRef<HTMLDivElement, AddColumnProps>(
+  ({ isAdding, onStartAdd, onCancel, onSubmit }, ref) => {
   const [newColumnTitle, setNewColumnTitle] = useState('');
   const [columnTitleError, setColumnTitleError] = useState(false);
 
@@ -34,7 +30,7 @@ export const AddColumn: React.FC<AddColumnProps> = ({
   };
 
   return (
-    <div className="add-column-wrapper">
+    <div ref={ref} className="add-column-wrapper">
       {!isAdding ? (
         <button 
           className="add-column-btn" 
@@ -92,4 +88,6 @@ export const AddColumn: React.FC<AddColumnProps> = ({
       )}
     </div>
   );
-};
+});
+
+AddColumn.displayName = 'AddColumn';

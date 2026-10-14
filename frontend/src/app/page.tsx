@@ -36,7 +36,25 @@ export default function Home() {
   const [isAddingColumn, setIsAddingColumn] = useState(false);
 
   const deletedColumnRef = useRef<HTMLDivElement>(null);
+  const addColumnRef = useRef<HTMLDivElement>(null);
   const boardAreaRef = useRef<HTMLElement>(null);
+
+  const scrollToAddColumn = () => {
+    setTimeout(() => {
+      if (addColumnRef.current) {
+        addColumnRef.current.scrollIntoView({
+          behavior: 'smooth',
+          inline: 'end',
+          block: 'nearest'
+        });
+      } else if (boardAreaRef.current) {
+        boardAreaRef.current.scrollTo({
+          left: boardAreaRef.current.scrollWidth,
+          behavior: 'smooth'
+        });
+      }
+    }, 60);
+  };
 
   useEffect(() => {
     if (showDeletedCards && deletedTasks.length > 0) {
@@ -57,6 +75,13 @@ export default function Home() {
       return () => clearTimeout(timer);
     }
   }, [showDeletedCards]);
+
+  useEffect(() => {
+    if (isAddingColumn) {
+      const timer = setTimeout(scrollToAddColumn, 60);
+      return () => clearTimeout(timer);
+    }
+  }, [isAddingColumn]);
 
   useEffect(() => {
     setIsBrowser(true);
@@ -341,7 +366,10 @@ export default function Home() {
         deletedTasksCount={deletedTasks.length}
         showDeletedCards={showDeletedCards}
         onToggleDeletedCards={() => setShowDeletedCards(!showDeletedCards)}
-        onAddColumnClick={() => setIsAddingColumn(true)}
+        onAddColumnClick={() => {
+          setIsAddingColumn(true);
+          scrollToAddColumn();
+        }}
         onLogoutClick={() => setShowLogoutConfirm(true)}
       />
 
@@ -376,8 +404,12 @@ export default function Home() {
 
             {/* Add Column Component */}
             <AddColumn
+              ref={addColumnRef}
               isAdding={isAddingColumn}
-              onStartAdd={() => setIsAddingColumn(true)}
+              onStartAdd={() => {
+                setIsAddingColumn(true);
+                scrollToAddColumn();
+              }}
               onCancel={() => setIsAddingColumn(false)}
               onSubmit={handleCreateColumn}
             />

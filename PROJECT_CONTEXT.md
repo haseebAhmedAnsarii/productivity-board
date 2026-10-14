@@ -38,6 +38,7 @@ A full-stack, real-time Kanban productivity web application with per-user persis
 
 ### B. Dynamic Column Management
 - Add custom columns to the board.
+- **Auto-Scroll to Add Column:** Clicking the header "+ Add Column" CTA (or the in-board "Add another column" button) smoothly scrolls the board horizontally to the far right, immediately focusing and bringing the column creation form into view.
 - **Delete Column:**
   - Confirmation prompt before deletion.
   - When a column is deleted, the column itself is soft-deleted (`is_deleted = 1` in `columns`), and all cards within it are transferred to the **"Deleted"** column (`is_deleted = 1, column_id = NULL, original_column_id = column.id`).
