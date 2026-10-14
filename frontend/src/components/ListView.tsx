@@ -43,8 +43,9 @@ export const ListView: React.FC<ListViewProps> = ({
   };
 
   return (
-    <div className="list-view-wrapper">
-      <div className="list-view-container">
+    <div className="list-view-container">
+      {/* Unified contrast wrapper for all columns in List View */}
+      <div className="list-card-container">
         {columns.map((column) => {
           const isCollapsed = !!collapsedCols[column.id];
           return (
@@ -92,7 +93,7 @@ export const ListView: React.FC<ListViewProps> = ({
                           <div className="list-task-content">
                             <span className="list-task-title" title={task.title}>{task.title}</span>
                             {task.description && (
-                              <span className="list-task-desc">{task.description}</span>
+                              <span className="list-task-desc" title={task.description}>{task.description}</span>
                             )}
                           </div>
                         </div>
@@ -133,12 +134,13 @@ export const ListView: React.FC<ListViewProps> = ({
           <div
             ref={deletedColumnRef}
             className="list-group"
-            style={{ borderColor: 'var(--danger-muted)', borderTopColor: 'var(--danger)' }}
+            style={{ borderTop: '2px solid var(--danger)' }}
           >
             <div
               className="list-group-header"
               onClick={() => toggleColumn('__DELETED__')}
               title="Click to expand/collapse"
+              style={{ background: 'rgba(239, 68, 68, 0.08)' }}
             >
               <div className="list-group-title-wrap">
                 <span className="list-group-chevron">
@@ -169,7 +171,7 @@ export const ListView: React.FC<ListViewProps> = ({
                           {task.title}
                         </span>
                         {task.description && (
-                          <span className="list-task-desc">{task.description}</span>
+                          <span className="list-task-desc" title={task.description}>{task.description}</span>
                         )}
                       </div>
                     </div>
@@ -190,7 +192,7 @@ export const ListView: React.FC<ListViewProps> = ({
           </div>
         )}
 
-        {/* Add Column Section in List View */}
+        {/* Add Column Section inside List Card Wrapper */}
         <div className="list-add-column-section">
           <AddColumn
             ref={addColumnRef}

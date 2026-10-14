@@ -865,39 +865,43 @@ body {
 /* ==========================================================================
    List View
    ========================================================================== */
-.list-view-wrapper {
+.list-view-container {
   flex: 1;
   min-height: 0;
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.list-view-wrapper::-webkit-scrollbar {
-  display: none;
-}
-
-.list-view-container {
+  height: calc(100vh - 60px);
+  padding: 1.25rem 2rem 1.5rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 1.75rem 2rem 4rem;
+}
+
+.list-card-container {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #14161a;
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-column);
+  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  padding: 1rem 1.25rem 1rem 1rem;
+  gap: 1rem;
 }
 
 .list-group {
   flex-shrink: 0;
   background: var(--bg-column);
   border: 1px solid var(--border-ui);
-  border-top: 2px solid var(--border-column-top);
-  border-radius: var(--radius-column);
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .list-group-header {
@@ -1204,6 +1208,13 @@ body {
   flex-shrink: 0;
 }
 
+.list-add-column-section {
+  padding: 0.85rem 1.25rem;
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-ui);
+  border-radius: 8px;
+}
+
 .list-add-column-section .add-column-wrapper,
 .table-add-column-section .add-column-wrapper {
   min-width: 100%;
@@ -1227,6 +1238,25 @@ body {
 /* ==========================================================================
    Bespoke Obsidian Inner Scrollbars
    ========================================================================== */
+.list-card-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.list-card-container::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 6px 0;
+}
+
+.list-card-container::-webkit-scrollbar-thumb {
+  background: var(--border-ui);
+  border-radius: 4px;
+}
+
+.list-card-container::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
 .list-task-items::-webkit-scrollbar,
 .table-card-container::-webkit-scrollbar {
   width: 6px;
@@ -1241,7 +1271,7 @@ body {
 
 .list-task-items::-webkit-scrollbar-thumb,
 .table-card-container::-webkit-scrollbar-thumb {
-  background: var(--border-ui);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 4px;
 }
 
