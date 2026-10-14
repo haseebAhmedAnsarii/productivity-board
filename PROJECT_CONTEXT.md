@@ -114,6 +114,19 @@ A full-stack, real-time Kanban productivity web application with per-user persis
   - [`frontend/src/components/LogoutModal.tsx`](file:///d:/practice/productivity-board/frontend/src/components/LogoutModal.tsx): Confirmation dialog before terminating user session.
   - [`frontend/src/components/index.ts`](file:///d:/practice/productivity-board/frontend/src/components/index.ts): Central barrel export.
 
+### J. Modular Backend Architecture (`backend/routes/`, `middleware/`, `services/`, `sockets/`)
+- **Refactored `server.ts` from 532 lines down to ~35 lines** into decoupled, dedicated architectural modules:
+  - [`backend/config.ts`](file:///d:/practice/productivity-board/backend/config.ts): Centralized environment constants (`PORT`, `JWT_SECRET`).
+  - [`backend/middleware/auth.ts`](file:///d:/practice/productivity-board/backend/middleware/auth.ts): Typed JWT authentication middleware and `AuthenticatedRequest` interface.
+  - [`backend/services/history.ts`](file:///d:/practice/productivity-board/backend/services/history.ts): Reusable audit logging service (`logTaskHistory`) for title, description, moved, deleted, and restored events.
+  - [`backend/routes/auth.ts`](file:///d:/practice/productivity-board/backend/routes/auth.ts): Dedicated router for `/api/auth/register` and `/api/auth/login`.
+  - [`backend/routes/boards.ts`](file:///d:/practice/productivity-board/backend/routes/boards.ts): Dedicated router for fetching board hierarchy, active columns, and soft-deleted cards (`/api/boards`).
+  - [`backend/routes/columns.ts`](file:///d:/practice/productivity-board/backend/routes/columns.ts): Dedicated router for column creation and soft-deletion (`/api/columns`, `/api/columns/:id`).
+  - [`backend/routes/tasks.ts`](file:///d:/practice/productivity-board/backend/routes/tasks.ts): Dedicated router for task creation, editing, in-modal moving, soft-deletion, restoration, and history queries (`/api/tasks`).
+  - [`backend/routes/index.ts`](file:///d:/practice/productivity-board/backend/routes/index.ts): Master API router mounting sub-routers under `/api`.
+  - [`backend/sockets/boardSocket.ts`](file:///d:/practice/productivity-board/backend/sockets/boardSocket.ts): Socket.IO connection authentication, `join_board`, `move_task` ordering, and broadcast events.
+  - [`backend/server.ts`](file:///d:/practice/productivity-board/backend/server.ts): Clean, high-level server entry point orchestrating Express, Socket.IO, DB initialization, and HTTP listen.
+
 ---
 
 ## 3. Database Schema (`backend/database.sqlite`)
