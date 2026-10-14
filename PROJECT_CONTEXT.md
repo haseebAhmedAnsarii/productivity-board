@@ -100,6 +100,20 @@ A full-stack, real-time Kanban productivity web application with per-user persis
 - **Textarea Resize Handling:** Resizing the textarea via its bottom-right handle expands content within the modal; once the modal hits its viewport boundary, a custom scrollbar appears instead of pushing header or action buttons off-screen.
 - **Persistent Header & Button Rows:** `.modal-header` and action button rows have `flex-shrink: 0` so they never collapse or become unclickable.
 
+### I. Modular Component Architecture (`frontend/src/components/` & `types/`)
+- **Refactored `page.tsx` from 1,070 lines down to ~270 lines** into clean, single-responsibility components:
+  - [`frontend/src/types/index.ts`](file:///d:/practice/productivity-board/frontend/src/types/index.ts): Centralized TypeScript definitions for `Task`, `Column`, `HistoryItem`, and `SelectedTask`.
+  - [`frontend/src/components/Header.tsx`](file:///d:/practice/productivity-board/frontend/src/components/Header.tsx): Header navigation, "Show/Hide Deleted Cards" CTA with counter, "+ Add Column" CTA, user avatar, and logout trigger.
+  - [`frontend/src/components/AuthView.tsx`](file:///d:/practice/productivity-board/frontend/src/components/AuthView.tsx): Isolated login/registration form with tab switching and error display.
+  - [`frontend/src/components/TaskCard.tsx`](file:///d:/practice/productivity-board/frontend/src/components/TaskCard.tsx): Draggable task card with numeric badge `#ID`, title, and description.
+  - [`frontend/src/components/KanbanColumn.tsx`](file:///d:/practice/productivity-board/frontend/src/components/KanbanColumn.tsx): Droppable column wrapper with delete button, task cards, and "+ Add Task" button.
+  - [`frontend/src/components/DeletedColumn.tsx`](file:///d:/practice/productivity-board/frontend/src/components/DeletedColumn.tsx): Dedicated soft-deleted column with `forwardRef` for auto-scrolling into view and mini "Restore" action.
+  - [`frontend/src/components/AddColumn.tsx`](file:///d:/practice/productivity-board/frontend/src/components/AddColumn.tsx): Inline add-column button and form with validation error handling.
+  - [`frontend/src/components/TaskModal.tsx`](file:///d:/practice/productivity-board/frontend/src/components/TaskModal.tsx): Task details modal supporting creation, editing, in-modal column moving with "Move Now", deletion confirmation, restoration, and expandable activity history timeline with formatted timestamps and seconds.
+  - [`frontend/src/components/DeleteColumnModal.tsx`](file:///d:/practice/productivity-board/frontend/src/components/DeleteColumnModal.tsx): Confirmation modal when deleting a column with task-count warnings.
+  - [`frontend/src/components/LogoutModal.tsx`](file:///d:/practice/productivity-board/frontend/src/components/LogoutModal.tsx): Confirmation dialog before terminating user session.
+  - [`frontend/src/components/index.ts`](file:///d:/practice/productivity-board/frontend/src/components/index.ts): Central barrel export.
+
 ---
 
 ## 3. Database Schema (`backend/database.sqlite`)
