@@ -8,3 +8,5 @@ export * from './TaskModal';
 export * from './DeleteColumnModal';
 export * from './LogoutModal';
 export * from './RestoreTaskModal';
+export * from './ListView';
+export * from './TableView';

@@ -814,3 +814,292 @@ body {
   line-height: 1.4;
   word-break: break-word;
 }
+
+/* ==========================================================================
+   View Mode Switcher (Board / List / Table)
+   ========================================================================== */
+.view-switcher {
+  display: flex;
+  align-items: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-button);
+  padding: 2px;
+  gap: 2px;
+}
+
+.view-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.view-btn:hover:not(.active) {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.view-btn.active {
+  background: var(--bg-card);
+  color: var(--accent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.view-btn svg {
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   List View
+   ========================================================================== */
+.list-view-container {
+  flex: 1;
+  padding: 1.75rem 2rem;
+  overflow-y: auto;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.list-group {
+  background: var(--bg-column);
+  border: 1px solid var(--border-ui);
+  border-top: 2px solid var(--border-column-top);
+  border-radius: var(--radius-column);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.list-group-header {
+  padding: 0.85rem 1.25rem;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-ui);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.list-group-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.list-group-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.88rem;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--text-main);
+}
+
+.list-task-items {
+  display: flex;
+  flex-direction: column;
+}
+
+.list-task-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--border-ui);
+  background: var(--bg-column);
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+}
+
+.list-task-row:last-child {
+  border-bottom: none;
+}
+
+.list-task-row:hover {
+  background: var(--surface-hover);
+}
+
+.list-task-main {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.list-task-title {
+  font-size: 0.925rem;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-task-desc {
+  font-size: 0.825rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 450px;
+}
+
+.list-task-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.list-empty-placeholder {
+  padding: 1.25rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* ==========================================================================
+   Table View
+   ========================================================================== */
+.table-view-container {
+  flex: 1;
+  padding: 1.75rem 2rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.table-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  max-width: 600px;
+}
+
+.table-search-input {
+  flex: 1;
+  padding: 0.55rem 0.85rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-input);
+  color: var(--text-main);
+  font-size: 0.85rem;
+  outline: none;
+  font-family: var(--font-body);
+}
+
+.table-search-input:focus {
+  border-color: var(--border-focus);
+}
+
+.table-filter-select {
+  padding: 0.55rem 0.85rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-input);
+  color: var(--text-main);
+  font-size: 0.85rem;
+  outline: none;
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+.table-card-container {
+  background: var(--bg-column);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius-column);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.kanban-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.kanban-table th {
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--border-ui);
+  user-select: none;
+}
+
+.kanban-table td {
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--border-ui);
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+.kanban-table tr:last-child td {
+  border-bottom: none;
+}
+
+.kanban-table tr:hover td {
+  background: var(--surface-hover);
+}
+
+.table-row-deleted td {
+  opacity: 0.85;
+}
+
+.table-col-select {
+  padding: 0.35rem 0.65rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-ui);
+  border-radius: 4px;
+  color: var(--text-main);
+  font-size: 0.8rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.table-action-icon {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  transition: all 0.15s ease;
+}
+
+.table-action-icon:hover {
+  color: var(--text-main);
+  background: var(--bg-surface);
+}

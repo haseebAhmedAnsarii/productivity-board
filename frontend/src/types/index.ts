@@ -25,3 +25,5 @@ export interface Column {
   title: string;
   tasks: Task[];
 }
+
+export type ViewMode = 'board' | 'list' | 'table';

@@ -129,6 +129,23 @@ A full-stack, real-time Kanban productivity web application with per-user persis
   - [`backend/sockets/boardSocket.ts`](file:///d:/practice/productivity-board/backend/sockets/boardSocket.ts): Socket.IO connection authentication, `join_board`, `move_task` ordering, and broadcast events.
   - [`backend/server.ts`](file:///d:/practice/productivity-board/backend/server.ts): Clean, high-level server entry point orchestrating Express, Socket.IO, DB initialization, and HTTP listen.
 
+### K. Multi-View Architecture (Board, List, Table)
+- **View Switcher (`viewMode: 'board' | 'list' | 'table'`):**
+  - Integrated into the header with tactile segmented control buttons (icons + text).
+  - Persists active mode and enables instant context-switching across all representations.
+- **Board View:**
+  - Classic Kanban multi-column drag-and-drop workflow with `@hello-pangea/dnd`, horizontal scrolling, and dedicated soft-deleted column.
+- **List View ([`ListView.tsx`](file:///d:/practice/productivity-board/frontend/src/components/ListView.tsx)):**
+  - Structured vertical group cards for each column with task counters and "+ Add Task" shortcuts.
+  - Interactive rows with `#ID` badges, titles, descriptions, quick column switcher dropdowns, and edit action.
+  - Dedicated "Deleted Tasks" group when soft-deleted cards exist and are toggled visible.
+- **Table View ([`TableView.tsx`](file:///d:/practice/productivity-board/frontend/src/components/TableView.tsx)):**
+  - Spreadsheet-like table with real-time search input (filtering by title or description).
+  - Column filter dropdown ("All Columns" or specific columns).
+  - Sortable columns (`#ID`, `Title`, `Column`) with ascending/descending indicators.
+  - Direct column reassignment dropdown per row, syncing instantaneously via WebSockets.
+  - Highlights soft-deleted cards with strike-through and a mini "Restore" button triggering `RestoreTaskModal`.
+
 ---
 
 ## 3. Database Schema (`backend/database.sqlite`)

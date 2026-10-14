@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { io, Socket } from 'socket.io-client';
 
-import { Column, SelectedTask, Task } from '../types';
+import { Column, SelectedTask, Task, ViewMode } from '../types';
 import {
   Header,
   AuthView,
@@ -15,6 +15,8 @@ import {
   DeleteColumnModal,
   LogoutModal,
   RestoreTaskModal,
+  ListView,
+  TableView,
 } from '../components';
 
 let socket: Socket;
@@ -36,6 +38,7 @@ export default function Home() {
   const [showDeletedCards, setShowDeletedCards] = useState(false);
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [taskToRestore, setTaskToRestore] = useState<Task | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('board');
 
   const deletedColumnRef = useRef<HTMLDivElement>(null);
   const addColumnRef = useRef<HTMLDivElement>(null);
@@ -294,10 +297,10 @@ export default function Home() {
     }
   };
 
-  const handleQuickMove = async (targetColId: string) => {
-    if (!selectedTask || !token || ('isNew' in selectedTask)) return;
+  const moveTaskToColumn = async (taskId: string, targetColId: string) => {
+    if (!token) return;
     try {
-      await fetch(`http://localhost:4000/api/tasks/${selectedTask.id}`, {
+      await fetch(`http://localhost:4000/api/tasks/${taskId}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -312,6 +315,11 @@ export default function Home() {
     } catch (err) {
       console.error("Error moving task", err);
     }
+  };
+
+  const handleQuickMove = async (targetColId: string) => {
+    if (!selectedTask || !('id' in selectedTask)) return;
+    await moveTaskToColumn(selectedTask.id, targetColId);
   };
 
   const saveTaskDetails = async (title: string, description: string, columnId: string) => {
@@ -367,6 +375,8 @@ export default function Home() {
         authUsername={authUsername}
         deletedTasksCount={deletedTasks.length}
         showDeletedCards={showDeletedCards}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
         onToggleDeletedCards={() => setShowDeletedCards(!showDeletedCards)}
         onAddColumnClick={() => {
           setIsAddingColumn(true);
@@ -381,7 +391,7 @@ export default function Home() {
         <div style={{ padding: '2rem' }}>
           <p>No board found. Registering automatically creates one. You might need to log out and register a new account to see the full demo.</p>
         </div>
-      ) : (
+      ) : viewMode === 'board' ? (
         <DragDropContext onDragEnd={onDragEnd}>
           <main ref={boardAreaRef} className="board-area">
             {columns.map((column) => (
@@ -417,6 +427,26 @@ export default function Home() {
             />
           </main>
         </DragDropContext>
+      ) : viewMode === 'list' ? (
+        <ListView
+          columns={columns}
+          deletedTasks={deletedTasks}
+          showDeletedCards={showDeletedCards}
+          onTaskClick={(task, isDeleted, colId) => openTaskModal(task, !!isDeleted, colId)}
+          onAddTask={(colId) => openNewTaskModal(colId)}
+          onRestoreTask={(task) => setTaskToRestore(task)}
+          onQuickMoveTask={moveTaskToColumn}
+        />
+      ) : (
+        <TableView
+          columns={columns}
+          deletedTasks={deletedTasks}
+          showDeletedCards={showDeletedCards}
+          onTaskClick={(task, isDeleted, colId) => openTaskModal(task, !!isDeleted, colId)}
+          onAddTask={(colId) => openNewTaskModal(colId || (columns[0]?.id ?? ''))}
+          onRestoreTask={(task) => setTaskToRestore(task)}
+          onQuickMoveTask={moveTaskToColumn}
+        />
       )}
 
       {/* Task Modal */}
