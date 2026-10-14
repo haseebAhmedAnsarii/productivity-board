@@ -14,6 +14,7 @@ import {
   TaskModal,
   DeleteColumnModal,
   LogoutModal,
+  RestoreTaskModal,
 } from '../components';
 
 let socket: Socket;
@@ -34,6 +35,7 @@ export default function Home() {
   const [deletedTasks, setDeletedTasks] = useState<Task[]>([]);
   const [showDeletedCards, setShowDeletedCards] = useState(false);
   const [isAddingColumn, setIsAddingColumn] = useState(false);
+  const [taskToRestore, setTaskToRestore] = useState<Task | null>(null);
 
   const deletedColumnRef = useRef<HTMLDivElement>(null);
   const addColumnRef = useRef<HTMLDivElement>(null);
@@ -398,7 +400,7 @@ export default function Home() {
                 ref={deletedColumnRef}
                 deletedTasks={deletedTasks}
                 onTaskClick={(task) => openTaskModal(task, true)}
-                onRestoreTask={(taskId) => restoreTask(taskId)}
+                onRestoreTask={(task) => setTaskToRestore(task)}
               />
             )}
 
@@ -426,7 +428,10 @@ export default function Home() {
         onClose={closeTaskModal}
         onSave={saveTaskDetails}
         onDelete={confirmDeleteTask}
-        onRestore={restoreTask}
+        onRestore={(task) => {
+          closeTaskModal();
+          setTaskToRestore(task);
+        }}
         onQuickMove={handleQuickMove}
       />
 
@@ -445,6 +450,17 @@ export default function Home() {
         column={columnToDelete}
         onClose={() => setColumnToDelete(null)}
         onConfirm={confirmDeleteColumn}
+      />
+
+      {/* Restore Task Confirmation Modal */}
+      <RestoreTaskModal
+        task={taskToRestore}
+        columns={columns}
+        onClose={() => setTaskToRestore(null)}
+        onConfirm={async (taskId, targetColId) => {
+          await restoreTask(taskId, targetColId);
+          setTaskToRestore(null);
+        }}
       />
     </div>
   );

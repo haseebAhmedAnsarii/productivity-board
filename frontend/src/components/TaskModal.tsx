@@ -9,7 +9,7 @@ interface TaskModalProps {
   onClose: () => void;
   onSave: (title: string, description: string, columnId: string) => Promise<void>;
   onDelete: () => Promise<void>;
-  onRestore: (taskId: string, targetColId?: string) => Promise<void>;
+  onRestore: (task: Task) => void;
   onQuickMove: (targetColId: string) => Promise<void>;
 }
 
@@ -360,8 +360,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 <button 
                   className="btn-primary" 
                   onClick={() => {
-                    if (currentTask?.id) {
-                      onRestore(currentTask.id, editColumnId);
+                    if (currentTask) {
+                      onRestore(currentTask);
                     }
                   }} 
                   style={{ flex: 1 }}

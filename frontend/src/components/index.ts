@@ -7,3 +7,4 @@ export * from './AddColumn';
 export * from './TaskModal';
 export * from './DeleteColumnModal';
 export * from './LogoutModal';
+export * from './RestoreTaskModal';

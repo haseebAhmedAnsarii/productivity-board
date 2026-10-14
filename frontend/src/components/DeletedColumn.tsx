@@ -4,7 +4,7 @@ import { Task } from '../types';
 interface DeletedColumnProps {
   deletedTasks: Task[];
   onTaskClick: (task: Task) => void;
-  onRestoreTask: (taskId: string) => void;
+  onRestoreTask: (task: Task) => void;
 }
 
 export const DeletedColumn = React.forwardRef<HTMLDivElement, DeletedColumnProps>(
@@ -41,7 +41,7 @@ export const DeletedColumn = React.forwardRef<HTMLDivElement, DeletedColumnProps
                   className="btn-restore-mini"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onRestoreTask(task.id);
+                    onRestoreTask(task);
                   }}
                 >
                   Restore

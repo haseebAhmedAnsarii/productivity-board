@@ -55,7 +55,7 @@ A full-stack, real-time Kanban productivity web application with per-user persis
   - **Auto-Scroll to Deleted Column:** Clicking the "Show Deleted Cards" CTA triggers a smooth horizontal scroll to the far right of the board area, immediately bringing the newly revealed `"Deleted"` column into full view.
 - **Column Protections:**
   - Read-only column: cannot add cards directly to it, cannot drag cards into/out of it.
-  - Cards inside have a **"Restore"** action.
+  - **Restore Confirmation Modal:** Clicking "Restore" (from the mini button on a deleted card or from inside the task modal) triggers a dedicated confirmation modal (`RestoreTaskModal`). It allows users to verify or select the target destination column (defaulting to the original column or resurrecting it) with clear visual feedback before restoring.
 - **Original Column Restoration:**
   - When a card whose entire column was deleted is restored, the backend automatically resurrects the original column (`UPDATE columns SET is_deleted = 0`) or recreates it if it was previously hard-deleted.
   - The card is placed directly back into its original column (rather than falling back to the "To Do" column).
@@ -113,6 +113,7 @@ A full-stack, real-time Kanban productivity web application with per-user persis
   - [`frontend/src/components/TaskModal.tsx`](file:///d:/practice/productivity-board/frontend/src/components/TaskModal.tsx): Task details modal supporting creation, editing, in-modal column moving with "Move Now", deletion confirmation, restoration, and expandable activity history timeline with formatted timestamps and seconds.
   - [`frontend/src/components/DeleteColumnModal.tsx`](file:///d:/practice/productivity-board/frontend/src/components/DeleteColumnModal.tsx): Confirmation modal when deleting a column with task-count warnings.
   - [`frontend/src/components/LogoutModal.tsx`](file:///d:/practice/productivity-board/frontend/src/components/LogoutModal.tsx): Confirmation dialog before terminating user session.
+  - [`frontend/src/components/RestoreTaskModal.tsx`](file:///d:/practice/productivity-board/frontend/src/components/RestoreTaskModal.tsx): Confirmation dialog before restoring a deleted card, with destination column selector and resurrection notice.
   - [`frontend/src/components/index.ts`](file:///d:/practice/productivity-board/frontend/src/components/index.ts): Central barrel export.
 
 ### J. Modular Backend Architecture (`backend/routes/`, `middleware/`, `services/`, `sockets/`)
