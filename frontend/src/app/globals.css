@@ -964,8 +964,6 @@ body {
 }
 
 .list-task-items {
-  max-height: 300px;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
@@ -1273,25 +1271,21 @@ body {
   background: var(--text-muted);
 }
 
-.list-task-items::-webkit-scrollbar,
 .table-card-container::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
-.list-task-items::-webkit-scrollbar-track,
 .table-card-container::-webkit-scrollbar-track {
   background: var(--bg-surface);
   border-radius: 4px;
 }
 
-.list-task-items::-webkit-scrollbar-thumb,
 .table-card-container::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 4px;
 }
 
-.list-task-items::-webkit-scrollbar-thumb:hover,
 .table-card-container::-webkit-scrollbar-thumb:hover {
   background: var(--accent);
 }
