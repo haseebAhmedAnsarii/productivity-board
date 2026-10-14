@@ -205,6 +205,30 @@ CREATE TABLE IF NOT EXISTS task_history (
 
 ---
 
+### I. Modular Component Architecture & Backend Decomposition
+- **Frontend Decomposition:** The monolithic `page.tsx` was broken down into focused single-responsibility components in `frontend/src/components/`:
+  - `Header.tsx`, `AuthView.tsx`, `TaskCard.tsx`, `KanbanColumn.tsx`, `DeletedColumn.tsx`, `AddColumn.tsx`, `TaskModal.tsx`, `DeleteColumnModal.tsx`, `LogoutModal.tsx`, `RestoreTaskModal.tsx`, `ListView.tsx`, and `TableView.tsx`.
+- **Backend Decomposition:** The monolithic `server.ts` was modularized into clean directories:
+  - `config.ts` (environment, ports, JWT secrets).
+  - `middleware/auth.ts` (`authenticateToken`).
+  - `services/history.ts` (`logTaskHistory`).
+  - `routes/` (`authRoutes.ts`, `boardRoutes.ts`, `columnRoutes.ts`, `taskRoutes.ts`, `index.ts`).
+  - `sockets/boardSocket.ts` (Socket.IO event handlers and real-time room dispatch).
+
+### J. Multi-View Architecture (Board, List, Table) & Universal Add Column
+- **Segmented View Switcher:** Header segmented pill controller allowing switching between **Board**, **List**, and **Table** views.
+- **List View Scrolling & Content Cropping Fix:**
+  - **Flex Squeeze & Cropping Resolution:** Flexbox children default to `flex-shrink: 1`. In `.list-view-container`, when columns exceeded available screen height, flexbox squeezed each `.list-group` to fit within the viewport, causing cards beyond the squeezed height to be chopped off by `.list-group`'s `overflow: hidden`, preventing the scrollbar from ever triggering, and squeezing the top columns further when "Show Deleted Cards" was clicked.
+  - **The Fix:** Added `flex-shrink: 0;` to `.list-group`, `.list-group-header`, `.list-task-row` (`min-height: 52px`), `.list-add-column-section`, `.table-toolbar`, `.table-card-container`, and `.table-add-column-section`.
+  - **Full-Width Scrolling Wrapper:** Wrapped `ListView` in `.list-view-wrapper` (`flex: 1; min-height: 0; width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden;`) with an inner `.list-view-container` (`max-width: 1200px; margin: 0 auto`). This ensures the vertical scrollbar sits at the true edge of the window, and mouse-wheel scrolling works anywhere across the entire screen.
+  - **Text Wrapping & Collapse:** Enhanced title and description text wrapping using multi-line clamp (`-webkit-line-clamp: 2`) and added interactive collapsible/expandable column sections with chevron toggles (`▼` / `▶`).
+  - **Deleted Cards Auto-Scroll:** Wired `deletedColumnRef` into `ListView` so clicking "Show Deleted Cards" does not compress top columns and automatically scrolls down to the revealed Deleted Tasks section.
+- **Universal "+ Add Column" Support:**
+  - Clicking "+ Add Column" in the header or in-view CTA now works consistently across all views (Board, List, Table).
+  - Automatically scrolls to the column creation form (`block: 'center'` for vertical views, `inline: 'end'` for horizontal board) and auto-focuses the input, with full Escape key cancel support.
+
+---
+
 ## 4. API & Socket Overview
 
 ### Backend Endpoints (`server.ts`):
@@ -230,3 +254,4 @@ CREATE TABLE IF NOT EXISTS task_history (
 3. **Running Terminals:**
    - Frontend dev server running on port 3000 / 3001.
    - Backend running on port 4000 via `npx tsx server.ts`.
+

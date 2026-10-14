@@ -53,6 +53,11 @@ export const AddColumn = React.forwardRef<HTMLDivElement, AddColumnProps>(
               setNewColumnTitle(e.target.value);
               if (columnTitleError) setColumnTitleError(false);
             }}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                handleCancel();
+              }
+            }}
             autoFocus
             style={columnTitleError ? { borderColor: 'var(--danger)' } : {}}
           />

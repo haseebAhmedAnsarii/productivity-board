@@ -49,8 +49,8 @@ export default function Home() {
       if (addColumnRef.current) {
         addColumnRef.current.scrollIntoView({
           behavior: 'smooth',
-          inline: 'end',
-          block: 'nearest'
+          inline: viewMode === 'board' ? 'end' : 'nearest',
+          block: viewMode === 'board' ? 'nearest' : 'center',
         });
       } else if (boardAreaRef.current) {
         boardAreaRef.current.scrollTo({
@@ -64,7 +64,7 @@ export default function Home() {
   useEffect(() => {
     if (showDeletedCards && deletedTasks.length > 0) {
       const timer = setTimeout(() => {
-        if (boardAreaRef.current) {
+        if (viewMode === 'board' && boardAreaRef.current) {
           boardAreaRef.current.scrollTo({
             left: boardAreaRef.current.scrollWidth,
             behavior: 'smooth'
@@ -72,14 +72,14 @@ export default function Home() {
         } else if (deletedColumnRef.current) {
           deletedColumnRef.current.scrollIntoView({
             behavior: 'smooth',
-            inline: 'end',
-            block: 'nearest'
+            inline: viewMode === 'board' ? 'end' : 'nearest',
+            block: viewMode === 'board' ? 'nearest' : 'center'
           });
         }
-      }, 60);
+      }, 80);
       return () => clearTimeout(timer);
     }
-  }, [showDeletedCards]);
+  }, [showDeletedCards, viewMode]);
 
   useEffect(() => {
     if (isAddingColumn) {
@@ -436,6 +436,15 @@ export default function Home() {
           onAddTask={(colId) => openNewTaskModal(colId)}
           onRestoreTask={(task) => setTaskToRestore(task)}
           onQuickMoveTask={moveTaskToColumn}
+          isAddingColumn={isAddingColumn}
+          onStartAddColumn={() => {
+            setIsAddingColumn(true);
+            scrollToAddColumn();
+          }}
+          onCancelAddColumn={() => setIsAddingColumn(false)}
+          onCreateColumn={handleCreateColumn}
+          addColumnRef={addColumnRef}
+          deletedColumnRef={deletedColumnRef}
         />
       ) : (
         <TableView
@@ -446,6 +455,14 @@ export default function Home() {
           onAddTask={(colId) => openNewTaskModal(colId || (columns[0]?.id ?? ''))}
           onRestoreTask={(task) => setTaskToRestore(task)}
           onQuickMoveTask={moveTaskToColumn}
+          isAddingColumn={isAddingColumn}
+          onStartAddColumn={() => {
+            setIsAddingColumn(true);
+            scrollToAddColumn();
+          }}
+          onCancelAddColumn={() => setIsAddingColumn(false)}
+          onCreateColumn={handleCreateColumn}
+          addColumnRef={addColumnRef}
         />
       )}
 

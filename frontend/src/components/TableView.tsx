@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Column, Task } from '../types';
+import { AddColumn } from './AddColumn';
 
 interface TableViewProps {
   columns: Column[];
@@ -9,6 +10,11 @@ interface TableViewProps {
   onAddTask: (columnId?: string) => void;
   onRestoreTask: (task: Task) => void;
   onQuickMoveTask: (taskId: string, targetColId: string) => Promise<void>;
+  isAddingColumn: boolean;
+  onStartAddColumn: () => void;
+  onCancelAddColumn: () => void;
+  onCreateColumn: (title: string) => Promise<void>;
+  addColumnRef?: React.Ref<HTMLDivElement>;
 }
 
 export const TableView: React.FC<TableViewProps> = ({
@@ -19,6 +25,11 @@ export const TableView: React.FC<TableViewProps> = ({
   onAddTask,
   onRestoreTask,
   onQuickMoveTask,
+  isAddingColumn,
+  onStartAddColumn,
+  onCancelAddColumn,
+  onCreateColumn,
+  addColumnRef,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedColumnFilter, setSelectedColumnFilter] = useState('ALL');
@@ -112,10 +123,18 @@ export const TableView: React.FC<TableViewProps> = ({
           </select>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
             {filteredActiveTasks.length + filteredDeletedTasks.length} {filteredActiveTasks.length + filteredDeletedTasks.length === 1 ? 'task' : 'tasks'}
           </span>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={onStartAddColumn}
+            style={{ padding: '0.45rem 0.85rem', fontSize: '0.8rem' }}
+          >
+            + Add Column
+          </button>
           <button
             type="button"
             className="btn-primary"
@@ -252,6 +271,17 @@ export const TableView: React.FC<TableViewProps> = ({
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Add Column Section in Table View */}
+      <div className="table-add-column-section">
+        <AddColumn
+          ref={addColumnRef}
+          isAdding={isAddingColumn}
+          onStartAdd={onStartAddColumn}
+          onCancel={onCancelAddColumn}
+          onSubmit={onCreateColumn}
+        />
       </div>
     </div>
   );
