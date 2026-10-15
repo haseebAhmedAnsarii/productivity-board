@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Column } from '../types';
 
 interface DeleteColumnModalProps {
@@ -12,11 +12,29 @@ export const DeleteColumnModal: React.FC<DeleteColumnModalProps> = ({
   onClose,
   onConfirm,
 }) => {
+  const overlayMouseDownRef = useRef(false);
+
   if (!column) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px', textAlign: 'center' }}>
+    <div
+      className="modal-overlay"
+      onMouseDown={(e) => {
+        overlayMouseDownRef.current = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (overlayMouseDownRef.current && e.target === e.currentTarget) {
+          onClose();
+        }
+        overlayMouseDownRef.current = false;
+      }}
+    >
+      <div
+        className="modal-content"
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+        style={{ maxWidth: '440px', textAlign: 'center' }}
+      >
         <div className="modal-header" style={{ justifyContent: 'center', position: 'relative' }}>
           <h2>Delete Column</h2>
           <button 

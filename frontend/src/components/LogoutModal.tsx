@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 interface LogoutModalProps {
   isOpen: boolean;
@@ -11,11 +11,29 @@ export const LogoutModal: React.FC<LogoutModalProps> = ({
   onClose,
   onConfirm,
 }) => {
+  const overlayMouseDownRef = useRef(false);
+
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px', textAlign: 'center' }}>
+    <div
+      className="modal-overlay"
+      onMouseDown={(e) => {
+        overlayMouseDownRef.current = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (overlayMouseDownRef.current && e.target === e.currentTarget) {
+          onClose();
+        }
+        overlayMouseDownRef.current = false;
+      }}
+    >
+      <div
+        className="modal-content"
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+        style={{ maxWidth: '420px', textAlign: 'center' }}
+      >
         <div className="modal-header" style={{ justifyContent: 'center', position: 'relative' }}>
           <h2>Confirm Logout</h2>
           <button 

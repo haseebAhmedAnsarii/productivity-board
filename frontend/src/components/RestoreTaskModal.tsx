@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Column, Task } from '../types';
 
 interface RestoreTaskModalProps {
@@ -15,6 +15,7 @@ export const RestoreTaskModal: React.FC<RestoreTaskModalProps> = ({
   onConfirm,
 }) => {
   const [selectedColumnId, setSelectedColumnId] = useState<string>('');
+  const overlayMouseDownRef = useRef(false);
 
   useEffect(() => {
     if (task) {
@@ -38,9 +39,21 @@ export const RestoreTaskModal: React.FC<RestoreTaskModalProps> = ({
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div
+      className="modal-overlay"
+      onMouseDown={(e) => {
+        overlayMouseDownRef.current = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (overlayMouseDownRef.current && e.target === e.currentTarget) {
+          onClose();
+        }
+        overlayMouseDownRef.current = false;
+      }}
+    >
       <div 
         className="modal-content" 
+        onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()} 
         style={{ maxWidth: '440px', textAlign: 'center' }}
       >

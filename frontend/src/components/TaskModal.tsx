@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Column, HistoryItem, SelectedTask, Task } from '../types';
 import { RichTextEditor } from './RichTextEditor';
 import { stripRichTextToSnippet } from './RichTextRenderer';
@@ -36,6 +36,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [expandedHistoryIds, setExpandedHistoryIds] = useState<Record<number, boolean>>({});
+  const overlayMouseDownRef = useRef(false);
 
   useEffect(() => {
     if (!selectedTask) return;
@@ -288,9 +289,28 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     }
   };
 
+  const handleOverlayMouseDown = (e: React.MouseEvent) => {
+    overlayMouseDownRef.current = e.target === e.currentTarget;
+  };
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (overlayMouseDownRef.current && e.target === e.currentTarget) {
+      onClose();
+    }
+    overlayMouseDownRef.current = false;
+  };
+
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="modal-overlay"
+      onMouseDown={handleOverlayMouseDown}
+      onClick={handleOverlayClick}
+    >
+      <div
+        className="modal-content"
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <h2>{isDeleted ? 'Deleted Task' : (isNew ? 'New Task' : 'Edit Task')}</h2>

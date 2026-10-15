@@ -48,6 +48,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const savedRangeRef = useRef<Range | null>(null);
   const savedSelectionRef = useRef<{ start: number; end: number } | null>(null);
   const editingLinkElementRef = useRef<HTMLAnchorElement | null>(null);
+  const linkOverlayMouseDownRef = useRef(false);
 
   // Sync value into visual editor when value changes externally or tab switches
   useEffect(() => {
@@ -746,8 +747,23 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
       {/* Quick Link Insert / Edit Modal */}
       {showLinkModal && (
-        <div className="rich-link-modal-overlay" onClick={() => setShowLinkModal(false)}>
-          <div className="rich-link-modal" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="rich-link-modal-overlay"
+          onMouseDown={(e) => {
+            linkOverlayMouseDownRef.current = e.target === e.currentTarget;
+          }}
+          onClick={(e) => {
+            if (linkOverlayMouseDownRef.current && e.target === e.currentTarget) {
+              setShowLinkModal(false);
+            }
+            linkOverlayMouseDownRef.current = false;
+          }}
+        >
+          <div
+            className="rich-link-modal"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="rich-link-modal-header">
               <h4>{editingLinkElementRef.current ? 'Edit Link' : 'Insert Link'}</h4>
               <button

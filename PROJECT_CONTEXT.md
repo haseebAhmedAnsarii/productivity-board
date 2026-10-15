@@ -257,6 +257,9 @@ CREATE TABLE IF NOT EXISTS task_history (
   - **Granular Activity & History Diffing:**
     - Title updates display exact changes: `Renamed title from ~"old"~ to **"new"**`.
     - Description updates display sanitized from-to changes matching title: `Updated description from ~"old snippet"~ to **"new snippet"**`, with hover tooltips and an interactive accordion toggle (`[Show full]`/`[Show less]`) to inspect full multi-line edits without cluttering the audit timeline.
+  - **Modal Backdrop Drag-Selection Protection:**
+    - Modals across the application ([`TaskModal.tsx`](file:///d:/practice/productivity-board/frontend/src/components/TaskModal.tsx), [`RestoreTaskModal.tsx`](file:///d:/practice/productivity-board/frontend/src/components/RestoreTaskModal.tsx), [`DeleteColumnModal.tsx`](file:///d:/practice/productivity-board/frontend/src/components/DeleteColumnModal.tsx), [`LogoutModal.tsx`](file:///d:/practice/productivity-board/frontend/src/components/LogoutModal.tsx), and link insertion in [`RichTextEditor.tsx`](file:///d:/practice/productivity-board/frontend/src/components/RichTextEditor.tsx)) track `mousedown` targets (`overlayMouseDownRef`).
+    - If a user holds click to select text inside modal content and their cursor moves outside the modal onto the overlay backdrop before releasing (`mouseup`), the modal remains open and text selection is preserved. The modal only dismisses if `mousedown` originated directly on the backdrop.
 
 
 ---
