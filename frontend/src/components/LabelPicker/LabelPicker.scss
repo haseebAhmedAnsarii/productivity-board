@@ -21,16 +21,51 @@
     font-weight: 600;
     letter-spacing: 0.01em;
     white-space: nowrap;
-    max-width: 130px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    max-width: 150px;
     user-select: none;
+    transition: var(--transition);
 
     .label-chip-dot {
       width: 6px;
       height: 6px;
       border-radius: 50%;
       flex-shrink: 0;
+    }
+
+    .label-chip-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .label-chip-remove {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: currentColor;
+      opacity: 0;
+      font-size: 0.85rem;
+      line-height: 1;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      cursor: pointer;
+      margin-left: 0.15rem;
+      padding: 0;
+      flex-shrink: 0;
+      transition: all 0.15s ease;
+
+      &:hover {
+        opacity: 1 !important;
+        background: rgba(255, 255, 255, 0.22);
+        transform: scale(1.15);
+      }
+    }
+
+    &:hover .label-chip-remove {
+      opacity: 0.65;
     }
   }
 
@@ -253,6 +288,7 @@
             background: var(--bg-surface);
             color: var(--text-muted);
             border: 1px solid var(--border-ui);
+            font-family: var(--font-body);
             font-size: 0.72rem;
             font-weight: 600;
             padding: 2px 9px;
@@ -263,6 +299,7 @@
             &:hover {
               color: var(--text-main);
               background: var(--bg-card);
+              border-color: var(--border-card-hover);
             }
           }
         }
@@ -342,6 +379,25 @@
         &:disabled {
           opacity: 0.5;
           cursor: not-allowed;
+        }
+      }
+
+      .label-cancel-btn {
+        background: var(--bg-surface);
+        color: var(--text-muted);
+        border: 1px solid var(--border-ui);
+        font-family: var(--font-body);
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 4px 14px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: var(--transition);
+
+        &:hover {
+          color: var(--text-main);
+          background: var(--bg-card);
+          border-color: var(--border-card-hover);
         }
       }
     }

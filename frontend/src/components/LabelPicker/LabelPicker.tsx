@@ -171,12 +171,26 @@ export const LabelPicker: React.FC<LabelPickerProps> = ({
         {taskLabels.map(label => (
           <span
             key={label.id}
-            className="label-chip"
+            className={`label-chip ${!readOnly ? 'has-remove' : ''}`}
             style={{ background: label.color + '22', borderColor: label.color, color: label.color }}
             title={label.name}
           >
             <span className="label-chip-dot" style={{ background: label.color }} />
-            {label.name}
+            <span className="label-chip-text">{label.name}</span>
+            {!readOnly && (
+              <button
+                type="button"
+                className="label-chip-remove"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onLabelsChange(taskLabels.filter(l => l.id !== label.id));
+                }}
+                title={`Remove ${label.name}`}
+                aria-label={`Remove ${label.name}`}
+              >
+                ×
+              </button>
+            )}
           </span>
         ))}
         {!readOnly && (
