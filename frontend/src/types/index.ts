@@ -1,3 +1,11 @@
+export interface Label {
+  id: number;
+  board_id: number;
+  name: string;
+  color: string;
+  created_at?: string;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -5,6 +13,7 @@ export interface Task {
   columnId?: string;
   originalColumnId?: string | null;
   originalColumnTitle?: string | null;
+  labels?: Label[];
 }
 
 export type SelectedTask = Task | { isNew: true; columnId: string } | null;
@@ -27,3 +36,4 @@ export interface Column {
 }
 
 export type ViewMode = 'board' | 'list' | 'table';
+

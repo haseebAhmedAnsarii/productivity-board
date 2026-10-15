@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Column, HistoryItem, SelectedTask, Task } from '../types';
+import { Column, HistoryItem, Label, SelectedTask, Task } from '../types';
 import { RichTextEditor } from './RichTextEditor';
 import { stripRichTextToSnippet } from './RichTextRenderer';
+import { LabelPicker } from './LabelPicker';
 
 interface TaskModalProps {
   selectedTask: SelectedTask;
   columns: Column[];
   token: string | null;
   isDeleted: boolean;
+  boardId: string;
   onClose: () => void;
-  onSave: (title: string, description: string, columnId: string) => Promise<void>;
+  onSave: (title: string, description: string, columnId: string, labelIds?: number[]) => Promise<void>;
   onDelete: () => Promise<void>;
   onRestore: (task: Task) => void;
   onQuickMove: (targetColId: string) => Promise<void>;
@@ -20,6 +22,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   columns,
   token,
   isDeleted,
+  boardId,
   onClose,
   onSave,
   onDelete,
@@ -36,10 +39,17 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [expandedHistoryIds, setExpandedHistoryIds] = useState<Record<number, boolean>>({});
+  const [taskLabels, setTaskLabels] = useState<Label[]>([]);
+  const [allBoardLabels, setAllBoardLabels] = useState<Label[]>([]);
   const overlayMouseDownRef = useRef(false);
 
   useEffect(() => {
     if (!selectedTask) return;
+
+    // Always reload board labels when modal opens
+    if (token && boardId) {
+      fetchBoardLabels();
+    }
 
     if ('isNew' in selectedTask) {
       setEditTitle('');
@@ -49,12 +59,15 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       setShowDeleteConfirm(false);
       setTaskHistory([]);
       setShowHistory(false);
+      setTaskLabels([]);
     } else {
       setEditTitle(selectedTask.title);
       setEditDescription(selectedTask.description);
       setTitleError(false);
       setShowDeleteConfirm(false);
       setShowHistory(false);
+      // Seed task labels from task object (populated by page.tsx)
+      setTaskLabels(selectedTask.labels ?? []);
 
       let currentId = selectedTask.columnId || '';
       if (!currentId) {
@@ -73,7 +86,22 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         fetchTaskHistory(selectedTask.id);
       }
     }
-  }, [selectedTask, isDeleted, token, columns]);
+  }, [selectedTask, isDeleted, token, columns, boardId]);
+
+  const fetchBoardLabels = async () => {
+    if (!token || !boardId) return;
+    try {
+      const res = await fetch(`http://localhost:4000/api/labels?boardId=${boardId}`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAllBoardLabels(data.labels || []);
+      }
+    } catch (e) {
+      console.error('Failed to load board labels', e);
+    }
+  };
 
   const fetchTaskHistory = async (taskId: string) => {
     if (!token) return;
@@ -278,7 +306,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       setTitleError(true);
       return;
     }
-    await onSave(editTitle.trim(), editDescription.trim(), editColumnId);
+    await onSave(editTitle.trim(), editDescription.trim(), editColumnId, taskLabels.map(l => l.id));
   };
 
   const handleInternalQuickMove = async (colId: string) => {
@@ -366,6 +394,20 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 }} 
                 autoFocus={!isDeleted}
                 style={titleError ? { borderColor: 'var(--danger)' } : (isDeleted ? { opacity: 0.8, cursor: 'not-allowed' } : {})}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Labels</label>
+              <LabelPicker
+                taskId={currentTask?.id ?? null}
+                boardId={boardId}
+                token={token || ''}
+                taskLabels={taskLabels}
+                allLabels={allBoardLabels}
+                onLabelsChange={setTaskLabels}
+                onBoardLabelsChange={setAllBoardLabels}
+                readOnly={isDeleted}
               />
             </div>
 

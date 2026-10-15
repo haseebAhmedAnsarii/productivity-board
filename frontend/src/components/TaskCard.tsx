@@ -17,6 +17,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   onClick,
 }) => {
   const descSnippet = stripRichTextToSnippet(task.description);
+  const labels = task.labels ?? [];
 
   return (
     <Draggable draggableId={task.id} index={index}>
@@ -36,6 +37,23 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           <div className="task-card-header">
             <span className="task-badge">#{task.id}</span>
           </div>
+
+          {labels.length > 0 && (
+            <div className="task-card-labels">
+              {labels.map(label => (
+                <span
+                  key={label.id}
+                  className="label-chip"
+                  style={{ background: label.color + '22', borderColor: label.color, color: label.color }}
+                  title={label.name}
+                >
+                  <span className="label-chip-dot" style={{ background: label.color }} />
+                  {label.name}
+                </span>
+              ))}
+            </div>
+          )}
+
           <div className="task-title">{task.title}</div>
           {descSnippet && (
             <div className="task-desc" title={descSnippet}>

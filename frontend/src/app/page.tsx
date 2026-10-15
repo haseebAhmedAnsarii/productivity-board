@@ -104,11 +104,50 @@ export default function Home() {
       });
       if (response.ok) {
         const data = await response.json();
-        setColumns(data.columns || []);
         const dTasks = data.deletedTasks || [];
-        setDeletedTasks(dTasks);
+        const currentBoardId = data.boardId;
+        if (currentBoardId) setBoardId(currentBoardId);
+
+        // Fetch all labels for this board in one request, then map them onto tasks
+        let labelsByTaskId: Record<string, import('../types').Label[]> = {};
+        if (currentBoardId) {
+          try {
+            const allTasks: import('../types').Task[] = [
+              ...(data.columns || []).flatMap((c: import('../types').Column) => c.tasks),
+              ...dTasks,
+            ];
+            // Fetch labels for each task in parallel (batch of promises)
+            const labelResults = await Promise.all(
+              allTasks.map(async (t) => {
+                const r = await fetch(
+                  `http://localhost:4000/api/labels/task/${t.id}`,
+                  { headers: { 'Authorization': `Bearer ${currentToken}` } }
+                );
+                if (r.ok) {
+                  const d = await r.json();
+                  return { taskId: t.id, labels: d.labels || [] };
+                }
+                return { taskId: t.id, labels: [] };
+              })
+            );
+            labelsByTaskId = Object.fromEntries(labelResults.map(r => [r.taskId, r.labels]));
+          } catch (e) {
+            // labels loading failure is non-fatal
+          }
+        }
+
+        const attachLabels = (tasks: import('../types').Task[]) =>
+          tasks.map(t => ({ ...t, labels: labelsByTaskId[t.id] ?? [] }));
+
+        const colsWithLabels = (data.columns || []).map((c: import('../types').Column) => ({
+          ...c,
+          tasks: attachLabels(c.tasks),
+        }));
+
+        setColumns(colsWithLabels);
+        const dTasksWithLabels = attachLabels(dTasks);
+        setDeletedTasks(dTasksWithLabels);
         if (dTasks.length === 0) setShowDeletedCards(false);
-        if (data.boardId) setBoardId(data.boardId);
       } else if (response.status === 401 || response.status === 403) {
         logout();
       }
@@ -323,12 +362,12 @@ export default function Home() {
     await moveTaskToColumn(selectedTask.id, targetColId);
   };
 
-  const saveTaskDetails = async (title: string, description: string, columnId: string) => {
+  const saveTaskDetails = async (title: string, description: string, columnId: string, labelIds?: number[]) => {
     if (!selectedTask || !token) return;
     
     try {
       if ('isNew' in selectedTask) {
-        await fetch(`http://localhost:4000/api/tasks`, {
+        const res = await fetch(`http://localhost:4000/api/tasks`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -336,6 +375,17 @@ export default function Home() {
           },
           body: JSON.stringify({ columnId: columnId || selectedTask.columnId, title, description })
         });
+        if (res.ok && labelIds && labelIds.length > 0) {
+          const data = await res.json();
+          const newTaskId = data.taskId;
+          if (newTaskId) {
+            await fetch(`http://localhost:4000/api/labels/task/${newTaskId}`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ labelIds }),
+            });
+          }
+        }
       } else {
         await fetch(`http://localhost:4000/api/tasks/${selectedTask.id}`, {
           method: 'PUT',
@@ -356,6 +406,7 @@ export default function Home() {
       console.error("Error saving task", err);
     }
   };
+
 
   if (!isBrowser) return null;
 
@@ -486,6 +537,7 @@ export default function Home() {
         columns={columns}
         token={token}
         isDeleted={isModalDeletedTask}
+        boardId={boardId}
         onClose={closeTaskModal}
         onSave={saveTaskDetails}
         onDelete={confirmDeleteTask}
