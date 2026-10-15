@@ -1,5 +1,6 @@
+import './BoardMinimap.css';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Column } from '../types';
+import { Column } from '../../types';
 
 interface BoardMinimapProps {
   boardAreaRef: React.RefObject<HTMLElement | null>;

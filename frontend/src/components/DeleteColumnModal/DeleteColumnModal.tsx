@@ -1,19 +1,21 @@
+import './DeleteColumnModal.css';
 import React, { useRef } from 'react';
+import { Column } from '../../types';
 
-interface LogoutModalProps {
-  isOpen: boolean;
+interface DeleteColumnModalProps {
+  column: Column | null;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void>;
 }
 
-export const LogoutModal: React.FC<LogoutModalProps> = ({
-  isOpen,
+export const DeleteColumnModal: React.FC<DeleteColumnModalProps> = ({
+  column,
   onClose,
   onConfirm,
 }) => {
   const overlayMouseDownRef = useRef(false);
 
-  if (!isOpen) return null;
+  if (!column) return null;
 
   return (
     <div
@@ -32,10 +34,10 @@ export const LogoutModal: React.FC<LogoutModalProps> = ({
         className="modal-content"
         onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: '420px', textAlign: 'center' }}
+        style={{ maxWidth: '440px', textAlign: 'center' }}
       >
         <div className="modal-header" style={{ justifyContent: 'center', position: 'relative' }}>
-          <h2>Confirm Logout</h2>
+          <h2>Delete Column</h2>
           <button 
             className="close-btn" 
             onClick={onClose}
@@ -45,11 +47,16 @@ export const LogoutModal: React.FC<LogoutModalProps> = ({
           </button>
         </div>
         
-        <p style={{ color: 'var(--text-muted)', fontSize: '1rem', lineHeight: 1.5, margin: '0.5rem 0 1.25rem' }}>
-          Are you sure you want to log out of your session?
+        <p style={{ color: 'var(--text-main)', fontSize: '1rem', lineHeight: 1.5, margin: '0.5rem 0' }}>
+          Are you sure you want to delete <strong>&ldquo;{column.title}&rdquo;</strong>?
         </p>
+        {column.tasks.length > 0 && (
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>
+            Note: All {column.tasks.length} {column.tasks.length === 1 ? 'task' : 'tasks'} inside this column will be safely moved to the Deleted column.
+          </p>
+        )}
 
-        <div style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center', marginTop: '1rem' }}>
           <button 
             onClick={onClose}
             className="btn-secondary"
@@ -62,7 +69,7 @@ export const LogoutModal: React.FC<LogoutModalProps> = ({
             className="btn-danger"
             style={{ flex: 1 }}
           >
-            Log Out
+            Delete Column
           </button>
         </div>
       </div>

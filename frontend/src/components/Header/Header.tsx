@@ -1,5 +1,6 @@
+import './Header.css';
 import React from 'react';
-import { ViewMode } from '../types';
+import { ViewMode } from '../../types';
 
 interface HeaderProps {
   authUsername: string;

@@ -1,7 +1,8 @@
+import './ListView.css';
 import React, { useState } from 'react';
-import { Column, Task } from '../types';
-import { AddColumn } from './AddColumn';
-import { stripRichTextToSnippet } from './RichTextRenderer';
+import { Column, Task } from '../../types';
+import { AddColumn } from '../AddColumn';
+import { stripRichTextToSnippet } from '../RichTextRenderer';
 
 interface ListViewProps {
   columns: Column[];

@@ -1,7 +1,8 @@
+import './TaskCard.css';
 import React from 'react';
 import { Draggable } from '@hello-pangea/dnd';
-import { Task } from '../types';
-import { stripRichTextToSnippet } from './RichTextRenderer';
+import { Task } from '../../types';
+import { stripRichTextToSnippet } from '../RichTextRenderer';
 
 interface TaskCardProps {
   task: Task;

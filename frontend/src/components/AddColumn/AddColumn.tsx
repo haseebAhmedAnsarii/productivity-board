@@ -1,3 +1,4 @@
+import './AddColumn.css';
 import React, { useState } from 'react';
 
 interface AddColumnProps {

@@ -1,25 +1,11 @@
 /* ==========================================================================
-   Productivity Board Design System & Component Styles
+   Productivity Board Design System & Base Foundations
    ========================================================================== */
 
 /* Design Tokens & Foundations */
 @import '../styles/variables.css';
 @import '../styles/base.css';
 
-/* Core Layout & Components */
-@import '../styles/header.css';
+/* Global Board Canvas & Modal Overlays */
 @import '../styles/board.css';
-@import '../styles/task-card.css';
-
-/* Modals & History */
 @import '../styles/modals.css';
-@import '../styles/task-modal.css';
-
-/* Views */
-@import '../styles/list-view.css';
-@import '../styles/table-view.css';
-
-/* Feature Systems */
-@import '../styles/minimap.css';
-@import '../styles/rich-text.css';
-@import '../styles/labels.css';

@@ -1,3 +1,4 @@
+import './RichTextRenderer.css';
 import React from 'react';
 
 /**

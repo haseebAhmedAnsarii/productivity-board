@@ -1,7 +1,8 @@
+import './TableView.css';
 import React, { useState, useMemo } from 'react';
-import { Column, Task } from '../types';
-import { AddColumn } from './AddColumn';
-import { stripRichTextToSnippet } from './RichTextRenderer';
+import { Column, Task } from '../../types';
+import { AddColumn } from '../AddColumn';
+import { stripRichTextToSnippet } from '../RichTextRenderer';
 
 interface TableViewProps {
   columns: Column[];

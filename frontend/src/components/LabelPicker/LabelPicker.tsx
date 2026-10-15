@@ -1,5 +1,6 @@
+import './LabelPicker.css';
 import React, { useState, useEffect, useRef } from 'react';
-import { Label } from '../types';
+import { Label } from '../../types';
 
 // Curated palette of warm, harmonious colors that fit the dark theme
 export const LABEL_COLOR_PALETTE = [

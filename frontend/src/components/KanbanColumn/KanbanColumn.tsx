@@ -1,7 +1,8 @@
+import './KanbanColumn.css';
 import React from 'react';
 import { Droppable } from '@hello-pangea/dnd';
-import { Column, Task } from '../types';
-import { TaskCard } from './TaskCard';
+import { Column, Task } from '../../types';
+import { TaskCard } from '../TaskCard';
 
 interface KanbanColumnProps {
   column: Column;

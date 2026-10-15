@@ -1,5 +1,6 @@
+import './RichTextEditor.css';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { RichTextRenderer, parseAndSanitizeRichText } from './RichTextRenderer';
+import { RichTextRenderer, parseAndSanitizeRichText } from '../RichTextRenderer';
 
 interface RichTextEditorProps {
   value: string;

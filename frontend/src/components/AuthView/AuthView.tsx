@@ -1,3 +1,4 @@
+import './AuthView.css';
 import React, { useState } from 'react';
 
 interface AuthViewProps {

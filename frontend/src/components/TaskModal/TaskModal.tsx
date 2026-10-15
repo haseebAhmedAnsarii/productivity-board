@@ -1,8 +1,9 @@
+import './TaskModal.css';
 import React, { useState, useEffect, useRef } from 'react';
-import { Column, HistoryItem, Label, SelectedTask, Task } from '../types';
-import { RichTextEditor } from './RichTextEditor';
-import { stripRichTextToSnippet } from './RichTextRenderer';
-import { LabelPicker } from './LabelPicker';
+import { Column, HistoryItem, Label, SelectedTask, Task } from '../../types';
+import { RichTextEditor } from '../RichTextEditor';
+import { stripRichTextToSnippet } from '../RichTextRenderer';
+import { LabelPicker } from '../LabelPicker';
 
 interface TaskModalProps {
   selectedTask: SelectedTask;

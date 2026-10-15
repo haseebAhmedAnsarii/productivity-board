@@ -1,5 +1,6 @@
+import './RestoreTaskModal.css';
 import React, { useState, useEffect, useRef } from 'react';
-import { Column, Task } from '../types';
+import { Column, Task } from '../../types';
 
 interface RestoreTaskModalProps {
   task: Task | null;

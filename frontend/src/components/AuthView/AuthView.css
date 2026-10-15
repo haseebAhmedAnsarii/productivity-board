@@ -1,0 +1,8 @@
+/* Auth View Component Styles */
+.auth-view-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: var(--bg-canvas);
+}

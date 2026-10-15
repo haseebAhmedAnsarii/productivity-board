@@ -1,6 +1,7 @@
+import './DeletedColumn.css';
 import React from 'react';
-import { Task } from '../types';
-import { stripRichTextToSnippet } from './RichTextRenderer';
+import { Task } from '../../types';
+import { stripRichTextToSnippet } from '../RichTextRenderer';
 
 interface DeletedColumnProps {
   deletedTasks: Task[];
