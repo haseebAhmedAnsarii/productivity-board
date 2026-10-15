@@ -291,10 +291,42 @@ export const TaskModal: React.FC<TaskModalProps> = ({
           );
         }
         return 'Restored card back to active board';
+      case 'label_added':
+        return (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
+            <span style={{ color: '#10b981', fontSize: '0.78rem' }}>🏷</span>
+            Added label{' '}
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
+              padding: '1px 7px', borderRadius: '3px',
+              background: 'rgba(16,185,129,0.12)', border: '1px solid #10b981',
+              color: '#10b981', fontWeight: 600, fontSize: '0.72rem',
+            }}>
+              {item.new_value}
+            </span>
+          </span>
+        );
+      case 'label_removed':
+        return (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
+            <span style={{ color: 'var(--danger)', fontSize: '0.78rem' }}>🏷</span>
+            Removed label{' '}
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
+              padding: '1px 7px', borderRadius: '3px',
+              background: 'rgba(207,79,68,0.12)', border: '1px solid var(--danger)',
+              color: 'var(--danger)', fontWeight: 600, fontSize: '0.72rem',
+              textDecoration: 'line-through',
+            }}>
+              {item.old_value}
+            </span>
+          </span>
+        );
       default:
         return item.new_value || item.change_type;
     }
   };
+
 
   if (!selectedTask) return null;
 
@@ -407,6 +439,9 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 allLabels={allBoardLabels}
                 onLabelsChange={setTaskLabels}
                 onBoardLabelsChange={setAllBoardLabels}
+                onLabelToggled={() => {
+                  if (currentTask?.id) fetchTaskHistory(currentTask.id);
+                }}
                 readOnly={isDeleted}
               />
             </div>

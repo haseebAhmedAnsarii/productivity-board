@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { db } from '../db.js';
 import { authenticateToken, type AuthenticatedRequest } from '../middleware/auth.js';
+import { logTaskHistory } from '../services/history.js';
 
 const router = Router();
 
@@ -96,6 +97,14 @@ router.post('/task/:taskId', authenticateToken, async (req: AuthenticatedRequest
     const { taskId } = req.params;
     const { labelIds } = req.body as { labelIds: number[] };
 
+    // Fetch existing labels before replacing so we can diff
+    const existingLabels = await db.all(
+      `SELECT l.id, l.name FROM labels l
+       JOIN task_labels tl ON tl.label_id = l.id
+       WHERE tl.task_id = ?`,
+      [taskId]
+    );
+
     await db.run('DELETE FROM task_labels WHERE task_id = ?', [taskId]);
 
     if (labelIds && labelIds.length > 0) {
@@ -107,11 +116,49 @@ router.post('/task/:taskId', authenticateToken, async (req: AuthenticatedRequest
       );
     }
 
+    // Diff: determine which labels were added and which were removed
+    const existingIds = new Set(existingLabels.map((l: { id: number }) => l.id));
+    const newIds = new Set(labelIds || []);
+
+    // Log removals
+    for (const l of existingLabels as { id: number; name: string }[]) {
+      if (!newIds.has(l.id)) {
+        await logTaskHistory(
+          taskId,
+          req.user?.userId || 0,
+          req.user?.username || 'User',
+          'label_removed',
+          l.name,
+          null
+        );
+      }
+    }
+
+    // Log additions — fetch names for added ids
+    const addedIds = [...newIds].filter(id => !existingIds.has(id));
+    if (addedIds.length > 0) {
+      const addedLabels = await db.all(
+        `SELECT id, name FROM labels WHERE id IN (${addedIds.map(() => '?').join(',')})`,
+        addedIds
+      );
+      for (const l of addedLabels as { id: number; name: string }[]) {
+        await logTaskHistory(
+          taskId,
+          req.user?.userId || 0,
+          req.user?.username || 'User',
+          'label_added',
+          null,
+          l.name
+        );
+      }
+    }
+
     res.json({ success: true });
   } catch (err) {
     console.error('Error setting task labels:', err);
     res.status(500).json({ error: 'Failed to set task labels' });
   }
 });
+
 
 export default router;

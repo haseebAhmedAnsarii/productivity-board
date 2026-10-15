@@ -25,6 +25,7 @@ interface LabelPickerProps {
   allLabels: Label[];             // all board labels
   onLabelsChange: (labels: Label[]) => void;
   onBoardLabelsChange: (labels: Label[]) => void;
+  onLabelToggled?: () => void;   // optional: called after add/remove on existing task
   readOnly?: boolean;
 }
 
@@ -36,6 +37,7 @@ export const LabelPicker: React.FC<LabelPickerProps> = ({
   allLabels,
   onLabelsChange,
   onBoardLabelsChange,
+  onLabelToggled,
   readOnly = false,
 }) => {
   const [open, setOpen] = useState(false);
@@ -87,6 +89,7 @@ export const LabelPicker: React.FC<LabelPickerProps> = ({
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ labelIds: nextLabels.map(l => l.id) }),
         });
+        onLabelToggled?.();
       } catch (e) {
         console.error('Failed to update task labels', e);
       }
