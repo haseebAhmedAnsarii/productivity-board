@@ -73,7 +73,7 @@ export const LabelPicker: React.FC<LabelPickerProps> = ({
 
   const isAttached = (labelId: number) => taskLabels.some(l => l.id === labelId);
 
-  const toggleLabel = async (label: Label) => {
+  const toggleLabel = (label: Label) => {
     if (readOnly) return;
     const nowAttached = isAttached(label.id);
     const nextLabels = nowAttached
@@ -81,19 +81,6 @@ export const LabelPicker: React.FC<LabelPickerProps> = ({
       : [...taskLabels, label];
 
     onLabelsChange(nextLabels);
-
-    if (taskId) {
-      try {
-        await fetch(`http://localhost:4000/api/labels/task/${taskId}`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ labelIds: nextLabels.map(l => l.id) }),
-        });
-        onLabelToggled?.();
-      } catch (e) {
-        console.error('Failed to update task labels', e);
-      }
-    }
   };
 
   const handleCreateLabel = async () => {

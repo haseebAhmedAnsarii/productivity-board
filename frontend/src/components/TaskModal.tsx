@@ -479,9 +479,6 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 allLabels={allBoardLabels}
                 onLabelsChange={setTaskLabels}
                 onBoardLabelsChange={setAllBoardLabels}
-                onLabelToggled={() => {
-                  if (currentTask?.id) fetchTaskHistory(currentTask.id);
-                }}
                 readOnly={isDeleted}
               />
             </div>

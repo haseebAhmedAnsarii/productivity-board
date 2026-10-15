@@ -395,6 +395,13 @@ export default function Home() {
           },
           body: JSON.stringify({ title, description, columnId })
         });
+        if (labelIds !== undefined) {
+          await fetch(`http://localhost:4000/api/labels/task/${selectedTask.id}`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ labelIds }),
+          });
+        }
       }
       
       fetchBoard(token);
