@@ -10,6 +10,15 @@ interface RichTextEditorProps {
 
 type EditorTab = 'visual' | 'markdown' | 'preview';
 
+interface LinkPopoverState {
+  visible: boolean;
+  url: string;
+  text: string;
+  top: number;
+  left: number;
+  targetElement: HTMLAnchorElement | null;
+}
+
 export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   value,
   onChange,
@@ -20,12 +29,25 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [linkText, setLinkText] = useState('');
+  const [linkPopover, setLinkPopover] = useState<LinkPopoverState>({
+    visible: false,
+    url: '',
+    text: '',
+    top: 0,
+    left: 0,
+    targetElement: null,
+  });
 
   const visualEditorRef = useRef<HTMLDivElement>(null);
   const markdownTextareaRef = useRef<HTMLTextAreaElement>(null);
   const isInternalChangeRef = useRef(false);
 
-  // Sync value into visual editor when initial value changes or tab changes
+  // Stored cursor / range positions to prevent inserting at the start
+  const savedRangeRef = useRef<Range | null>(null);
+  const savedSelectionRef = useRef<{ start: number; end: number } | null>(null);
+  const editingLinkElementRef = useRef<HTMLAnchorElement | null>(null);
+
+  // Sync value into visual editor when value changes externally or tab switches
   useEffect(() => {
     if (activeTab === 'visual' && visualEditorRef.current) {
       if (!isInternalChangeRef.current) {
@@ -42,7 +64,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     onChange(currentHtml === '<br>' ? '' : currentHtml);
   }, [onChange]);
 
-  // Execute a document formatting command in visual WYSIWYG mode
+  // Execute formatting command in Visual or Markdown mode
   const executeCommand = (command: string, arg: string | undefined = undefined) => {
     if (readOnly) return;
 
@@ -57,7 +79,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     }
   };
 
-  // Insert markdown wrappers or line prefixes in markdown source mode
+  // Insert markdown wrappers or line prefixes in markdown mode
   const applyMarkdownFormatting = (command: string, arg?: string) => {
     const textarea = markdownTextareaRef.current;
     if (!textarea) return;
@@ -129,12 +151,6 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         replacement = `\n---\n`;
         cursorOffset = replacement.length;
         break;
-      case 'insertLink':
-        if (arg) {
-          replacement = `[${selectedText || 'link'}](${arg})`;
-          cursorOffset = replacement.length;
-        }
-        break;
       default:
         return;
     }
@@ -188,50 +204,118 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     }
   };
 
-  const handleOpenLinkModal = () => {
+  // Open Link Modal with exact cursor range preserved
+  const handleOpenLinkModal = (existingLinkEl?: HTMLAnchorElement | null) => {
     if (readOnly) return;
-    if (activeTab === 'visual') {
-      const selection = window.getSelection()?.toString();
-      setLinkText(selection || '');
+
+    if (existingLinkEl) {
+      editingLinkElementRef.current = existingLinkEl;
+      setLinkUrl(existingLinkEl.getAttribute('href') || '');
+      setLinkText(existingLinkEl.textContent || '');
+      savedRangeRef.current = null;
+    } else if (activeTab === 'visual') {
+      editingLinkElementRef.current = null;
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        // Ensure range is within our editor
+        if (visualEditorRef.current?.contains(range.commonAncestorContainer)) {
+          savedRangeRef.current = range.cloneRange();
+        } else {
+          savedRangeRef.current = null;
+        }
+      } else {
+        savedRangeRef.current = null;
+      }
+      setLinkText(selection?.toString() || '');
+      setLinkUrl('');
     } else if (markdownTextareaRef.current) {
+      editingLinkElementRef.current = null;
       const textarea = markdownTextareaRef.current;
-      const selected = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd);
-      setLinkText(selected || '');
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      savedSelectionRef.current = { start, end };
+      setLinkText(textarea.value.substring(start, end));
+      setLinkUrl('');
     }
-    setLinkUrl('');
+
+    setLinkPopover((prev) => ({ ...prev, visible: false }));
     setShowLinkModal(true);
   };
 
+  // Confirm Link insertion at exact preserved cursor position
   const handleConfirmLink = (e: React.FormEvent) => {
     e.preventDefault();
     if (!linkUrl.trim()) return;
 
     let formattedUrl = linkUrl.trim();
-    if (!/^https?:\/\//i.test(formattedUrl) && !/^mailto:/i.test(formattedUrl)) {
+    if (
+      !/^https?:\/\//i.test(formattedUrl) &&
+      !/^mailto:/i.test(formattedUrl) &&
+      !formattedUrl.startsWith('#') &&
+      !formattedUrl.startsWith('/')
+    ) {
       formattedUrl = `https://${formattedUrl}`;
     }
 
-    if (activeTab === 'visual') {
-      if (visualEditorRef.current) {
-        visualEditorRef.current.focus();
-        if (linkText) {
-          const aTag = `<a href="${formattedUrl}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
-          document.execCommand('insertHTML', false, aTag);
-        } else {
-          document.execCommand('createLink', false, formattedUrl);
+    const textToDisplay = linkText.trim() || formattedUrl;
+
+    if (activeTab === 'visual' && visualEditorRef.current) {
+      visualEditorRef.current.focus();
+
+      // If editing an existing link element
+      if (editingLinkElementRef.current && visualEditorRef.current.contains(editingLinkElementRef.current)) {
+        editingLinkElementRef.current.setAttribute('href', formattedUrl);
+        editingLinkElementRef.current.textContent = textToDisplay;
+        editingLinkElementRef.current = null;
+      } else {
+        // Restore saved range so the link is NOT placed at the beginning
+        const selection = window.getSelection();
+        let range = savedRangeRef.current;
+
+        if (!range && selection && selection.rangeCount > 0) {
+          range = selection.getRangeAt(0);
         }
-        handleVisualInput();
+
+        const aTag = document.createElement('a');
+        aTag.setAttribute('href', formattedUrl);
+        aTag.setAttribute('target', '_blank');
+        aTag.setAttribute('rel', 'noopener noreferrer');
+        aTag.setAttribute('title', 'Ctrl+Click to open link');
+        aTag.textContent = textToDisplay;
+
+        if (range && visualEditorRef.current.contains(range.commonAncestorContainer)) {
+          range.deleteContents();
+          range.insertNode(aTag);
+
+          // Place caret right after the inserted link
+          const newRange = document.createRange();
+          newRange.setStartAfter(aTag);
+          newRange.collapse(true);
+          selection?.removeAllRanges();
+          selection?.addRange(newRange);
+        } else {
+          // If no range found, append at the end
+          visualEditorRef.current.appendChild(aTag);
+        }
       }
-    } else {
+
+      savedRangeRef.current = null;
+      handleVisualInput();
+    } else if (markdownTextareaRef.current) {
       const textarea = markdownTextareaRef.current;
-      if (textarea) {
-        const textToUse = linkText || selectedMarkdownText() || formattedUrl;
-        const markdownLink = `[${textToUse}](${formattedUrl})`;
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const newText = textarea.value.substring(0, start) + markdownLink + textarea.value.substring(end);
-        onChange(newText);
-      }
+      const start = savedSelectionRef.current ? savedSelectionRef.current.start : textarea.value.length;
+      const end = savedSelectionRef.current ? savedSelectionRef.current.end : textarea.value.length;
+      const markdownLink = `[${textToDisplay}](${formattedUrl})`;
+      const newText = textarea.value.substring(0, start) + markdownLink + textarea.value.substring(end);
+      onChange(newText);
+      savedSelectionRef.current = null;
+
+      setTimeout(() => {
+        textarea.focus();
+        const nextPos = start + markdownLink.length;
+        textarea.setSelectionRange(nextPos, nextPos);
+      }, 0);
     }
 
     setShowLinkModal(false);
@@ -239,10 +323,63 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     setLinkText('');
   };
 
-  const selectedMarkdownText = () => {
-    if (!markdownTextareaRef.current) return '';
-    const { selectionStart, selectionEnd, value } = markdownTextareaRef.current;
-    return value.substring(selectionStart, selectionEnd);
+  // Handle click on links inside Visual WYSIWYG mode
+  const handleVisualClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const link = target.closest('a');
+
+    if (link && link.href) {
+      // 1. If Ctrl / Cmd key is pressed, open immediately!
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        window.open(link.href, '_blank', 'noopener,noreferrer');
+        return;
+      }
+
+      // 2. Otherwise display interactive floating link bubble
+      const rect = link.getBoundingClientRect();
+      const containerRect = visualEditorRef.current?.getBoundingClientRect();
+
+      if (containerRect) {
+        setLinkPopover({
+          visible: true,
+          url: link.href,
+          text: link.textContent || '',
+          top: rect.bottom - containerRect.top + 6,
+          left: Math.max(8, rect.left - containerRect.left),
+          targetElement: link as HTMLAnchorElement,
+        });
+      }
+    } else {
+      // Clicked outside any link
+      if (linkPopover.visible) {
+        setLinkPopover((prev) => ({ ...prev, visible: false }));
+      }
+    }
+  };
+
+  // Popover Actions
+  const handleOpenPopoverLink = () => {
+    if (linkPopover.url) {
+      window.open(linkPopover.url, '_blank', 'noopener,noreferrer');
+    }
+    setLinkPopover((prev) => ({ ...prev, visible: false }));
+  };
+
+  const handleEditPopoverLink = () => {
+    if (linkPopover.targetElement) {
+      handleOpenLinkModal(linkPopover.targetElement);
+    }
+  };
+
+  const handleRemovePopoverLink = () => {
+    if (linkPopover.targetElement && visualEditorRef.current) {
+      const text = linkPopover.targetElement.textContent || '';
+      const textNode = document.createTextNode(text);
+      linkPopover.targetElement.parentNode?.replaceChild(textNode, linkPopover.targetElement);
+      handleVisualInput();
+    }
+    setLinkPopover((prev) => ({ ...prev, visible: false }));
   };
 
   // Keyboard shortcut listener
@@ -419,7 +556,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             <button
               type="button"
               className="rich-toolbar-btn"
-              onClick={handleOpenLinkModal}
+              onClick={() => handleOpenLinkModal()}
               title="Insert Link (Ctrl+K)"
             >
               🔗
@@ -489,7 +626,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         </div>
       </div>
 
-      {/* Editor Body based on active tab */}
+      {/* Editor Body */}
       <div className="rich-editor-body" onKeyDown={handleKeyDown}>
         {activeTab === 'visual' && (
           <div
@@ -497,10 +634,48 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             className="rich-visual-editable"
             contentEditable
             onInput={handleVisualInput}
+            onClick={handleVisualClick}
             data-placeholder={placeholder}
             role="textbox"
             aria-multiline="true"
           />
+        )}
+
+        {/* Floating Link Popover in Visual Mode */}
+        {activeTab === 'visual' && linkPopover.visible && (
+          <div
+            className="rich-link-popover"
+            style={{ top: `${linkPopover.top}px`, left: `${linkPopover.left}px` }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span className="rich-link-popover-url" title={linkPopover.url}>
+              🔗 {linkPopover.url}
+            </span>
+            <button
+              type="button"
+              className="rich-link-popover-btn"
+              onClick={handleOpenPopoverLink}
+              title="Open link in new tab"
+            >
+              ↗ Open
+            </button>
+            <button
+              type="button"
+              className="rich-link-popover-btn"
+              onClick={handleEditPopoverLink}
+              title="Edit link URL or text"
+            >
+              ✎ Edit
+            </button>
+            <button
+              type="button"
+              className="rich-link-popover-btn btn-remove"
+              onClick={handleRemovePopoverLink}
+              title="Remove link"
+            >
+              ✕ Unlink
+            </button>
+          </div>
         )}
 
         {activeTab === 'markdown' && (
@@ -521,12 +696,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         )}
       </div>
 
-      {/* Quick Link Insert Modal */}
+      {/* Quick Link Insert / Edit Modal */}
       {showLinkModal && (
         <div className="rich-link-modal-overlay" onClick={() => setShowLinkModal(false)}>
           <div className="rich-link-modal" onClick={(e) => e.stopPropagation()}>
             <div className="rich-link-modal-header">
-              <h4>Insert Link</h4>
+              <h4>{editingLinkElementRef.current ? 'Edit Link' : 'Insert Link'}</h4>
               <button
                 type="button"
                 className="close-btn"
@@ -565,7 +740,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                   Cancel
                 </button>
                 <button type="submit" className="btn-primary">
-                  Insert Link
+                  {editingLinkElementRef.current ? 'Save Link' : 'Insert Link'}
                 </button>
               </div>
             </form>

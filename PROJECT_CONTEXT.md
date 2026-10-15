@@ -249,7 +249,11 @@ CREATE TABLE IF NOT EXISTS task_history (
   - **Multi-View Integration:**
     - **Modal View:** Full rich text editing and preview inside [`TaskModal.tsx`](file:///d:/practice/productivity-board/frontend/src/components/TaskModal.tsx), with a dedicated read-only view badge for deleted cards.
     - **Board, List & Table Views:** Cards in [`TaskCard.tsx`](file:///d:/practice/productivity-board/frontend/src/components/TaskCard.tsx), [`DeletedColumn.tsx`](file:///d:/practice/productivity-board/frontend/src/components/DeletedColumn.tsx), [`ListView.tsx`](file:///d:/practice/productivity-board/frontend/src/components/ListView.tsx), and [`TableView.tsx`](file:///d:/practice/productivity-board/frontend/src/components/TableView.tsx) display clean 2-line clamped snippets with tooltip hover, preventing layout distortion while preserving rich text within modal views.
+  - **Accurate Selection Preservation & Interactive Links:**
+    - Range/selection is saved before the link modal opens and restored on submission (`Range.insertNode(aTag)` in Visual mode, cursor-offset splice in Markdown mode), preventing links from ever jumping to the beginning of the text.
+    - Inside Visual WYSIWYG mode, clicking any link displays an interactive floating popover (`[🔗 url] [↗ Open] [✎ Edit] [✕ Unlink]`) and supports `Ctrl+Click` / `Cmd+Click` to open immediately. In Preview and Read-Only modes, links are standard clickable external anchors (`target="_blank" rel="noopener noreferrer"`).
   - **Zero Migration Database Compatibility:** Works seamlessly with SQLite's `TEXT` column and existing plain text descriptions without schema alterations.
+
 
 ---
 

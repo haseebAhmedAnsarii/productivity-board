@@ -2013,3 +2013,59 @@ body {
   margin: 0;
 }
 
+/* Floating Link Popover */
+.rich-link-popover {
+  position: absolute;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-ui);
+  border-radius: 8px;
+  padding: 0.35rem 0.65rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  animation: fadeIn 0.15s ease-out;
+  max-width: 90%;
+  backdrop-filter: blur(8px);
+}
+
+.rich-link-popover-url {
+  color: var(--accent);
+  font-size: 0.75rem;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.rich-link-popover-btn {
+  background: var(--bg-column);
+  border: 1px solid var(--border-ui);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.22rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.rich-link-popover-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-main);
+  border-color: var(--accent);
+}
+
+.rich-link-popover-btn.btn-remove:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+
