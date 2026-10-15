@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Column, HistoryItem, SelectedTask, Task } from '../types';
 import { RichTextEditor } from './RichTextEditor';
+import { stripRichTextToSnippet } from './RichTextRenderer';
 
 interface TaskModalProps {
   selectedTask: SelectedTask;
@@ -34,6 +35,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   const [taskHistory, setTaskHistory] = useState<HistoryItem[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [expandedHistoryIds, setExpandedHistoryIds] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     if (!selectedTask) return;
@@ -128,8 +130,109 @@ export const TaskModal: React.FC<TaskModalProps> = ({
             Renamed title from <span style={{ textDecoration: 'line-through', opacity: 0.7 }}>&ldquo;{item.old_value}&rdquo;</span> to <strong style={{ color: 'var(--text-main)' }}>&ldquo;{item.new_value}&rdquo;</strong>
           </span>
         );
-      case 'description':
-        return 'Updated task description';
+      case 'description': {
+        const formatDesc = (val: string | null) => {
+          if (!val || val === '(empty)' || !val.trim()) return '(empty)';
+          const stripped = stripRichTextToSnippet(val);
+          return stripped.trim() || '(empty)';
+        };
+
+        const oldText = formatDesc(item.old_value);
+        const newText = formatDesc(item.new_value);
+
+        if (oldText === '(empty)' && newText === '(empty)') {
+          return 'Updated task description';
+        }
+
+        const isLong = oldText.length > 70 || newText.length > 70;
+        const isExpanded = !!expandedHistoryIds[item.id];
+
+        const truncateSnippet = (text: string, maxLen = 70) => {
+          if (text === '(empty)') return '(empty)';
+          if (text.length <= maxLen) return text;
+          return text.substring(0, maxLen).trim() + '…';
+        };
+
+        const oldSnippet = truncateSnippet(oldText);
+        const newSnippet = truncateSnippet(newText);
+
+        return (
+          <div>
+            <span>
+              Updated description from{' '}
+              <span
+                style={{
+                  textDecoration: oldText !== '(empty)' ? 'line-through' : 'none',
+                  opacity: 0.7,
+                }}
+                title={oldText !== '(empty)' ? oldText : undefined}
+              >
+                {oldText === '(empty)' ? '(empty)' : `“${oldSnippet}”`}
+              </span>{' '}
+              to{' '}
+              <strong
+                style={{ color: 'var(--text-main)' }}
+                title={newText !== '(empty)' ? newText : undefined}
+              >
+                {newText === '(empty)' ? '(empty)' : `“${newSnippet}”`}
+              </strong>
+            </span>
+
+            {isLong && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpandedHistoryIds((prev) => ({
+                    ...prev,
+                    [item.id]: !prev[item.id],
+                  }));
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--accent)',
+                  fontSize: '0.72rem',
+                  cursor: 'pointer',
+                  marginLeft: '0.5rem',
+                  textDecoration: 'underline',
+                  padding: 0,
+                }}
+              >
+                {isExpanded ? 'Show less' : 'Show full'}
+              </button>
+            )}
+
+            {isLong && isExpanded && (
+              <div
+                style={{
+                  marginTop: '0.4rem',
+                  padding: '0.45rem 0.65rem',
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-ui)',
+                  borderRadius: '6px',
+                  fontSize: '0.76rem',
+                  lineHeight: '1.45',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.3rem',
+                }}
+              >
+                <div style={{ color: 'var(--text-muted)' }}>
+                  <span style={{ color: '#ef4444', fontWeight: 600 }}>Previous: </span>
+                  <span style={{ textDecoration: oldText !== '(empty)' ? 'line-through' : 'none' }}>
+                    {oldText}
+                  </span>
+                </div>
+                <div style={{ color: 'var(--text-main)' }}>
+                  <span style={{ color: '#10b981', fontWeight: 600 }}>New: </span>
+                  <span>{newText}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
       case 'moved':
         return `Moved from "${item.old_value}" to "${item.new_value}"`;
       case 'deleted':
