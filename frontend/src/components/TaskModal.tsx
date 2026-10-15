@@ -294,11 +294,13 @@ export const TaskModal: React.FC<TaskModalProps> = ({
             <div className="form-group">
               <label>Description</label>
               <RichTextEditor
+                key={currentTask?.id || 'new-task'}
                 value={editDescription}
                 onChange={(val) => {
                   if (!isDeleted) setEditDescription(val);
                 }}
                 readOnly={isDeleted}
+                defaultTab="preview"
                 placeholder="Add a detailed description... Use the toolbar above or write markdown"
               />
             </div>

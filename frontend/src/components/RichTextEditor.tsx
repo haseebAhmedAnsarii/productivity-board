@@ -6,6 +6,7 @@ interface RichTextEditorProps {
   onChange: (value: string) => void;
   placeholder?: string;
   readOnly?: boolean;
+  defaultTab?: EditorTab;
 }
 
 type EditorTab = 'visual' | 'markdown' | 'preview';
@@ -24,8 +25,9 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   onChange,
   placeholder = 'Add a detailed description... Use the toolbar above or write markdown',
   readOnly = false,
+  defaultTab = 'preview',
 }) => {
-  const [activeTab, setActiveTab] = useState<EditorTab>('visual');
+  const [activeTab, setActiveTab] = useState<EditorTab>(defaultTab);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [linkText, setLinkText] = useState('');
@@ -64,9 +66,21 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     onChange(currentHtml === '<br>' ? '' : currentHtml);
   }, [onChange]);
 
-  // Execute formatting command in Visual or Markdown mode
+  // Execute formatting command in Visual, Markdown, or Preview mode
   const executeCommand = (command: string, arg: string | undefined = undefined) => {
     if (readOnly) return;
+
+    if (activeTab === 'preview') {
+      setActiveTab('visual');
+      setTimeout(() => {
+        if (visualEditorRef.current) {
+          visualEditorRef.current.focus();
+          document.execCommand(command, false, arg);
+          handleVisualInput();
+        }
+      }, 0);
+      return;
+    }
 
     if (activeTab === 'visual') {
       if (visualEditorRef.current) {
@@ -168,8 +182,14 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     if (activeTab === 'visual') {
       const checklistHtml = `<ul class="rich-checklist"><li class="rich-checklist-item"><input type="checkbox" /> <span>Task item</span></li></ul>`;
       executeCommand('insertHTML', checklistHtml);
-    } else {
+    } else if (activeTab === 'markdown') {
       applyMarkdownFormatting('insertChecklist');
+    } else {
+      setActiveTab('visual');
+      setTimeout(() => {
+        const checklistHtml = `<ul class="rich-checklist"><li class="rich-checklist-item"><input type="checkbox" /> <span>Task item</span></li></ul>`;
+        executeCommand('insertHTML', checklistHtml);
+      }, 0);
     }
   };
 
@@ -182,8 +202,19 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         const codeHtml = `<code>${selection || 'code'}</code>`;
         executeCommand('insertHTML', codeHtml);
       }
-    } else {
+    } else if (activeTab === 'markdown') {
       applyMarkdownFormatting('insertCode');
+    } else {
+      setActiveTab('visual');
+      setTimeout(() => {
+        const selection = window.getSelection()?.toString();
+        if (selection && selection.includes('\n')) {
+          executeCommand('formatBlock', '<pre>');
+        } else {
+          const codeHtml = `<code>${selection || 'code'}</code>`;
+          executeCommand('insertHTML', codeHtml);
+        }
+      }, 0);
     }
   };
 
@@ -192,7 +223,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       const selection = window.getSelection()?.toString();
       const markHtml = `<mark>${selection || 'highlighted text'}</mark>`;
       executeCommand('insertHTML', markHtml);
-    } else {
+    } else if (activeTab === 'markdown') {
       const textarea = markdownTextareaRef.current;
       if (!textarea) return;
       const start = textarea.selectionStart;
@@ -201,6 +232,13 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       const replacement = `==${selected || 'highlighted text'}==`;
       const newText = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
       onChange(newText);
+    } else {
+      setActiveTab('visual');
+      setTimeout(() => {
+        const selection = window.getSelection()?.toString();
+        const markHtml = `<mark>${selection || 'highlighted text'}</mark>`;
+        executeCommand('insertHTML', markHtml);
+      }, 0);
     }
   };
 
@@ -208,13 +246,17 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const handleOpenLinkModal = (existingLinkEl?: HTMLAnchorElement | null) => {
     if (readOnly) return;
 
+    if (activeTab === 'preview') {
+      setActiveTab('visual');
+    }
+
     if (existingLinkEl) {
       editingLinkElementRef.current = existingLinkEl;
       setLinkUrl(existingLinkEl.getAttribute('href') || '');
       const rawText = existingLinkEl.textContent || '';
       setLinkText(rawText.replace(/^blank["']\s+rel=["'][^"']*["'][^>]*>\s*/i, ''));
       savedRangeRef.current = null;
-    } else if (activeTab === 'visual') {
+    } else if (activeTab === 'visual' || activeTab === 'preview') {
       editingLinkElementRef.current = null;
       const selection = window.getSelection();
       if (selection && selection.rangeCount > 0) {
@@ -692,7 +734,11 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         )}
 
         {activeTab === 'preview' && (
-          <div className="rich-preview-canvas">
+          <div
+            className="rich-preview-canvas"
+            onDoubleClick={() => !readOnly && setActiveTab('visual')}
+            title={!readOnly ? "Double-click to edit description" : undefined}
+          >
             <RichTextRenderer content={value} placeholder={placeholder} />
           </div>
         )}
