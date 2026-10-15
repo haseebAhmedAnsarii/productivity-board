@@ -211,7 +211,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     if (existingLinkEl) {
       editingLinkElementRef.current = existingLinkEl;
       setLinkUrl(existingLinkEl.getAttribute('href') || '');
-      setLinkText(existingLinkEl.textContent || '');
+      const rawText = existingLinkEl.textContent || '';
+      setLinkText(rawText.replace(/^blank["']\s+rel=["'][^"']*["'][^>]*>\s*/i, ''));
       savedRangeRef.current = null;
     } else if (activeTab === 'visual') {
       editingLinkElementRef.current = null;
@@ -266,6 +267,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       // If editing an existing link element
       if (editingLinkElementRef.current && visualEditorRef.current.contains(editingLinkElementRef.current)) {
         editingLinkElementRef.current.setAttribute('href', formattedUrl);
+        editingLinkElementRef.current.setAttribute('title', formattedUrl);
         editingLinkElementRef.current.textContent = textToDisplay;
         editingLinkElementRef.current = null;
       } else {
@@ -281,7 +283,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         aTag.setAttribute('href', formattedUrl);
         aTag.setAttribute('target', '_blank');
         aTag.setAttribute('rel', 'noopener noreferrer');
-        aTag.setAttribute('title', 'Ctrl+Click to open link');
+        aTag.setAttribute('title', formattedUrl);
         aTag.textContent = textToDisplay;
 
         if (range && visualEditorRef.current.contains(range.commonAncestorContainer)) {

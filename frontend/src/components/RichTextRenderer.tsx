@@ -9,6 +9,9 @@ export const stripRichTextToSnippet = (content?: string | null): string => {
   return content
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    // Heal any corrupted attribute leakage before stripping
+    .replace(/\[blank["']\s+rel=["'][^"']*["'][^>]*>\s*([^\]]+)\]\([^)]+\)/gi, '$1')
+    .replace(/(<a\b[^>]*>)\s*blank["']\s+rel=["'][^"']*["'][^>]*>\s*/gi, '$1')
     .replace(/<[^>]+>/g, ' ')
     .replace(/#{1,6}\s+/g, '')
     .replace(/\*\*([^*]+)\*\*/g, '$1')
@@ -26,88 +29,123 @@ export const stripRichTextToSnippet = (content?: string | null): string => {
 
 /**
  * Parses markdown syntax and sanitizes HTML tags to produce safe, fully clickable rich HTML markup.
+ * Uses strict HTML-tag protection so markdown formatting rules never mutate HTML attributes or existing tags.
  */
 export const parseAndSanitizeRichText = (rawContent?: string | null): string => {
   if (!rawContent || !rawContent.trim()) return '';
 
-  let html = rawContent;
+  let text = rawContent;
 
-  // 1. Preserve fenced code blocks so internal markdown is not modified
+  // 1. Heal any prior corrupted attribute leakage in markdown or HTML
+  // e.g. [blank" rel="noopener noreferrer" title="https://a.com">a](https://a.com/) -> [a](https://a.com/)
+  text = text.replace(
+    /\[blank["']\s+rel=["'][^"']*["'][^>]*>\s*([^\]]+)\]/gi,
+    '[$1]'
+  );
+  // e.g. <a ...>blank" rel="noopener noreferrer" title="...">a</a> -> <a ...>a</a>
+  text = text.replace(
+    /(<a\b[^>]*>)\s*blank["']\s+rel=["'][^"']*["'][^>]*>\s*/gi,
+    '$1'
+  );
+
+  // 2. Preserve fenced code blocks so code contents are untouched
   const codeBlocks: string[] = [];
-  html = html.replace(/```([a-zA-Z0-9_-]*)\n?([\s\S]*?)```/g, (_match, _lang, code) => {
-    const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
+  text = text.replace(/```([a-zA-Z0-9_-]*)\n?([\s\S]*?)```/g, (_match, _lang, code) => {
+    const placeholder = `\uE002CODE_BLOCK_${codeBlocks.length}\uE003`;
     codeBlocks.push(`<pre><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;').trim()}</code></pre>`);
     return placeholder;
   });
 
-  // 2. Convert markdown links: [text](url) -> <a href="url" target="_blank" rel="noopener noreferrer">text</a>
-  html = html.replace(
+  // 3. Protect ALL existing HTML tags so markdown regexes NEVER touch HTML tags or attributes
+  const htmlTags: string[] = [];
+  text = text.replace(/<[^>]+>/g, (tag) => {
+    const placeholder = `\uE000HTML_TAG_${htmlTags.length}\uE001`;
+    htmlTags.push(tag);
+    return placeholder;
+  });
+
+  // 4. Convert markdown links: [text](url)
+  text = text.replace(
     /\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)]+|[^\s)]+)\)/g,
     '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
   );
 
-  // 3. Convert markdown headers (#, ##, ###)
-  html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-  html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-  html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+  // 5. Convert markdown headers (#, ##, ###) at start of lines
+  text = text.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+  text = text.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+  text = text.replace(/^# (.*$)/gim, '<h1>$1</h1>');
 
-  // 4. Convert blockquotes (> quote)
-  html = html.replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>');
+  // 6. Convert blockquotes (> quote)
+  text = text.replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>');
 
-  // 5. Convert horizontal rules (---, ***, ___)
-  html = html.replace(/^(?:---|\*\*\*|___)\s*$/gim, '<hr />');
+  // 7. Convert horizontal rules (---, ***, ___)
+  text = text.replace(/^(?:---|---|\*\*\*|___)\s*$/gim, '<hr />');
 
-  // 6. Convert task checklists (- [ ] or - [x])
-  html = html.replace(
+  // 8. Convert task checklists (- [ ] or - [x])
+  text = text.replace(
     /^[-*]\s+\[ \]\s+(.*)$/gim,
     '<li class="rich-checklist-item"><input type="checkbox" disabled /> <span>$1</span></li>'
   );
-  html = html.replace(
+  text = text.replace(
     /^[-*]\s+\[[xX]\]\s+(.*)$/gim,
     '<li class="rich-checklist-item"><input type="checkbox" checked disabled /> <span style="text-decoration: line-through; opacity: 0.8;">$1</span></li>'
   );
 
-  // 7. Convert unordered lists (- or *)
-  html = html.replace(/^[-*]\s+(?!\[[ xX]\])(.*)$/gim, '<li>$1</li>');
+  // 9. Convert unordered lists (- or *)
+  text = text.replace(/^[-*]\s+(?!\[[ xX]\])(.*)$/gim, '<li>$1</li>');
 
-  // 8. Convert ordered lists (1. )
-  html = html.replace(/^\d+\.\s+(.*)$/gim, '<li>$1</li>');
+  // 10. Convert ordered lists (1. )
+  text = text.replace(/^\d+\.\s+(.*)$/gim, '<li data-ordered="true">$1</li>');
 
-  // 9. Wrap adjacent list items in <ul>
-  html = html.replace(/(<li[\s\S]*?<\/li>)+/gi, (match) => {
+  // 11. Wrap newly created consecutive <li> (that are not already wrapped in <ul> or <ol>)
+  text = text.replace(/(<li[\s\S]*?<\/li>\s*)+/gi, (match) => {
     if (match.includes('rich-checklist-item')) {
       return `<ul class="rich-checklist">${match}</ul>`;
+    }
+    if (match.includes('data-ordered="true"')) {
+      return `<ol>${match.replace(/ data-ordered="true"/g, '')}</ol>`;
     }
     return `<ul>${match}</ul>`;
   });
 
-  // 10. Convert bold (**text** or __text__)
-  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/__([^_]+)__/g, '<strong>$1</strong>');
-
-  // 11. Convert italic (*text* or _text_)
-  html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-  html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
-
-  // 12. Convert strikethrough (~~text~~)
-  html = html.replace(/~~([^~]+)~~/g, '<del>$1</del>');
-
-  // 13. Convert highlight (==text==)
-  html = html.replace(/==([^=]+)==/g, '<mark>$1</mark>');
-
-  // 14. Convert inline code (`code`)
-  html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
-
-  // 15. Restore fenced code blocks
-  codeBlocks.forEach((block, idx) => {
-    html = html.replace(`__CODE_BLOCK_${idx}__`, block);
+  // 12. Convert bold (**text** or __text__)
+  text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  text = text.replace(/(?:^|\W)__([^_]+)__(?=\W|$)/g, (match, p1) => {
+    const prefix = match.startsWith('__') ? '' : match[0];
+    return `${prefix}<strong>${p1}</strong>`;
   });
 
-  // 16. Wrap plain paragraphs if no block tags exist
-  const hasBlocks = /<(p|div|h[1-6]|ul|ol|li|blockquote|pre|hr)\b/i.test(html);
+  // 13. Convert italic (*text* or _text_)
+  text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  text = text.replace(/(?:^|\W)_([^_]+)_(?=\W|$)/g, (match, p1) => {
+    const prefix = match.startsWith('_') ? '' : match[0];
+    return `${prefix}<em>${p1}</em>`;
+  });
+
+  // 14. Convert strikethrough (~~text~~)
+  text = text.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+
+  // 15. Convert highlight (==text==)
+  text = text.replace(/==([^=]+)==/g, '<mark>$1</mark>');
+
+  // 16. Convert inline code (`code`)
+  text = text.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+
+  // 17. Restore fenced code blocks
+  codeBlocks.forEach((block, idx) => {
+    text = text.replace(`\uE002CODE_BLOCK_${idx}\uE003`, block);
+  });
+
+  // 18. Restore protected HTML tags
+  text = text.replace(/\uE000HTML_TAG_(\d+)\uE001/g, (_match, idStr) => {
+    return htmlTags[parseInt(idStr, 10)];
+  });
+
+  // 19. Wrap plain paragraphs if no block tags exist
+  const hasBlocks = /<(p|div|h[1-6]|ul|ol|li|blockquote|pre|hr)\b/i.test(text);
   if (!hasBlocks) {
-    const paragraphs = html.split(/\n{2,}/);
-    html = paragraphs
+    const paragraphs = text.split(/\n{2,}/);
+    text = paragraphs
       .map((p) => {
         const trimmed = p.trim();
         if (!trimmed) return '';
@@ -117,22 +155,27 @@ export const parseAndSanitizeRichText = (rawContent?: string | null): string => 
       .join('');
   }
 
-  // 17. Ensure all <a> tags have target="_blank", rel="noopener noreferrer", and valid protocol
-  html = html.replace(/<a\s+(?:[^>]*?\s+)?href=["']([^"']*)["'][^>]*>(.*?)<\/a>/gi, (_match, url, text) => {
-    let safeUrl = url.trim();
+  // 20. Normalize and validate all <a> tags safely
+  text = text.replace(/<a\b([^>]*)>(.*?)<\/a>/gi, (_match, attrs, linkBody) => {
+    const hrefMatch = attrs.match(/href=["']([^"']*)["']/i);
+    let href = hrefMatch ? hrefMatch[1].trim() : '#';
     if (
-      !/^https?:\/\//i.test(safeUrl) &&
-      !/^mailto:/i.test(safeUrl) &&
-      !safeUrl.startsWith('#') &&
-      !safeUrl.startsWith('/')
+      href !== '#' &&
+      !/^https?:\/\//i.test(href) &&
+      !/^mailto:/i.test(href) &&
+      !href.startsWith('#') &&
+      !href.startsWith('/')
     ) {
-      safeUrl = `https://${safeUrl}`;
+      href = `https://${href}`;
     }
-    return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" title="${safeUrl}">${text}</a>`;
+
+    // Clean any residual attribute string that might have leaked into inner text
+    const cleanBody = linkBody.replace(/^blank["']\s+rel=["'][^"']*["'][^>]*>\s*/i, '');
+    return `<a href="${href}" target="_blank" rel="noopener noreferrer" title="${href}">${cleanBody}</a>`;
   });
 
-  // 18. Security Sanitization: Remove dangerous script, style, iframe tags and inline event handlers
-  html = html
+  // 21. Security Sanitization: Remove dangerous script, style, iframe tags and inline event handlers
+  text = text
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
     .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
     .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
@@ -140,7 +183,7 @@ export const parseAndSanitizeRichText = (rawContent?: string | null): string => 
     .replace(/\son\w+='[^']*'/gi, '')
     .replace(/href=["']javascript:[^"']*["']/gi, 'href="#"');
 
-  return html;
+  return text;
 };
 
 interface RichTextRendererProps {

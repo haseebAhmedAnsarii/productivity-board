@@ -252,6 +252,7 @@ CREATE TABLE IF NOT EXISTS task_history (
   - **Accurate Selection Preservation & Interactive Links:**
     - Range/selection is saved before the link modal opens and restored on submission (`Range.insertNode(aTag)` in Visual mode, cursor-offset splice in Markdown mode), preventing links from ever jumping to the beginning of the text.
     - Inside Visual WYSIWYG mode, clicking any link displays an interactive floating popover (`[🔗 url] [↗ Open] [✎ Edit] [✕ Unlink]`) and supports `Ctrl+Click` / `Cmd+Click` to open immediately. In Preview and Read-Only modes, links are standard clickable external anchors (`target="_blank" rel="noopener noreferrer"`).
+    - **HTML-Tag Protection & Idempotent Sanitization:** `parseAndSanitizeRichText` protects all existing `<...>` HTML tags before executing markdown inline transforms (such as `_..._` or `**...**`), preventing markdown regexes from matching inside tag attributes (e.g., `target="_blank"`). Automatically heals any legacy corrupted link attribute leakage (`[blank" rel="... title="...">a](url)`) in both rendered HTML and card snippets.
   - **Zero Migration Database Compatibility:** Works seamlessly with SQLite's `TEXT` column and existing plain text descriptions without schema alterations.
 
 
