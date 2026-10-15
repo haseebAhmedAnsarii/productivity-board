@@ -1,4 +1,4 @@
-import './TaskCard.css';
+import './TaskCard.scss';
 import React from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import { Task } from '../../types';

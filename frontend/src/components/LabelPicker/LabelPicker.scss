@@ -1,0 +1,368 @@
+/* ============================================================
+   LABELS & TAGS SYSTEM
+   ============================================================ */
+
+/* --- Label chips on cards & in modal --- */
+.label-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+
+  .label-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid;
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    user-select: none;
+
+    .label-chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+  }
+
+  .label-add-btn {
+    background: transparent;
+    border: 1px dashed var(--border-ui);
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+
+    &:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+  }
+}
+
+.task-card .label-chip {
+  font-size: 0.66rem;
+  padding: 1px 5px;
+  max-width: 100px;
+}
+
+.label-chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.task-card-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 0.45rem;
+}
+
+/* --- Picker wrapper (position anchor) --- */
+.label-picker-wrapper {
+  position: relative;
+
+  .label-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 200;
+    width: 260px;
+    background: var(--bg-column);
+    border: 1px solid var(--border-ui);
+    border-radius: 6px;
+    box-shadow: var(--shadow-modal);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    .label-dropdown-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--border-ui);
+      font-family: var(--font-heading);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+
+      .label-close-btn {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-size: 1rem;
+        line-height: 1;
+        cursor: pointer;
+        padding: 0 2px;
+        transition: var(--transition);
+
+        &:hover {
+          color: var(--text-main);
+        }
+      }
+    }
+
+    .label-list {
+      display: flex;
+      flex-direction: column;
+      max-height: 190px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-ui) transparent;
+
+      .label-empty-hint {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        font-style: italic;
+        padding: 0.65rem 0.75rem;
+      }
+
+      .label-list-row {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.15rem 0.5rem 0.15rem 0.4rem;
+        transition: var(--transition);
+
+        &:hover {
+          background: var(--bg-surface-hover);
+
+          .label-row-actions {
+            opacity: 1;
+          }
+        }
+
+        .label-toggle-btn {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 0.35rem 0.35rem;
+          border-radius: 4px;
+          text-align: left;
+          transition: var(--transition);
+          min-width: 0;
+
+          &:hover {
+            background: var(--bg-card);
+          }
+
+          .label-toggle-check {
+            width: 14px;
+            font-size: 0.7rem;
+            color: var(--accent);
+            font-weight: 700;
+            flex-shrink: 0;
+            text-align: center;
+          }
+
+          .label-toggle-name {
+            font-family: var(--font-body);
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+
+        .label-row-actions {
+          display: flex;
+          gap: 2px;
+          opacity: 0;
+          transition: var(--transition);
+          flex-shrink: 0;
+
+          .label-edit-icon-btn,
+          .label-del-icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.78rem;
+            padding: 3px 5px;
+            border-radius: 3px;
+            transition: var(--transition);
+            line-height: 1;
+          }
+
+          .label-edit-icon-btn {
+            color: var(--text-muted);
+
+            &:hover {
+              background: var(--bg-card);
+              color: var(--accent);
+            }
+          }
+
+          .label-del-icon-btn {
+            color: var(--text-muted);
+
+            &:hover {
+              background: var(--danger-muted);
+              color: var(--danger);
+            }
+          }
+        }
+
+        .label-delete-confirm {
+          flex: 1;
+          padding: 0.35rem 0.35rem;
+          font-size: 0.75rem;
+          color: var(--text-secondary);
+
+          .label-confirm-del-btn {
+            background: var(--danger);
+            color: #fff;
+            border: none;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 9px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: var(--transition);
+
+            &:hover {
+              background: var(--danger-hover);
+            }
+          }
+
+          .label-cancel-btn {
+            background: var(--bg-surface);
+            color: var(--text-muted);
+            border: 1px solid var(--border-ui);
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 2px 9px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: var(--transition);
+
+            &:hover {
+              color: var(--text-main);
+              background: var(--bg-card);
+            }
+          }
+        }
+      }
+    }
+
+    .label-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      padding: 0.6rem 0.75rem;
+      border-top: 1px solid var(--border-ui);
+
+      &.label-form-create {
+        border-top: 1px solid var(--border-ui);
+      }
+
+      .label-name-input {
+        background: var(--bg-input);
+        border: 1px solid var(--border-ui);
+        color: var(--text-main);
+        font-family: var(--font-body);
+        font-size: 0.84rem;
+        padding: 0.45rem 0.6rem;
+        border-radius: 4px;
+        outline: none;
+        transition: var(--transition);
+        width: 100%;
+
+        &:focus {
+          border-color: var(--accent);
+          box-shadow: 0 0 0 1px var(--accent);
+        }
+      }
+
+      .label-color-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 5px;
+
+        .label-color-swatch {
+          width: 24px;
+          height: 24px;
+          border-radius: 4px;
+          border: 2px solid transparent;
+          cursor: pointer;
+          transition: transform 0.1s ease, border-color 0.12s ease;
+          padding: 0;
+
+          &:hover {
+            transform: scale(1.15);
+          }
+
+          &.selected {
+            border-color: var(--text-main);
+            transform: scale(1.12);
+          }
+        }
+      }
+
+      .label-save-btn {
+        background: var(--accent);
+        color: var(--text-inverse);
+        border: none;
+        font-family: var(--font-body);
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 4px 14px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: var(--transition);
+
+        &:hover:not(:disabled) {
+          background: var(--accent-hover);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    .label-create-trigger {
+      background: transparent;
+      border: none;
+      border-top: 1px solid var(--border-ui);
+      width: 100%;
+      text-align: left;
+      padding: 0.55rem 0.75rem;
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      cursor: pointer;
+      transition: var(--transition);
+
+      &:hover {
+        background: var(--accent-muted);
+      }
+    }
+  }
+}

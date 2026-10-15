@@ -1,4 +1,4 @@
-import './AuthView.css';
+import './AuthView.scss';
 import React, { useState } from 'react';
 
 interface AuthViewProps {

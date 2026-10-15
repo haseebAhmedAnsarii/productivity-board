@@ -1,4 +1,4 @@
-import './BoardMinimap.css';
+import './BoardMinimap.scss';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Column } from '../../types';
 

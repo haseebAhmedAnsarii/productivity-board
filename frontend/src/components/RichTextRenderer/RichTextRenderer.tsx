@@ -1,4 +1,4 @@
-import './RichTextRenderer.css';
+import './RichTextRenderer.scss';
 import React from 'react';
 
 /**

@@ -1,4 +1,4 @@
-import './KanbanColumn.css';
+import './KanbanColumn.scss';
 import React from 'react';
 import { Droppable } from '@hello-pangea/dnd';
 import { Column, Task } from '../../types';

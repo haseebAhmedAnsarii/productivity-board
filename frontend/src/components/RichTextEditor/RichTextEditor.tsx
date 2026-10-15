@@ -1,4 +1,4 @@
-import './RichTextEditor.css';
+import './RichTextEditor.scss';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { RichTextRenderer, parseAndSanitizeRichText } from '../RichTextRenderer';
 

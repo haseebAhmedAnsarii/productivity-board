@@ -1,11 +1,11 @@
 /* ==========================================================================
-   Productivity Board Design System & Base Foundations
+   Productivity Board Design System & Base Foundations (SCSS)
    ========================================================================== */
 
 /* Design Tokens & Foundations */
-@import '../styles/variables.css';
-@import '../styles/base.css';
+@import '../styles/variables.scss';
+@import '../styles/base.scss';
 
 /* Global Board Canvas & Modal Overlays */
-@import '../styles/board.css';
-@import '../styles/modals.css';
+@import '../styles/board.scss';
+@import '../styles/modals.scss';

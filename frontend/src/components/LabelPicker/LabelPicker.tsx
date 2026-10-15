@@ -1,4 +1,4 @@
-import './LabelPicker.css';
+import './LabelPicker.scss';
 import React, { useState, useEffect, useRef } from 'react';
 import { Label } from '../../types';
 

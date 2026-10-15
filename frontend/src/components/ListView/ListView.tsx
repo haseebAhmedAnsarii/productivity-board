@@ -1,4 +1,4 @@
-import './ListView.css';
+import './ListView.scss';
 import React, { useState } from 'react';
 import { Column, Task } from '../../types';
 import { AddColumn } from '../AddColumn';

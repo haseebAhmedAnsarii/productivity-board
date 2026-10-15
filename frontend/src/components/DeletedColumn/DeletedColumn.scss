@@ -1,0 +1,88 @@
+/* Deleted Column & Card Styles */
+.deleted-column {
+  border-top: 2px solid var(--danger);
+  border-style: solid;
+  background: var(--bg-column);
+
+  .task-list {
+    .task-card-deleted {
+      opacity: 0.82;
+      cursor: pointer;
+      border-color: var(--border-subtle);
+
+      &::before {
+        background: var(--danger);
+        opacity: 0.7;
+      }
+
+      &:hover {
+        opacity: 1;
+        border-color: var(--danger);
+        background: var(--bg-card-hover);
+
+        &::before {
+          opacity: 1;
+        }
+      }
+
+      .btn-restore-mini {
+        background: transparent;
+        border: 1px solid var(--border-ui);
+        color: var(--accent);
+        padding: 3px 9px;
+        border-radius: var(--radius-btn);
+        font-size: 0.75rem;
+        font-family: var(--font-body);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+
+        &:hover {
+          background: var(--accent-muted);
+          border-color: var(--accent);
+          color: #ffffff;
+        }
+      }
+    }
+  }
+}
+
+.btn-deleted-cta {
+  background: var(--danger-muted);
+  border: 1px solid var(--danger);
+  color: #ff7b72;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: var(--radius-btn);
+  cursor: pointer;
+  padding: 0.45rem 0.85rem;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  &:hover {
+    background: var(--danger);
+    color: #ffffff;
+  }
+}
+
+.btn-restore-mini {
+  background: transparent;
+  border: 1px solid var(--border-ui);
+  color: var(--accent);
+  padding: 3px 9px;
+  border-radius: var(--radius-btn);
+  font-size: 0.75rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+
+  &:hover {
+    background: var(--accent-muted);
+    border-color: var(--accent);
+    color: #ffffff;
+  }
+}

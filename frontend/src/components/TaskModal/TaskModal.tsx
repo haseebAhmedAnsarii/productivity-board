@@ -1,4 +1,4 @@
-import './TaskModal.css';
+import './TaskModal.scss';
 import React, { useState, useEffect, useRef } from 'react';
 import { Column, HistoryItem, Label, SelectedTask, Task } from '../../types';
 import { RichTextEditor } from '../RichTextEditor';

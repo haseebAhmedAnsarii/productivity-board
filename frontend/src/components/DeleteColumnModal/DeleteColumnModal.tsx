@@ -1,4 +1,4 @@
-import './DeleteColumnModal.css';
+import './DeleteColumnModal.scss';
 import React, { useRef } from 'react';
 import { Column } from '../../types';
 

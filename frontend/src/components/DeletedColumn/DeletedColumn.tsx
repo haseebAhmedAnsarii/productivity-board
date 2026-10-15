@@ -1,4 +1,4 @@
-import './DeletedColumn.css';
+import './DeletedColumn.scss';
 import React from 'react';
 import { Task } from '../../types';
 import { stripRichTextToSnippet } from '../RichTextRenderer';

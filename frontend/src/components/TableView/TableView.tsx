@@ -1,4 +1,4 @@
-import './TableView.css';
+import './TableView.scss';
 import React, { useState, useMemo } from 'react';
 import { Column, Task } from '../../types';
 import { AddColumn } from '../AddColumn';

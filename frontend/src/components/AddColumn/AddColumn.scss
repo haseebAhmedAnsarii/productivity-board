@@ -1,0 +1,60 @@
+/* Add Column Component */
+.add-column-wrapper {
+  min-width: 310px;
+  max-width: 310px;
+  flex-shrink: 0;
+
+  .add-column-btn {
+    width: 100%;
+    background: var(--bg-column);
+    border: 1px dashed var(--border-ui);
+    border-radius: var(--radius-column);
+    padding: 0.95rem 1.15rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: var(--transition);
+    font-family: var(--font-body);
+    box-shadow: var(--shadow-sm);
+
+    &:hover {
+      background: var(--bg-card);
+      border-color: var(--accent);
+      color: var(--text-main);
+      transform: translateY(-1px);
+    }
+  }
+
+  .add-column-card {
+    background: var(--bg-column);
+    border: 1px solid var(--border-ui);
+    border-radius: var(--radius-column);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    box-shadow: var(--shadow-sm);
+
+    input,
+    .add-column-input {
+      background: var(--bg-input);
+      border: 1px solid var(--border-ui);
+      color: var(--text-main);
+      padding: 0.7rem;
+      border-radius: var(--radius-input);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      outline: none;
+      transition: var(--transition);
+
+      &:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 1px var(--accent);
+      }
+    }
+  }
+}

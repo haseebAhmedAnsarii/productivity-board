@@ -1,4 +1,4 @@
-import './RestoreTaskModal.css';
+import './RestoreTaskModal.scss';
 import React, { useState, useEffect, useRef } from 'react';
 import { Column, Task } from '../../types';
 

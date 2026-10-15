@@ -1,4 +1,4 @@
-import './LogoutModal.css';
+import './LogoutModal.scss';
 import React, { useRef } from 'react';
 
 interface LogoutModalProps {
