@@ -239,6 +239,18 @@ CREATE TABLE IF NOT EXISTS task_history (
   - **Collapsible Minimap Pill:** Users can collapse the full minimap into a sleek floating pill (`[🗺️ Minimap <count>]`) and expand it on demand, with a close button (`✕`) on the bar.
   - **Hidden Native Scrollbar & Responsive Clearance:** The native scrollbar on `.board-area` is hidden via `scrollbar-width: none; ::-webkit-scrollbar { display: none; }`. Adjusted `.kanban-column` `max-height` to `calc(100vh - 10.25rem)` with `.board-area` `padding: 1.25rem 2rem 5.25rem;` and a sleeker 44px minimap profile (`bottom: 0.85rem`), plus `@media (max-height: 760px)` responsive adaptation. This ensures center columns and their "+ Add Task" CTA buttons always have clear breathing space above the floating minimap on all laptop screen sizes.
 
+### L. Rich Text Task Descriptions
+- **Components:**
+  - [`RichTextEditor.tsx`](file:///d:/practice/productivity-board/frontend/src/components/RichTextEditor.tsx): Full-featured interactive editor with tri-mode switcher (**Visual WYSIWYG**, **Markdown Source**, and **Rendered Preview**).
+  - [`RichTextRenderer.tsx`](file:///d:/practice/productivity-board/frontend/src/components/RichTextRenderer.tsx): Safe XSS-sanitized HTML and Markdown parser/renderer.
+  - `stripRichTextToSnippet`: Utility extracting clean, unformatted plain-text excerpts for compact card and table previews.
+- **Key Features:**
+  - **Comprehensive Formatting Toolbar:** Bold (`Ctrl+B`), Italic (`Ctrl+I`), Underline (`Ctrl+U`), Strikethrough, Highlight badge, Headings (`H1`, `H2`, `H3`), Bullet lists, Numbered lists, Interactive task checklists (`[ ]` / `[x]`), Blockquotes, Code blocks / inline code, Horizontal dividers, Link dialog (`Ctrl+K`), Undo (`Ctrl+Z`), and Clear Formatting.
+  - **Multi-View Integration:**
+    - **Modal View:** Full rich text editing and preview inside [`TaskModal.tsx`](file:///d:/practice/productivity-board/frontend/src/components/TaskModal.tsx), with a dedicated read-only view badge for deleted cards.
+    - **Board, List & Table Views:** Cards in [`TaskCard.tsx`](file:///d:/practice/productivity-board/frontend/src/components/TaskCard.tsx), [`DeletedColumn.tsx`](file:///d:/practice/productivity-board/frontend/src/components/DeletedColumn.tsx), [`ListView.tsx`](file:///d:/practice/productivity-board/frontend/src/components/ListView.tsx), and [`TableView.tsx`](file:///d:/practice/productivity-board/frontend/src/components/TableView.tsx) display clean 2-line clamped snippets with tooltip hover, preventing layout distortion while preserving rich text within modal views.
+  - **Zero Migration Database Compatibility:** Works seamlessly with SQLite's `TEXT` column and existing plain text descriptions without schema alterations.
+
 ---
 
 ## 4. API & Socket Overview

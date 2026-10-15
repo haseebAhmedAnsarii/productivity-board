@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Column, Task } from '../types';
 import { AddColumn } from './AddColumn';
+import { stripRichTextToSnippet } from './RichTextRenderer';
 
 interface TableViewProps {
   columns: Column[];
@@ -213,8 +214,8 @@ export const TableView: React.FC<TableViewProps> = ({
                       </select>
                     </td>
                     <td>
-                      <span className="table-task-desc" title={task.description || ''}>
-                        {task.description ? task.description : <span style={{ opacity: 0.5 }}>—</span>}
+                      <span className="table-task-desc" title={stripRichTextToSnippet(task.description)}>
+                        {task.description ? stripRichTextToSnippet(task.description) : <span style={{ opacity: 0.5 }}>—</span>}
                       </span>
                     </td>
                     <td style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
@@ -252,8 +253,8 @@ export const TableView: React.FC<TableViewProps> = ({
                       </span>
                     </td>
                     <td>
-                      <span className="table-task-desc" title={task.description || ''}>
-                        {task.description ? task.description : <span style={{ opacity: 0.5 }}>—</span>}
+                      <span className="table-task-desc" title={stripRichTextToSnippet(task.description)}>
+                        {task.description ? stripRichTextToSnippet(task.description) : <span style={{ opacity: 0.5 }}>—</span>}
                       </span>
                     </td>
                     <td style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>

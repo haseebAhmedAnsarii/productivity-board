@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Column, Task } from '../types';
 import { AddColumn } from './AddColumn';
+import { stripRichTextToSnippet } from './RichTextRenderer';
 
 interface ListViewProps {
   columns: Column[];
@@ -93,7 +94,9 @@ export const ListView: React.FC<ListViewProps> = ({
                           <div className="list-task-content">
                             <span className="list-task-title" title={task.title}>{task.title}</span>
                             {task.description && (
-                              <span className="list-task-desc" title={task.description}>{task.description}</span>
+                              <span className="list-task-desc" title={stripRichTextToSnippet(task.description)}>
+                                {stripRichTextToSnippet(task.description)}
+                              </span>
                             )}
                           </div>
                         </div>
@@ -171,7 +174,9 @@ export const ListView: React.FC<ListViewProps> = ({
                           {task.title}
                         </span>
                         {task.description && (
-                          <span className="list-task-desc" title={task.description}>{task.description}</span>
+                          <span className="list-task-desc" title={stripRichTextToSnippet(task.description)}>
+                            {stripRichTextToSnippet(task.description)}
+                          </span>
                         )}
                       </div>
                     </div>

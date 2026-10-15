@@ -1,5 +1,6 @@
 import React from 'react';
 import { Task } from '../types';
+import { stripRichTextToSnippet } from './RichTextRenderer';
 
 interface DeletedColumnProps {
   deletedTasks: Task[];
@@ -21,38 +22,44 @@ export const DeletedColumn = React.forwardRef<HTMLDivElement, DeletedColumnProps
         </div>
         
         <div className="task-list">
-          {deletedTasks.map((task) => (
-            <div
-              key={task.id}
-              className="task-card task-card-deleted"
-              onClick={() => onTaskClick(task)}
-            >
-              <div className="task-card-header">
-                <span className="task-badge task-badge-deleted">#{task.id}</span>
+          {deletedTasks.map((task) => {
+            const descSnippet = stripRichTextToSnippet(task.description);
+            return (
+              <div
+                key={task.id}
+                className="task-card task-card-deleted"
+                onClick={() => onTaskClick(task)}
+              >
+                <div className="task-card-header">
+                  <span className="task-badge task-badge-deleted">#{task.id}</span>
+                </div>
+                <div className="task-title" style={{ textDecoration: 'line-through', opacity: 0.85 }}>
+                  {task.title}
+                </div>
+                {descSnippet && (
+                  <div className="task-desc" title={descSnippet}>
+                    {descSnippet}
+                  </div>
+                )}
+                <div style={{ marginTop: '0.65rem', display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    className="btn-restore-mini"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRestoreTask(task);
+                    }}
+                  >
+                    Restore
+                  </button>
+                </div>
               </div>
-              <div className="task-title" style={{ textDecoration: 'line-through', opacity: 0.85 }}>
-                {task.title}
-              </div>
-              {task.description && (
-                <div className="task-desc">{task.description}</div>
-              )}
-              <div style={{ marginTop: '0.65rem', display: 'flex', justifyContent: 'flex-end' }}>
-                <button
-                  className="btn-restore-mini"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRestoreTask(task);
-                  }}
-                >
-                  Restore
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
   }
 );
+
 
 DeletedColumn.displayName = 'DeletedColumn';

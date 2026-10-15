@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Column, HistoryItem, SelectedTask, Task } from '../types';
+import { RichTextEditor } from './RichTextEditor';
 
 interface TaskModalProps {
   selectedTask: SelectedTask;
@@ -292,15 +293,13 @@ export const TaskModal: React.FC<TaskModalProps> = ({
             
             <div className="form-group">
               <label>Description</label>
-              <textarea 
-                rows={4} 
-                placeholder="Add a detailed description..." 
-                value={editDescription} 
-                readOnly={isDeleted}
-                onChange={(e) => {
-                  if (!isDeleted) setEditDescription(e.target.value);
+              <RichTextEditor
+                value={editDescription}
+                onChange={(val) => {
+                  if (!isDeleted) setEditDescription(val);
                 }}
-                style={isDeleted ? { opacity: 0.8, cursor: 'not-allowed' } : {}}
+                readOnly={isDeleted}
+                placeholder="Add a detailed description... Use the toolbar above or write markdown"
               />
             </div>
 

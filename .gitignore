@@ -50,3 +50,6 @@ database.sqlite
 # OS metadata
 .DS_Store
 Thumbs.db
+
+# AI markdown file
+LOST_CHAT_TRANSCRIPT.md

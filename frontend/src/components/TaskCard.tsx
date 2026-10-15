@@ -1,6 +1,7 @@
 import React from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import { Task } from '../types';
+import { stripRichTextToSnippet } from './RichTextRenderer';
 
 interface TaskCardProps {
   task: Task;
@@ -15,6 +16,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   columnId,
   onClick,
 }) => {
+  const descSnippet = stripRichTextToSnippet(task.description);
+
   return (
     <Draggable draggableId={task.id} index={index}>
       {(provided, snapshot) => (
@@ -34,7 +37,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             <span className="task-badge">#{task.id}</span>
           </div>
           <div className="task-title">{task.title}</div>
-          {task.description && <div className="task-desc">{task.description}</div>}
+          {descSnippet && (
+            <div className="task-desc" title={descSnippet}>
+              {descSnippet}
+            </div>
+          )}
         </div>
       )}
     </Draggable>

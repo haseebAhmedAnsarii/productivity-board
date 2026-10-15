@@ -11,3 +11,5 @@ export * from './RestoreTaskModal';
 export * from './ListView';
 export * from './TableView';
 export * from './BoardMinimap';
+export * from './RichTextRenderer';
+export * from './RichTextEditor';
