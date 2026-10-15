@@ -237,7 +237,7 @@ CREATE TABLE IF NOT EXISTS task_history (
   - **Click-to-Jump Navigation:** Clicking anywhere on the minimap track or directly on a mini column immediately scrolls the board canvas smoothly to that exact column position.
   - **Step Scrolling Buttons:** Tactile left/right stepper buttons (`◀` and `▶`) scroll by one column width (`350px`) with disabled states when at the scroll boundaries.
   - **Collapsible Minimap Pill:** Users can collapse the full minimap into a sleek floating pill (`[🗺️ Minimap <count>]`) and expand it on demand, with a close button (`✕`) on the bar.
-  - **Hidden Native Scrollbar & Clearance:** The native scrollbar on `.board-area` is hidden via `scrollbar-width: none; ::-webkit-scrollbar { display: none; }` and `.board-area` has `padding-bottom: 5.5rem;` ensuring cards and column buttons are never obscured.
+  - **Hidden Native Scrollbar & Responsive Clearance:** The native scrollbar on `.board-area` is hidden via `scrollbar-width: none; ::-webkit-scrollbar { display: none; }`. Adjusted `.kanban-column` `max-height` to `calc(100vh - 10.25rem)` with `.board-area` `padding: 1.25rem 2rem 5.25rem;` and a sleeker 44px minimap profile (`bottom: 0.85rem`), plus `@media (max-height: 760px)` responsive adaptation. This ensures center columns and their "+ Add Task" CTA buttons always have clear breathing space above the floating minimap on all laptop screen sizes.
 
 ---
 
