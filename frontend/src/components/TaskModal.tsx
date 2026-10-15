@@ -149,6 +149,23 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     }
   };
 
+  const parseLabelHistory = (val: string | null | undefined): { name: string; color: string } => {
+    if (!val) return { name: '', color: '#6ba87e' };
+    try {
+      const parsed = JSON.parse(val);
+      if (parsed && typeof parsed === 'object' && parsed.name) {
+        return {
+          name: parsed.name,
+          color: parsed.color || allBoardLabels.find(l => l.name.toLowerCase() === parsed.name.toLowerCase())?.color || '#6ba87e',
+        };
+      }
+    } catch {
+      // Not serialized JSON, fallback to plain string lookup
+    }
+    const found = allBoardLabels.find(l => l.name.toLowerCase() === val.toLowerCase());
+    return { name: val, color: found?.color || '#6ba87e' };
+  };
+
   const renderHistoryDescription = (item: HistoryItem) => {
     switch (item.change_type) {
       case 'created':
@@ -291,37 +308,60 @@ export const TaskModal: React.FC<TaskModalProps> = ({
           );
         }
         return 'Restored card back to active board';
-      case 'label_added':
+      case 'label_added': {
+        const { name, color } = parseLabelHistory(item.new_value);
         return (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
-            <span style={{ color: '#10b981', fontSize: '0.78rem' }}>🏷</span>
-            Added label{' '}
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
-              padding: '1px 7px', borderRadius: '3px',
-              background: 'rgba(16,185,129,0.12)', border: '1px solid #10b981',
-              color: '#10b981', fontWeight: 600, fontSize: '0.72rem',
-            }}>
-              {item.new_value}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>Added label</span>
+            <span
+              className="label-chip"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.28rem',
+                padding: '2px 8px',
+                borderRadius: '4px',
+                background: color + '22',
+                border: `1px solid ${color}`,
+                color: color,
+                fontWeight: 600,
+                fontSize: '0.74rem',
+              }}
+            >
+              <span className="label-chip-dot" style={{ background: color }} />
+              {name}
             </span>
           </span>
         );
-      case 'label_removed':
+      }
+      case 'label_removed': {
+        const { name, color } = parseLabelHistory(item.old_value);
         return (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
-            <span style={{ color: 'var(--danger)', fontSize: '0.78rem' }}>🏷</span>
-            Removed label{' '}
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
-              padding: '1px 7px', borderRadius: '3px',
-              background: 'rgba(207,79,68,0.12)', border: '1px solid var(--danger)',
-              color: 'var(--danger)', fontWeight: 600, fontSize: '0.72rem',
-              textDecoration: 'line-through',
-            }}>
-              {item.old_value}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>Removed label</span>
+            <span
+              className="label-chip"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.28rem',
+                padding: '2px 8px',
+                borderRadius: '4px',
+                background: color + '22',
+                border: `1px solid ${color}`,
+                color: color,
+                fontWeight: 600,
+                fontSize: '0.74rem',
+                textDecoration: 'line-through',
+                opacity: 0.85,
+              }}
+            >
+              <span className="label-chip-dot" style={{ background: color }} />
+              {name}
             </span>
           </span>
         );
+      }
       default:
         return item.new_value || item.change_type;
     }

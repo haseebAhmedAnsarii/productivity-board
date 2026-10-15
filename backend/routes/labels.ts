@@ -94,12 +94,12 @@ router.get('/task/:taskId', authenticateToken, async (req: AuthenticatedRequest,
 // POST /api/labels/task/:taskId — set labels for a task (full replace)
 router.post('/task/:taskId', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
-    const { taskId } = req.params;
+    const taskId = String(req.params.taskId);
     const { labelIds } = req.body as { labelIds: number[] };
 
     // Fetch existing labels before replacing so we can diff
     const existingLabels = await db.all(
-      `SELECT l.id, l.name FROM labels l
+      `SELECT l.id, l.name, l.color FROM labels l
        JOIN task_labels tl ON tl.label_id = l.id
        WHERE tl.task_id = ?`,
       [taskId]
@@ -121,34 +121,34 @@ router.post('/task/:taskId', authenticateToken, async (req: AuthenticatedRequest
     const newIds = new Set(labelIds || []);
 
     // Log removals
-    for (const l of existingLabels as { id: number; name: string }[]) {
+    for (const l of existingLabels as { id: number; name: string; color: string }[]) {
       if (!newIds.has(l.id)) {
         await logTaskHistory(
           taskId,
           req.user?.userId || 0,
           req.user?.username || 'User',
           'label_removed',
-          l.name,
+          JSON.stringify({ name: l.name, color: l.color }),
           null
         );
       }
     }
 
-    // Log additions — fetch names for added ids
+    // Log additions — fetch names and colors for added ids
     const addedIds = [...newIds].filter(id => !existingIds.has(id));
     if (addedIds.length > 0) {
       const addedLabels = await db.all(
-        `SELECT id, name FROM labels WHERE id IN (${addedIds.map(() => '?').join(',')})`,
+        `SELECT id, name, color FROM labels WHERE id IN (${addedIds.map(() => '?').join(',')})`,
         addedIds
       );
-      for (const l of addedLabels as { id: number; name: string }[]) {
+      for (const l of addedLabels as { id: number; name: string; color: string }[]) {
         await logTaskHistory(
           taskId,
           req.user?.userId || 0,
           req.user?.username || 'User',
           'label_added',
           null,
-          l.name
+          JSON.stringify({ name: l.name, color: l.color })
         );
       }
     }
