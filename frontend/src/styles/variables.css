@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  /* Warm Architectural Obsidian Palette (Zero cyan/purple/indigo/aurora) */
+  --bg-canvas: #121211;
+  --bg-header: #171614;
+  --bg-column: #1a1917;
+  --bg-card: #23211e;
+  --bg-card-hover: #292622;
+  --bg-surface: #1e1c1a;
+  --bg-surface-hover: #272421;
+  --bg-input: #151412;
+
+  /* Solid Tactile Structural Borders (Zero thin white Linear lines) */
+  --border-subtle: #272420;
+  --border-ui: #332f28;
+  --border-card: #3a352c;
+  --border-card-hover: #524b3f;
+  --border-column-top: #4a4336;
+
+  /* Typography Colors (High contrast, warm readability) */
+  --text-main: #f7f4ee;
+  --text-secondary: #c9c2b4;
+  --text-muted: #8c8475;
+  --text-inverse: #141312;
+
+  /* Distinct Accent: Warm Amber Ochre & Terracotta */
+  --accent: #e59a52;
+  --accent-hover: #d9883b;
+  --accent-muted: #2f2316;
+  --danger: #cf4f44;
+  --danger-hover: #b83f35;
+  --danger-muted: #331917;
+
+  /* Editorial & Architectural Font Pairing */
+  --font-heading: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Space Mono', monospace;
+
+  /* Dynamically Varied Corner Radii (Custom tailored, anti-generic) */
+  --radius-column: 6px;
+  --radius-card: 3px;
+  --radius-badge: 2px;
+  --radius-btn: 4px;
+  --radius-input: 3px;
+  --radius-modal: 7px;
+  --radius-avatar: 4px;
+  --radius-scrollbar: 2px;
+
+  /* Solid tactile depth */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 2px 5px rgba(0, 0, 0, 0.45);
+  --shadow-card-hover: 0 8px 18px rgba(0, 0, 0, 0.65);
+  --shadow-modal: 0 24px 48px -12px rgba(0, 0, 0, 0.9);
+
+  --transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
+}
