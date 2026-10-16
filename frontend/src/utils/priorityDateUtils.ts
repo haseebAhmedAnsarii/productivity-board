@@ -10,8 +10,8 @@ export interface PriorityMeta {
 }
 
 export const PRIORITY_CONFIG: Record<PriorityLevel, PriorityMeta> = {
-  urgent: {
-    label: 'Urgent',
+  critical: {
+    label: 'Critical',
     color: '#cf4f44',
     bg: 'rgba(207, 79, 68, 0.16)',
     borderColor: 'rgba(207, 79, 68, 0.45)',
@@ -156,8 +156,16 @@ export function matchesDueDateFilter(dueDateStr: string | null | undefined, filt
   return true;
 }
 
+export function normalizePriority(p?: string | null): PriorityLevel {
+  if (!p) return 'medium';
+  const lower = p.toLowerCase();
+  if (lower === 'urgent' || lower === 'critical') return 'critical';
+  if (lower === 'high') return 'high';
+  if (lower === 'low') return 'low';
+  return 'medium';
+}
+
 export function matchesPriorityFilter(taskPriority: PriorityLevel | undefined, filter: string): boolean {
   if (!filter || filter === 'all' || filter === 'ALL') return true;
-  const current = taskPriority || 'medium';
-  return current.toLowerCase() === filter.toLowerCase();
+  return normalizePriority(taskPriority) === normalizePriority(filter);
 }

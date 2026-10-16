@@ -61,9 +61,12 @@ export const initDb = async () => {
       WHERE board_id IS NULL AND column_id IS NOT NULL;
     `);
 
-    // Backfill priority for any existing tasks with NULL
+    // Backfill priority for any existing tasks with NULL and migrate 'urgent' to 'critical'
     await db.exec(`
       UPDATE tasks SET priority = 'medium' WHERE priority IS NULL;
+      UPDATE tasks SET priority = 'critical' WHERE priority = 'urgent';
+      UPDATE task_history SET new_value = 'critical' WHERE change_type = 'priority' AND new_value = 'urgent';
+      UPDATE task_history SET old_value = 'critical' WHERE change_type = 'priority' AND old_value = 'urgent';
     `);
 
     await db.exec(`

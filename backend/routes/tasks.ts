@@ -17,7 +17,8 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
       [columnId]
     );
     const nextOrder = (maxOrderRes?.maxOrder ?? -1) + 1;
-    const taskPriority = priority || 'medium';
+    const rawPriority = priority === 'urgent' ? 'critical' : priority;
+    const taskPriority = rawPriority || 'medium';
     const taskDueDate = dueDate || null;
     
     const result = await db.run(
@@ -202,7 +203,9 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => 
 
     const newTitle = title !== undefined ? title : task.title;
     const newDescription = description !== undefined ? description : task.description;
-    const newPriority = priority !== undefined ? priority : (task.priority || 'medium');
+    const rawPriority = priority === 'urgent' ? 'critical' : priority;
+    const currentPriority = (task.priority === 'urgent' ? 'critical' : task.priority) || 'medium';
+    const newPriority = rawPriority !== undefined ? rawPriority : currentPriority;
     const newDueDate = dueDate !== undefined ? (dueDate || null) : (task.due_date || null);
 
     if (newTitle && task.title !== newTitle) {

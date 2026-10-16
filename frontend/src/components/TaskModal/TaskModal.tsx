@@ -4,7 +4,7 @@ import { Column, HistoryItem, Label, PriorityLevel, SelectedTask, Task } from '.
 import { RichTextEditor } from '../RichTextEditor';
 import { stripRichTextToSnippet } from '../RichTextRenderer';
 import { LabelPicker } from '../LabelPicker';
-import { PRIORITY_CONFIG } from '../../utils/priorityDateUtils';
+import { PRIORITY_CONFIG, normalizePriority } from '../../utils/priorityDateUtils';
 
 interface TaskModalProps {
   selectedTask: SelectedTask;
@@ -76,7 +76,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     } else {
       setEditTitle(selectedTask.title);
       setEditDescription(selectedTask.description);
-      setEditPriority(selectedTask.priority || 'medium');
+      setEditPriority(normalizePriority(selectedTask.priority));
       setEditDueDate(selectedTask.dueDate || '');
       setTitleError(false);
       setShowDeleteConfirm(false);
@@ -535,7 +535,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               <div className="form-group">
                 <label>Priority</label>
                 <div className="priority-selector">
-                  {(['low', 'medium', 'high', 'urgent'] as PriorityLevel[]).map((lvl) => {
+                  {(['low', 'medium', 'high', 'critical'] as PriorityLevel[]).map((lvl) => {
                     const meta = PRIORITY_CONFIG[lvl];
                     const isSelected = editPriority === lvl;
                     return (

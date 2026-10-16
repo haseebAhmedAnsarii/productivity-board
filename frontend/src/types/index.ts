@@ -6,7 +6,7 @@ export interface Label {
   created_at?: string;
 }
 
-export type PriorityLevel = 'urgent' | 'high' | 'medium' | 'low';
+export type PriorityLevel = 'critical' | 'high' | 'medium' | 'low';
 export type DueDateFilter = 'all' | 'overdue' | 'today' | 'week' | 'has_date' | 'no_date';
 
 export interface Task {

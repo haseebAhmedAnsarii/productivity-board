@@ -36,7 +36,7 @@ router.get('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
         id: t.id.toString(),
         title: t.title,
         description: t.description,
-        priority: t.priority || 'medium',
+        priority: (t.priority === 'urgent' ? 'critical' : t.priority) || 'medium',
         dueDate: t.due_date || null
       }))
     }));
@@ -48,7 +48,7 @@ router.get('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
       id: t.id.toString(),
       title: t.title,
       description: t.description,
-      priority: t.priority || 'medium',
+      priority: (t.priority === 'urgent' ? 'critical' : t.priority) || 'medium',
       dueDate: t.due_date || null,
       originalColumnId: t.original_column_id ? t.original_column_id.toString() : null,
       originalColumnTitle: t.original_column_id ? (colTitleMap.get(t.original_column_id) || null) : null
