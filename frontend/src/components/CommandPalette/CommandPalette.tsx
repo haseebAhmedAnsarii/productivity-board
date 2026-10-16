@@ -131,7 +131,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         title: showDeletedCards ? 'Hide Deleted Tasks' : 'Show Deleted Tasks',
         subtitle: `${deletedTasks.length} archived card${deletedTasks.length === 1 ? '' : 's'}`,
         icon: '🗑️',
-        badge: deletedTasks.length > 0 ? `${deletedTasks.length}` : undefined,
+        badge: deletedTasks.length > 0 ? `${deletedTasks.length} cards` : undefined,
         action: () => {
           onToggleDeletedCards();
           onClose();
@@ -227,27 +227,76 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       }
     );
 
-    // Filter Navigation & Actions if query is present
-    navItems.forEach((item) => {
-      if (!q || item.title.toLowerCase().includes(q) || (item.subtitle && item.subtitle.toLowerCase().includes(q))) {
-        items.push(item);
-      }
-    });
+    const isSingleChar = q.length === 1;
 
-    actionItems.forEach((item) => {
-      if (!q || item.title.toLowerCase().includes(q) || (item.subtitle && item.subtitle.toLowerCase().includes(q))) {
-        items.push(item);
+    // Evaluate Navigation & Action commands with priority scoring
+    interface ScoredCommand {
+      item: CommandItem;
+      score: number;
+    }
+
+    const scoredCommands: ScoredCommand[] = [];
+
+    const evaluateCommand = (item: CommandItem) => {
+      if (!q) {
+        scoredCommands.push({ item, score: 0 });
+        return;
       }
-    });
+
+      const itemShortcut = item.shortcut?.toLowerCase();
+      const titleLower = item.title.toLowerCase();
+      const subtitleLower = item.subtitle?.toLowerCase() || '';
+
+      // Highest Priority: Exact shortcut match (e.g. 'l' matches shortcut 'L')
+      if (itemShortcut === q) {
+        scoredCommands.push({ item, score: 200 });
+        return;
+      }
+
+      if (isSingleChar) {
+        // In single-character mode, do NOT do loose substring match across arbitrary words.
+        // Only match if a distinct word in the title starts with that character.
+        const words = titleLower.split(/[\s:_-]+/);
+        if (words.some((w) => w.startsWith(q))) {
+          scoredCommands.push({ item, score: 50 });
+        }
+        return;
+      }
+
+      // Multi-character query scoring
+      if (titleLower.startsWith(q)) {
+        scoredCommands.push({ item, score: 100 });
+      } else if (titleLower.includes(q)) {
+        scoredCommands.push({ item, score: 60 });
+      } else if (subtitleLower.includes(q)) {
+        scoredCommands.push({ item, score: 30 });
+      }
+    };
+
+    navItems.forEach(evaluateCommand);
+    actionItems.forEach(evaluateCommand);
+
+    // Sort commands descending by score so exact shortcut matches appear at index 0
+    scoredCommands.sort((a, b) => b.score - a.score);
+    scoredCommands.forEach(({ item }) => items.push(item));
 
     // 3. Search Active Tasks
     if (q) {
       const matchedActive = allActiveTasks.filter(({ task, columnTitle }) => {
         const idMatch = task.id.toString() === q.replace(/^#/, '');
-        const titleMatch = task.title.toLowerCase().includes(q);
+        if (idMatch) return true;
+
+        const titleLower = task.title.toLowerCase();
+        if (isSingleChar) {
+          // In single-character mode, only match tasks if their title or words start with that letter
+          const words = titleLower.split(/[\s:_-]+/);
+          return words.some((w) => w.startsWith(q));
+        }
+
+        const titleMatch = titleLower.includes(q);
         const descMatch = task.description && task.description.toLowerCase().includes(q);
         const colMatch = columnTitle.toLowerCase().includes(q);
-        return idMatch || titleMatch || descMatch || colMatch;
+        return titleMatch || descMatch || colMatch;
       });
 
       matchedActive.slice(0, 15).forEach(({ task, columnTitle, columnId }) => {
@@ -273,9 +322,17 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       if (showDeletedCards && deletedTasks.length > 0) {
         const matchedDeleted = deletedTasks.filter((t) => {
           const idMatch = t.id.toString() === q.replace(/^#/, '');
-          const titleMatch = t.title.toLowerCase().includes(q);
+          if (idMatch) return true;
+
+          const titleLower = t.title.toLowerCase();
+          if (isSingleChar) {
+            const words = titleLower.split(/[\s:_-]+/);
+            return words.some((w) => w.startsWith(q));
+          }
+
+          const titleMatch = titleLower.includes(q);
           const descMatch = t.description && t.description.toLowerCase().includes(q);
-          return idMatch || titleMatch || descMatch;
+          return titleMatch || descMatch;
         });
 
         matchedDeleted.slice(0, 5).forEach((task) => {
@@ -446,7 +503,15 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       </span>
                     )}
                     {item.shortcut && (
-                      <kbd className="command-item-shortcut">{item.shortcut}</kbd>
+                      <kbd
+                        className={`command-item-shortcut ${
+                          item.shortcut.toLowerCase() === query.trim().toLowerCase()
+                            ? 'shortcut-matched'
+                            : ''
+                        }`}
+                      >
+                        {item.shortcut}
+                      </kbd>
                     )}
                   </div>
                 </React.Fragment>
@@ -465,6 +530,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             </span>
             <span>
               <kbd>ESC</kbd> Close
+            </span>
+            <span>
+              <kbd>B</kbd> <kbd>L</kbd> <kbd>T</kbd> Views
             </span>
           </div>
           <span className="footer-brand-hint">Bento Board</span>

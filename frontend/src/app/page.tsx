@@ -144,18 +144,57 @@ export default function Home() {
     if (storedUser) setAuthUsername(storedUser);
   }, []);
 
-  // Global keyboard shortcut for Command Palette (Ctrl+K or Cmd+K)
+  // Global keyboard shortcuts:
+  // - Ctrl+K / Cmd+K: Open/close Command Palette
+  // - B / L / T: Instant view switching when idle on the board (no modals or input fields active)
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // 1. Toggle Command Palette with Ctrl+K / Cmd+K
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsCommandPaletteOpen(prev => !prev);
+        return;
+      }
+
+      // If user is not authenticated or any modifier key is pressed, do not trigger single-key shortcuts
+      if (!token || e.ctrlKey || e.altKey || e.metaKey) return;
+
+      // 2. Ignore if typing in an input, textarea, select, or contenteditable element
+      const target = e.target as HTMLElement | null;
+      const isInputActive = target && (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' ||
+        target.isContentEditable ||
+        Boolean(target.closest('input, textarea, select, [contenteditable="true"]'))
+      );
+      if (isInputActive) return;
+
+      // 3. Ignore if any modal is currently open
+      const isAnyModalOpen = isCommandPaletteOpen ||
+        Boolean(selectedTask) ||
+        showLogoutConfirm ||
+        Boolean(columnToDelete) ||
+        Boolean(taskToRestore);
+      if (isAnyModalOpen) return;
+
+      // 4. Single-key view switching
+      const key = e.key.toLowerCase();
+      if (key === 'b') {
+        e.preventDefault();
+        setViewMode('board');
+      } else if (key === 'l') {
+        e.preventDefault();
+        setViewMode('list');
+      } else if (key === 't') {
+        e.preventDefault();
+        setViewMode('table');
       }
     };
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, []);
+  }, [token, isCommandPaletteOpen, selectedTask, showLogoutConfirm, columnToDelete, taskToRestore]);
 
   const fetchBoard = async (currentToken: string) => {
     try {
