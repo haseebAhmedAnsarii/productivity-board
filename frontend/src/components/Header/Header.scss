@@ -80,4 +80,43 @@
       }
     }
   }
+
+  .header-command-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.38rem 0.85rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-ui);
+    border-radius: var(--radius-btn);
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: var(--transition);
+    user-select: none;
+
+    &:hover {
+      border-color: var(--border-card-hover);
+      color: var(--text-main);
+      background: var(--surface-hover);
+    }
+
+    .cmd-kbd {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: var(--bg-input);
+      border: 1px solid var(--border-ui);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    @media (max-width: 860px) {
+      span {
+        display: none;
+      }
+    }
+  }
 }

@@ -19,6 +19,7 @@ import {
   TableView,
   BoardMinimap,
   FilterBar,
+  CommandPalette,
 } from '../components';
 import { matchesPriorityFilter, matchesDueDateFilter } from '../utils/priorityDateUtils';
 
@@ -42,6 +43,7 @@ export default function Home() {
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [taskToRestore, setTaskToRestore] = useState<Task | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('board');
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   // Priority & Due Date Filter States
   const [searchQuery, setSearchQuery] = useState('');
@@ -140,6 +142,19 @@ export default function Home() {
     const storedUser = localStorage.getItem('authUsername');
     if (storedToken) setToken(storedToken);
     if (storedUser) setAuthUsername(storedUser);
+  }, []);
+
+  // Global keyboard shortcut for Command Palette (Ctrl+K or Cmd+K)
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, []);
 
   const fetchBoard = async (currentToken: string) => {
@@ -526,6 +541,7 @@ export default function Home() {
           scrollToAddColumn();
         }}
         onLogoutClick={() => setShowLogoutConfirm(true)}
+        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
       />
 
       {boardId && (
@@ -680,6 +696,29 @@ export default function Home() {
           await restoreTask(taskId, targetColId);
           setTaskToRestore(null);
         }}
+      />
+
+      {/* Global Command Palette (Ctrl+K / Cmd+K) */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        columns={columns}
+        deletedTasks={deletedTasks}
+        showDeletedCards={showDeletedCards}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        onToggleDeletedCards={() => setShowDeletedCards(!showDeletedCards)}
+        onOpenNewTaskModal={(colId) => openNewTaskModal(colId || columns[0]?.id || '')}
+        onStartAddColumn={() => {
+          setIsAddingColumn(true);
+          scrollToAddColumn();
+        }}
+        onOpenTaskModal={(task, isDeleted, colId) => openTaskModal(task, isDeleted, colId)}
+        onSetPriorityFilter={setPriorityFilter}
+        onSetDueDateFilter={setDueDateFilter}
+        onClearFilters={handleClearFilters}
+        isFilterActive={isFilterActive}
+        onLogout={() => setShowLogoutConfirm(true)}
       />
     </div>
   );

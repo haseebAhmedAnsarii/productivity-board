@@ -11,6 +11,7 @@ interface HeaderProps {
   onToggleDeletedCards: () => void;
   onAddColumnClick: () => void;
   onLogoutClick: () => void;
+  onOpenCommandPalette?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -22,6 +23,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleDeletedCards,
   onAddColumnClick,
   onLogoutClick,
+  onOpenCommandPalette,
 }) => {
   return (
     <header className="header">
@@ -69,6 +71,21 @@ export const Header: React.FC<HeaderProps> = ({
             <span>Table</span>
           </button>
         </div>
+        {onOpenCommandPalette && (
+          <button
+            type="button"
+            className="header-command-trigger"
+            onClick={onOpenCommandPalette}
+            title="Open Command Palette (Ctrl+K)"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <span>Search or command...</span>
+            <kbd className="cmd-kbd">Ctrl K</kbd>
+          </button>
+        )}
       </div>
       <div className="user-profile">
         {deletedTasksCount > 0 && (
