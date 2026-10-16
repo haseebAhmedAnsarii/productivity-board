@@ -6,6 +6,9 @@ export interface Label {
   created_at?: string;
 }
 
+export type PriorityLevel = 'urgent' | 'high' | 'medium' | 'low';
+export type DueDateFilter = 'all' | 'overdue' | 'today' | 'week' | 'has_date' | 'no_date';
+
 export interface Task {
   id: string;
   title: string;
@@ -14,6 +17,8 @@ export interface Task {
   originalColumnId?: string | null;
   originalColumnTitle?: string | null;
   labels?: Label[];
+  priority?: PriorityLevel;
+  dueDate?: string | null;
 }
 
 export type SelectedTask = Task | { isNew: true; columnId: string } | null;

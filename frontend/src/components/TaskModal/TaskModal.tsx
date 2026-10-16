@@ -1,9 +1,10 @@
 import './TaskModal.scss';
 import React, { useState, useEffect, useRef } from 'react';
-import { Column, HistoryItem, Label, SelectedTask, Task } from '../../types';
+import { Column, HistoryItem, Label, PriorityLevel, SelectedTask, Task } from '../../types';
 import { RichTextEditor } from '../RichTextEditor';
 import { stripRichTextToSnippet } from '../RichTextRenderer';
 import { LabelPicker } from '../LabelPicker';
+import { PRIORITY_CONFIG } from '../../utils/priorityDateUtils';
 
 interface TaskModalProps {
   selectedTask: SelectedTask;
@@ -12,7 +13,14 @@ interface TaskModalProps {
   isDeleted: boolean;
   boardId: string;
   onClose: () => void;
-  onSave: (title: string, description: string, columnId: string, labelIds?: number[]) => Promise<void>;
+  onSave: (
+    title: string,
+    description: string,
+    columnId: string,
+    labelIds?: number[],
+    priority?: PriorityLevel,
+    dueDate?: string | null
+  ) => Promise<void>;
   onDelete: () => Promise<void>;
   onRestore: (task: Task) => void;
   onQuickMove: (targetColId: string) => Promise<void>;
@@ -33,6 +41,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editColumnId, setEditColumnId] = useState('');
+  const [editPriority, setEditPriority] = useState<PriorityLevel>('medium');
+  const [editDueDate, setEditDueDate] = useState<string>('');
   const [titleError, setTitleError] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -56,6 +66,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       setEditTitle('');
       setEditDescription('');
       setEditColumnId(selectedTask.columnId);
+      setEditPriority('medium');
+      setEditDueDate('');
       setTitleError(false);
       setShowDeleteConfirm(false);
       setTaskHistory([]);
@@ -64,6 +76,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     } else {
       setEditTitle(selectedTask.title);
       setEditDescription(selectedTask.description);
+      setEditPriority(selectedTask.priority || 'medium');
+      setEditDueDate(selectedTask.dueDate || '');
       setTitleError(false);
       setShowDeleteConfirm(false);
       setShowHistory(false);
@@ -363,6 +377,31 @@ export const TaskModal: React.FC<TaskModalProps> = ({
           </span>
         );
       }
+      case 'priority': {
+        const oldMeta = PRIORITY_CONFIG[(item.old_value as PriorityLevel) || 'medium'];
+        const newMeta = PRIORITY_CONFIG[(item.new_value as PriorityLevel) || 'medium'];
+        return (
+          <span>
+            Changed priority from{' '}
+            <span style={{ color: oldMeta?.color || 'var(--text-muted)', fontWeight: 600 }}>
+              {oldMeta?.label || item.old_value}
+            </span>{' '}
+            to{' '}
+            <span style={{ color: newMeta?.color || 'var(--accent)', fontWeight: 700 }}>
+              {newMeta?.label || item.new_value}
+            </span>
+          </span>
+        );
+      }
+      case 'due_date': {
+        return (
+          <span>
+            Changed due date from{' '}
+            <strong style={{ color: 'var(--text-secondary)' }}>{item.old_value || 'None'}</strong> to{' '}
+            <strong style={{ color: 'var(--accent)' }}>{item.new_value || 'None'}</strong>
+          </span>
+        );
+      }
       default:
         return item.new_value || item.change_type;
     }
@@ -379,7 +418,14 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       setTitleError(true);
       return;
     }
-    await onSave(editTitle.trim(), editDescription.trim(), editColumnId, taskLabels.map(l => l.id));
+    await onSave(
+      editTitle.trim(),
+      editDescription.trim(),
+      editColumnId,
+      taskLabels.map(l => l.id),
+      editPriority,
+      editDueDate.trim() || null
+    );
   };
 
   const handleInternalQuickMove = async (colId: string) => {
@@ -482,6 +528,110 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 onBoardLabelsChange={setAllBoardLabels}
                 readOnly={isDeleted}
               />
+            </div>
+
+            {/* Priority & Due Date Section */}
+            <div className="task-modal-row-grid">
+              <div className="form-group">
+                <label>Priority</label>
+                <div className="priority-selector">
+                  {(['low', 'medium', 'high', 'urgent'] as PriorityLevel[]).map((lvl) => {
+                    const meta = PRIORITY_CONFIG[lvl];
+                    const isSelected = editPriority === lvl;
+                    return (
+                      <button
+                        key={lvl}
+                        type="button"
+                        disabled={isDeleted}
+                        className={`priority-select-btn ${isSelected ? 'selected' : ''}`}
+                        style={isSelected ? {
+                          background: meta.bg,
+                          borderColor: meta.color,
+                          color: meta.color,
+                        } : {}}
+                        onClick={() => {
+                          if (!isDeleted) setEditPriority(lvl);
+                        }}
+                      >
+                        <span className="priority-chip-dot" style={{ background: meta.color }} />
+                        {meta.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <label htmlFor="task-due-date-input">Due Date</label>
+                  {editDueDate && !isDeleted && (
+                    <button
+                      type="button"
+                      onClick={() => setEditDueDate('')}
+                      className="due-date-clear-btn"
+                      title="Clear due date"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                <div className="due-date-input-wrapper">
+                  <input
+                    id="task-due-date-input"
+                    type="date"
+                    value={editDueDate}
+                    disabled={isDeleted}
+                    onChange={(e) => setEditDueDate(e.target.value)}
+                    className="due-date-input"
+                    style={isDeleted ? { opacity: 0.8, cursor: 'not-allowed' } : {}}
+                  />
+                  {!isDeleted && (
+                    <div className="due-date-presets">
+                      <button
+                        type="button"
+                        className="preset-btn"
+                        onClick={() => {
+                          const now = new Date();
+                          const y = now.getFullYear();
+                          const m = String(now.getMonth() + 1).padStart(2, '0');
+                          const d = String(now.getDate()).padStart(2, '0');
+                          setEditDueDate(`${y}-${m}-${d}`);
+                        }}
+                      >
+                        Today
+                      </button>
+                      <button
+                        type="button"
+                        className="preset-btn"
+                        onClick={() => {
+                          const tmrw = new Date();
+                          tmrw.setDate(tmrw.getDate() + 1);
+                          const y = tmrw.getFullYear();
+                          const m = String(tmrw.getMonth() + 1).padStart(2, '0');
+                          const d = String(tmrw.getDate()).padStart(2, '0');
+                          setEditDueDate(`${y}-${m}-${d}`);
+                        }}
+                      >
+                        Tomorrow
+                      </button>
+                      <button
+                        type="button"
+                        className="preset-btn"
+                        onClick={() => {
+                          const nextWk = new Date();
+                          nextWk.setDate(nextWk.getDate() + 7);
+                          const y = nextWk.getFullYear();
+                          const m = String(nextWk.getMonth() + 1).padStart(2, '0');
+                          const d = String(nextWk.getDate()).padStart(2, '0');
+                          setEditDueDate(`${y}-${m}-${d}`);
+                        }}
+                      >
+                        +1 Week
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="form-group">

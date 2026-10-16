@@ -2,6 +2,7 @@ import './DeletedColumn.scss';
 import React from 'react';
 import { Task } from '../../types';
 import { stripRichTextToSnippet } from '../RichTextRenderer';
+import { PRIORITY_CONFIG, getDueDateInfo } from '../../utils/priorityDateUtils';
 
 interface DeletedColumnProps {
   deletedTasks: Task[];
@@ -25,6 +26,10 @@ export const DeletedColumn = React.forwardRef<HTMLDivElement, DeletedColumnProps
         <div className="task-list">
           {deletedTasks.map((task) => {
             const descSnippet = stripRichTextToSnippet(task.description);
+            const priority = task.priority || 'medium';
+            const priorityMeta = PRIORITY_CONFIG[priority];
+            const dueDateInfo = getDueDateInfo(task.dueDate);
+
             return (
               <div
                 key={task.id}
@@ -32,7 +37,31 @@ export const DeletedColumn = React.forwardRef<HTMLDivElement, DeletedColumnProps
                 onClick={() => onTaskClick(task)}
               >
                 <div className="task-card-header">
-                  <span className="task-badge task-badge-deleted">#{task.id}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <span className="task-badge task-badge-deleted">#{task.id}</span>
+                    {priorityMeta && (
+                      <span
+                        className="priority-chip"
+                        style={{
+                          color: priorityMeta.color,
+                          borderColor: priorityMeta.borderColor,
+                          background: priorityMeta.bg,
+                        }}
+                        title={`Priority: ${priorityMeta.label}`}
+                      >
+                        <span className="priority-chip-dot" style={{ background: priorityMeta.color }} />
+                        {priorityMeta.label}
+                      </span>
+                    )}
+                  </div>
+                  {dueDateInfo.status !== 'none' && (
+                    <span
+                      className={`due-date-chip status-${dueDateInfo.status}`}
+                      title={dueDateInfo.fullText}
+                    >
+                      <span>{dueDateInfo.badgeText}</span>
+                    </span>
+                  )}
                 </div>
                 <div className="task-title" style={{ textDecoration: 'line-through', opacity: 0.85 }}>
                   {task.title}

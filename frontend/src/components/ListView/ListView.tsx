@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Column, Task } from '../../types';
 import { AddColumn } from '../AddColumn';
 import { stripRichTextToSnippet } from '../RichTextRenderer';
+import { PRIORITY_CONFIG, getDueDateInfo } from '../../utils/priorityDateUtils';
 
 interface ListViewProps {
   columns: Column[];
@@ -84,48 +85,98 @@ export const ListView: React.FC<ListViewProps> = ({
                       No tasks in this column. Click &ldquo;+ Add Task&rdquo; to create one.
                     </div>
                   ) : (
-                    column.tasks.map((task) => (
-                      <div
-                        key={task.id}
-                        className="list-task-row"
-                        onClick={() => onTaskClick(task, false, column.id)}
-                      >
-                        <div className="list-task-main">
-                          <span className="task-badge">#{task.id}</span>
-                          <div className="list-task-content">
-                            <span className="list-task-title" title={task.title}>{task.title}</span>
-                            {task.description && (
-                              <span className="list-task-desc" title={stripRichTextToSnippet(task.description)}>
-                                {stripRichTextToSnippet(task.description)}
-                              </span>
-                            )}
+                    column.tasks.map((task) => {
+                      const priority = task.priority || 'medium';
+                      const priorityMeta = PRIORITY_CONFIG[priority];
+                      const dueDateInfo = getDueDateInfo(task.dueDate);
+                      const labels = task.labels ?? [];
+
+                      return (
+                        <div
+                          key={task.id}
+                          className="list-task-row"
+                          onClick={() => onTaskClick(task, false, column.id)}
+                        >
+                          <div className="list-task-main">
+                            <span className="task-badge">#{task.id}</span>
+                            <div className="list-task-content">
+                              <span className="list-task-title" title={task.title}>{task.title}</span>
+                              {task.description && (
+                                <span className="list-task-desc" title={stripRichTextToSnippet(task.description)}>
+                                  {stripRichTextToSnippet(task.description)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="list-task-meta" onClick={(e) => e.stopPropagation()}>
+                            <div className="list-task-badges">
+                              {labels.length > 0 && (
+                                <div className="list-task-labels">
+                                  {labels.map((label) => (
+                                    <span
+                                      key={label.id}
+                                      className="label-chip"
+                                      style={{ background: label.color + '22', borderColor: label.color, color: label.color }}
+                                      title={label.name}
+                                    >
+                                      <span className="label-chip-dot" style={{ background: label.color }} />
+                                      {label.name}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                              {priorityMeta && (
+                                <span
+                                  className="priority-chip"
+                                  style={{
+                                    color: priorityMeta.color,
+                                    borderColor: priorityMeta.borderColor,
+                                    background: priorityMeta.bg,
+                                  }}
+                                  title={`Priority: ${priorityMeta.label}`}
+                                >
+                                  <span className="priority-chip-dot" style={{ background: priorityMeta.color }} />
+                                  {priorityMeta.label}
+                                </span>
+                              )}
+                              {dueDateInfo.status !== 'none' && (
+                                <span
+                                  className={`due-date-chip status-${dueDateInfo.status}`}
+                                  title={dueDateInfo.fullText}
+                                >
+                                  <span className="due-date-icon">
+                                    {dueDateInfo.isOverdue ? '⚠️' : dueDateInfo.status === 'today' ? '⚡' : '📅'}
+                                  </span>
+                                  <span>{dueDateInfo.badgeText}</span>
+                                </span>
+                              )}
+                            </div>
+
+                            <select
+                              className="table-col-select"
+                              value={column.id}
+                              onChange={(e) => onQuickMoveTask(task.id, e.target.value)}
+                              title="Move to another column"
+                            >
+                              {columns.map((col) => (
+                                <option key={col.id} value={col.id}>
+                                  {col.title}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              type="button"
+                              className="table-action-icon"
+                              onClick={() => onTaskClick(task, false, column.id)}
+                              title="Open details"
+                            >
+                              ✎
+                            </button>
                           </div>
                         </div>
-
-                        <div className="list-task-meta" onClick={(e) => e.stopPropagation()}>
-                          <select
-                            className="table-col-select"
-                            value={column.id}
-                            onChange={(e) => onQuickMoveTask(task.id, e.target.value)}
-                            title="Move to another column"
-                          >
-                            {columns.map((col) => (
-                              <option key={col.id} value={col.id}>
-                                {col.title}
-                              </option>
-                            ))}
-                          </select>
-                          <button
-                            type="button"
-                            className="table-action-icon"
-                            onClick={() => onTaskClick(task, false, column.id)}
-                            title="Open details"
-                          >
-                            ✎
-                          </button>
-                        </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               )}
@@ -161,38 +212,72 @@ export const ListView: React.FC<ListViewProps> = ({
 
             {!collapsedCols['__DELETED__'] && (
               <div className="list-task-items">
-                {deletedTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className="list-task-row"
-                    style={{ opacity: 0.85 }}
-                    onClick={() => onTaskClick(task, true)}
-                  >
-                    <div className="list-task-main">
-                      <span className="task-badge task-badge-deleted">#{task.id}</span>
-                      <div className="list-task-content">
-                        <span className="list-task-title" style={{ textDecoration: 'line-through' }} title={task.title}>
-                          {task.title}
-                        </span>
-                        {task.description && (
-                          <span className="list-task-desc" title={stripRichTextToSnippet(task.description)}>
-                            {stripRichTextToSnippet(task.description)}
+                {deletedTasks.map((task) => {
+                  const priority = task.priority || 'medium';
+                  const priorityMeta = PRIORITY_CONFIG[priority];
+                  const dueDateInfo = getDueDateInfo(task.dueDate);
+
+                  return (
+                    <div
+                      key={task.id}
+                      className="list-task-row"
+                      style={{ opacity: 0.85 }}
+                      onClick={() => onTaskClick(task, true)}
+                    >
+                      <div className="list-task-main">
+                        <span className="task-badge task-badge-deleted">#{task.id}</span>
+                        <div className="list-task-content">
+                          <span className="list-task-title" style={{ textDecoration: 'line-through' }} title={task.title}>
+                            {task.title}
                           </span>
-                        )}
+                          {task.description && (
+                            <span className="list-task-desc" title={stripRichTextToSnippet(task.description)}>
+                              {stripRichTextToSnippet(task.description)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="list-task-meta" onClick={(e) => e.stopPropagation()}>
+                        <div className="list-task-badges">
+                          {priorityMeta && (
+                            <span
+                              className="priority-chip"
+                              style={{
+                                color: priorityMeta.color,
+                                borderColor: priorityMeta.borderColor,
+                                background: priorityMeta.bg,
+                              }}
+                              title={`Priority: ${priorityMeta.label}`}
+                            >
+                              <span className="priority-chip-dot" style={{ background: priorityMeta.color }} />
+                              {priorityMeta.label}
+                            </span>
+                          )}
+                          {dueDateInfo.status !== 'none' && (
+                            <span
+                              className={`due-date-chip status-${dueDateInfo.status}`}
+                              title={dueDateInfo.fullText}
+                            >
+                              <span className="due-date-icon">
+                                {dueDateInfo.isOverdue ? '⚠️' : dueDateInfo.status === 'today' ? '⚡' : '📅'}
+                              </span>
+                              <span>{dueDateInfo.badgeText}</span>
+                            </span>
+                          )}
+                        </div>
+
+                        <button
+                          type="button"
+                          className="btn-restore-mini"
+                          onClick={() => onRestoreTask(task)}
+                        >
+                          Restore
+                        </button>
                       </div>
                     </div>
-
-                    <div className="list-task-meta" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        className="btn-restore-mini"
-                        onClick={() => onRestoreTask(task)}
-                      >
-                        Restore
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

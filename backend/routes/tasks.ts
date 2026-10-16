@@ -8,7 +8,7 @@ const router = Router();
 // Create new task
 router.post('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
-    const { columnId, title, description } = req.body;
+    const { columnId, title, description, priority, dueDate } = req.body;
     const col = await db.get('SELECT board_id FROM columns WHERE id = ?', [columnId]);
     const boardId = col ? col.board_id : null;
 
@@ -17,10 +17,12 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
       [columnId]
     );
     const nextOrder = (maxOrderRes?.maxOrder ?? -1) + 1;
+    const taskPriority = priority || 'medium';
+    const taskDueDate = dueDate || null;
     
     const result = await db.run(
-      'INSERT INTO tasks (column_id, board_id, title, description, order_index, is_deleted) VALUES (?, ?, ?, ?, ?, 0)', 
-      [columnId, boardId, title, description, nextOrder]
+      'INSERT INTO tasks (column_id, board_id, title, description, order_index, is_deleted, priority, due_date) VALUES (?, ?, ?, ?, ?, 0, ?, ?)', 
+      [columnId, boardId, title, description, nextOrder, taskPriority, taskDueDate]
     );
     await logTaskHistory(result.lastID!, req.user?.userId || 0, req.user?.username || 'User', 'created', null, title);
     res.json({ success: true, taskId: result.lastID });
@@ -196,16 +198,24 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => 
     if (task.is_deleted === 1) {
       return res.status(400).json({ error: 'Deleted tasks cannot be edited' });
     }
-    const { title, description, columnId } = req.body;
+    const { title, description, columnId, priority, dueDate } = req.body;
 
     const newTitle = title !== undefined ? title : task.title;
     const newDescription = description !== undefined ? description : task.description;
+    const newPriority = priority !== undefined ? priority : (task.priority || 'medium');
+    const newDueDate = dueDate !== undefined ? (dueDate || null) : (task.due_date || null);
 
     if (newTitle && task.title !== newTitle) {
       await logTaskHistory(taskId, req.user?.userId || 0, req.user?.username || 'User', 'title', task.title, newTitle);
     }
     if ((task.description || '') !== (newDescription || '')) {
       await logTaskHistory(taskId, req.user?.userId || 0, req.user?.username || 'User', 'description', task.description || '(empty)', newDescription || '(empty)');
+    }
+    if ((task.priority || 'medium') !== newPriority) {
+      await logTaskHistory(taskId, req.user?.userId || 0, req.user?.username || 'User', 'priority', task.priority || 'medium', newPriority);
+    }
+    if ((task.due_date || null) !== newDueDate) {
+      await logTaskHistory(taskId, req.user?.userId || 0, req.user?.username || 'User', 'due_date', task.due_date || 'No Date', newDueDate || 'No Date');
     }
 
     let targetColumnId = task.column_id;
@@ -237,8 +247,8 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => 
     }
 
     await db.run(
-      'UPDATE tasks SET title = ?, description = ?, column_id = ?, order_index = ? WHERE id = ?',
-      [newTitle, newDescription, targetColumnId, targetOrder, taskId]
+      'UPDATE tasks SET title = ?, description = ?, column_id = ?, order_index = ?, priority = ?, due_date = ? WHERE id = ?',
+      [newTitle, newDescription, targetColumnId, targetOrder, newPriority, newDueDate, taskId]
     );
 
     res.json({ success: true, columnId: targetColumnId });

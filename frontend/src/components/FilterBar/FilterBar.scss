@@ -1,0 +1,190 @@
+/* ==========================================================================
+   Filter Bar Component
+   ========================================================================== */
+.filter-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 0.65rem 2rem;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-ui);
+  position: relative;
+  z-index: 5;
+  flex-wrap: wrap;
+
+  .filter-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    flex: 1;
+
+    .filter-search-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      min-width: 220px;
+      max-width: 320px;
+      flex: 1;
+
+      .filter-search-icon {
+        position: absolute;
+        left: 0.65rem;
+        color: var(--text-muted);
+        pointer-events: none;
+        flex-shrink: 0;
+      }
+
+      .filter-search-input {
+        width: 100%;
+        padding: 0.38rem 1.8rem 0.38rem 2rem;
+        background: var(--bg-input);
+        border: 1px solid var(--border-ui);
+        border-radius: var(--radius-btn);
+        color: var(--text-main);
+        font-family: var(--font-body);
+        font-size: 0.8rem;
+        outline: none;
+        transition: var(--transition);
+
+        &::placeholder {
+          color: var(--text-muted);
+          opacity: 0.8;
+        }
+
+        &:hover {
+          border-color: var(--border-card-hover);
+        }
+
+        &:focus {
+          border-color: var(--accent);
+          box-shadow: 0 0 0 1px var(--accent);
+          background: var(--bg-column);
+        }
+      }
+
+      .filter-search-clear {
+        position: absolute;
+        right: 0.5rem;
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        cursor: pointer;
+        padding: 0.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: var(--transition);
+
+        &:hover {
+          color: var(--text-main);
+          background: rgba(255, 255, 255, 0.1);
+        }
+      }
+    }
+
+    .filter-select-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+
+      .filter-label {
+        font-size: 0.75rem;
+        font-family: var(--font-body);
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        user-select: none;
+      }
+
+      .filter-select {
+        padding: 0.38rem 0.75rem;
+        background: var(--bg-input);
+        border: 1px solid var(--border-ui);
+        border-radius: var(--radius-btn);
+        color: var(--text-main);
+        font-family: var(--font-body);
+        font-size: 0.8rem;
+        outline: none;
+        cursor: pointer;
+        transition: var(--transition);
+
+        &:hover {
+          border-color: var(--border-card-hover);
+        }
+
+        &:focus {
+          border-color: var(--accent);
+          box-shadow: 0 0 0 1px var(--accent);
+        }
+
+        &.filter-active {
+          border-color: var(--accent);
+          background: rgba(229, 154, 82, 0.12);
+          color: var(--accent);
+          font-weight: 600;
+        }
+
+        option {
+          background: var(--bg-column);
+          color: var(--text-main);
+        }
+      }
+    }
+  }
+
+  .filter-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .filter-active-status {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+
+      .filter-count-badge {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--accent);
+        background: rgba(229, 154, 82, 0.14);
+        border: 1px solid rgba(229, 154, 82, 0.35);
+        padding: 0.25rem 0.6rem;
+        border-radius: var(--radius-badge);
+        user-select: none;
+      }
+
+      .filter-reset-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        background: transparent;
+        border: 1px solid var(--border-ui);
+        color: var(--text-muted);
+        font-family: var(--font-body);
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.3rem 0.65rem;
+        border-radius: var(--radius-btn);
+        cursor: pointer;
+        transition: var(--transition);
+
+        .reset-icon {
+          font-size: 0.7rem;
+        }
+
+        &:hover {
+          color: #ff7b72;
+          border-color: rgba(239, 68, 68, 0.5);
+          background: rgba(239, 68, 68, 0.1);
+        }
+      }
+    }
+  }
+}

@@ -46,8 +46,12 @@ export const initDb = async () => {
     try {
       await db.exec('ALTER TABLE tasks ADD COLUMN original_column_id INTEGER;');
     } catch (e) {}
+    // Priority and Due Date migrations
     try {
-      await db.exec('ALTER TABLE columns ADD COLUMN is_deleted INTEGER DEFAULT 0;');
+      await db.exec("ALTER TABLE tasks ADD COLUMN priority TEXT DEFAULT 'medium';");
+    } catch (e) {}
+    try {
+      await db.exec('ALTER TABLE tasks ADD COLUMN due_date TEXT DEFAULT NULL;');
     } catch (e) {}
 
     // Backfill board_id for any existing tasks
@@ -55,6 +59,11 @@ export const initDb = async () => {
       UPDATE tasks 
       SET board_id = (SELECT board_id FROM columns WHERE columns.id = tasks.column_id) 
       WHERE board_id IS NULL AND column_id IS NOT NULL;
+    `);
+
+    // Backfill priority for any existing tasks with NULL
+    await db.exec(`
+      UPDATE tasks SET priority = 'medium' WHERE priority IS NULL;
     `);
 
     await db.exec(`

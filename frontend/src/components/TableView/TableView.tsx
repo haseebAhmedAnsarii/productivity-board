@@ -3,6 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Column, Task } from '../../types';
 import { AddColumn } from '../AddColumn';
 import { stripRichTextToSnippet } from '../RichTextRenderer';
+import { PRIORITY_CONFIG, getDueDateInfo } from '../../utils/priorityDateUtils';
 
 interface TableViewProps {
   columns: Column[];
@@ -35,7 +36,7 @@ export const TableView: React.FC<TableViewProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedColumnFilter, setSelectedColumnFilter] = useState('ALL');
-  const [sortBy, setSortBy] = useState<'id' | 'title' | 'column'>('id');
+  const [sortBy, setSortBy] = useState<'id' | 'title' | 'column' | 'priority' | 'dueDate'>('id');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   // Aggregate active tasks with column info
@@ -67,6 +68,14 @@ export const TableView: React.FC<TableViewProps> = ({
           comp = a.task.title.localeCompare(b.task.title);
         } else if (sortBy === 'column') {
           comp = a.column.title.localeCompare(b.column.title);
+        } else if (sortBy === 'priority') {
+          const weightA = PRIORITY_CONFIG[a.task.priority || 'medium']?.weight || 2;
+          const weightB = PRIORITY_CONFIG[b.task.priority || 'medium']?.weight || 2;
+          comp = weightA - weightB;
+        } else if (sortBy === 'dueDate') {
+          const dateA = a.task.dueDate ? new Date(a.task.dueDate).getTime() : 9999999999999;
+          const dateB = b.task.dueDate ? new Date(b.task.dueDate).getTime() : 9999999999999;
+          comp = dateA - dateB;
         }
         return sortOrder === 'asc' ? comp : -comp;
       });
@@ -85,7 +94,7 @@ export const TableView: React.FC<TableViewProps> = ({
     });
   }, [deletedTasks, showDeletedCards, searchTerm, selectedColumnFilter]);
 
-  const handleSort = (field: 'id' | 'title' | 'column') => {
+  const handleSort = (field: 'id' | 'title' | 'column' | 'priority' | 'dueDate') => {
     if (sortBy === field) {
       setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
     } else {
@@ -154,25 +163,39 @@ export const TableView: React.FC<TableViewProps> = ({
           <thead>
             <tr>
               <th 
-                style={{ width: '75px', cursor: 'pointer' }}
+                style={{ width: '70px', cursor: 'pointer' }}
                 onClick={() => handleSort('id')}
                 title="Click to sort by ID"
               >
                 #ID {sortBy === 'id' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </th>
               <th 
-                style={{ width: '28%', cursor: 'pointer' }}
+                style={{ width: '24%', cursor: 'pointer' }}
                 onClick={() => handleSort('title')}
                 title="Click to sort by Title"
               >
                 Title {sortBy === 'title' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </th>
               <th 
-                style={{ width: '170px', cursor: 'pointer' }}
+                style={{ width: '150px', cursor: 'pointer' }}
                 onClick={() => handleSort('column')}
                 title="Click to sort by Column"
               >
                 Column {sortBy === 'column' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+              </th>
+              <th 
+                style={{ width: '115px', cursor: 'pointer' }}
+                onClick={() => handleSort('priority')}
+                title="Click to sort by Priority"
+              >
+                Priority {sortBy === 'priority' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+              </th>
+              <th 
+                style={{ width: '140px', cursor: 'pointer' }}
+                onClick={() => handleSort('dueDate')}
+                title="Click to sort by Due Date"
+              >
+                Due Date {sortBy === 'dueDate' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </th>
               <th>Description</th>
               <th style={{ width: '95px', textAlign: 'right' }}>Actions</th>
@@ -181,94 +204,172 @@ export const TableView: React.FC<TableViewProps> = ({
           <tbody>
             {filteredActiveTasks.length === 0 && filteredDeletedTasks.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
                   No tasks found matching your filter criteria.
                 </td>
               </tr>
             ) : (
               <>
                 {/* Active Tasks */}
-                {filteredActiveTasks.map(({ task, column }) => (
-                  <tr
-                    key={task.id}
-                    onClick={() => onTaskClick(task, false, column.id)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <td>
-                      <span className="task-badge">#{task.id}</span>
-                    </td>
-                    <td>
-                      <span className="table-task-title" title={task.title}>{task.title}</span>
-                    </td>
-                    <td onClick={(e) => e.stopPropagation()}>
-                      <select
-                        className="table-col-select"
-                        value={column.id}
-                        onChange={(e) => onQuickMoveTask(task.id, e.target.value)}
-                        title="Change column"
-                      >
-                        {columns.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.title}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td>
-                      <span className="table-task-desc" title={stripRichTextToSnippet(task.description)}>
-                        {task.description ? stripRichTextToSnippet(task.description) : <span style={{ opacity: 0.5 }}>—</span>}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        className="table-action-icon"
-                        onClick={() => onTaskClick(task, false, column.id)}
-                        title="Edit task"
-                      >
-                        ✎ Edit
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {filteredActiveTasks.map(({ task, column }) => {
+                  const priority = task.priority || 'medium';
+                  const priorityMeta = PRIORITY_CONFIG[priority];
+                  const dueDateInfo = getDueDateInfo(task.dueDate);
+
+                  return (
+                    <tr
+                      key={task.id}
+                      onClick={() => onTaskClick(task, false, column.id)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <td>
+                        <span className="task-badge">#{task.id}</span>
+                      </td>
+                      <td>
+                        <span className="table-task-title" title={task.title}>{task.title}</span>
+                      </td>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <select
+                          className="table-col-select"
+                          value={column.id}
+                          onChange={(e) => onQuickMoveTask(task.id, e.target.value)}
+                          title="Change column"
+                        >
+                          {columns.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.title}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td>
+                        {priorityMeta ? (
+                          <span
+                            className="priority-chip"
+                            style={{
+                              color: priorityMeta.color,
+                              borderColor: priorityMeta.borderColor,
+                              background: priorityMeta.bg,
+                            }}
+                            title={`Priority: ${priorityMeta.label}`}
+                          >
+                            <span className="priority-chip-dot" style={{ background: priorityMeta.color }} />
+                            {priorityMeta.label}
+                          </span>
+                        ) : (
+                          <span style={{ opacity: 0.5 }}>—</span>
+                        )}
+                      </td>
+                      <td>
+                        {dueDateInfo.status !== 'none' ? (
+                          <span
+                            className={`due-date-chip status-${dueDateInfo.status}`}
+                            title={dueDateInfo.fullText}
+                          >
+                            <span className="due-date-icon">
+                              {dueDateInfo.isOverdue ? '⚠️' : dueDateInfo.status === 'today' ? '⚡' : '📅'}
+                            </span>
+                            <span>{dueDateInfo.badgeText}</span>
+                          </span>
+                        ) : (
+                          <span style={{ opacity: 0.5 }}>—</span>
+                        )}
+                      </td>
+                      <td>
+                        <span className="table-task-desc" title={stripRichTextToSnippet(task.description)}>
+                          {task.description ? stripRichTextToSnippet(task.description) : <span style={{ opacity: 0.5 }}>—</span>}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
+                        <button
+                          type="button"
+                          className="table-action-icon"
+                          onClick={() => onTaskClick(task, false, column.id)}
+                          title="Edit task"
+                        >
+                          ✎ Edit
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
 
                 {/* Soft-Deleted Tasks */}
-                {filteredDeletedTasks.map((task) => (
-                  <tr
-                    key={task.id}
-                    className="table-row-deleted"
-                    onClick={() => onTaskClick(task, true)}
-                    style={{ cursor: 'pointer', background: 'rgba(239, 68, 68, 0.04)' }}
-                  >
-                    <td>
-                      <span className="task-badge task-badge-deleted">#{task.id}</span>
-                    </td>
-                    <td>
-                      <span className="table-task-title table-task-title-deleted" title={task.title}>
-                        {task.title}
-                      </span>
-                    </td>
-                    <td>
-                      <span style={{ color: 'var(--danger)', fontSize: '0.78rem', fontWeight: 600, textTransform: 'uppercase' }}>
-                        Deleted
-                      </span>
-                    </td>
-                    <td>
-                      <span className="table-task-desc" title={stripRichTextToSnippet(task.description)}>
-                        {task.description ? stripRichTextToSnippet(task.description) : <span style={{ opacity: 0.5 }}>—</span>}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        className="btn-restore-mini"
-                        onClick={() => onRestoreTask(task)}
-                      >
-                        Restore
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {filteredDeletedTasks.map((task) => {
+                  const priority = task.priority || 'medium';
+                  const priorityMeta = PRIORITY_CONFIG[priority];
+                  const dueDateInfo = getDueDateInfo(task.dueDate);
+
+                  return (
+                    <tr
+                      key={task.id}
+                      className="table-row-deleted"
+                      onClick={() => onTaskClick(task, true)}
+                      style={{ cursor: 'pointer', background: 'rgba(239, 68, 68, 0.04)' }}
+                    >
+                      <td>
+                        <span className="task-badge task-badge-deleted">#{task.id}</span>
+                      </td>
+                      <td>
+                        <span className="table-task-title table-task-title-deleted" title={task.title}>
+                          {task.title}
+                        </span>
+                      </td>
+                      <td>
+                        <span style={{ color: 'var(--danger)', fontSize: '0.78rem', fontWeight: 600, textTransform: 'uppercase' }}>
+                          Deleted
+                        </span>
+                      </td>
+                      <td>
+                        {priorityMeta ? (
+                          <span
+                            className="priority-chip"
+                            style={{
+                              color: priorityMeta.color,
+                              borderColor: priorityMeta.borderColor,
+                              background: priorityMeta.bg,
+                            }}
+                            title={`Priority: ${priorityMeta.label}`}
+                          >
+                            <span className="priority-chip-dot" style={{ background: priorityMeta.color }} />
+                            {priorityMeta.label}
+                          </span>
+                        ) : (
+                          <span style={{ opacity: 0.5 }}>—</span>
+                        )}
+                      </td>
+                      <td>
+                        {dueDateInfo.status !== 'none' ? (
+                          <span
+                            className={`due-date-chip status-${dueDateInfo.status}`}
+                            title={dueDateInfo.fullText}
+                          >
+                            <span className="due-date-icon">
+                              {dueDateInfo.isOverdue ? '⚠️' : dueDateInfo.status === 'today' ? '⚡' : '📅'}
+                            </span>
+                            <span>{dueDateInfo.badgeText}</span>
+                          </span>
+                        ) : (
+                          <span style={{ opacity: 0.5 }}>—</span>
+                        )}
+                      </td>
+                      <td>
+                        <span className="table-task-desc" title={stripRichTextToSnippet(task.description)}>
+                          {task.description ? stripRichTextToSnippet(task.description) : <span style={{ opacity: 0.5 }}>—</span>}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
+                        <button
+                          type="button"
+                          className="btn-restore-mini"
+                          onClick={() => onRestoreTask(task)}
+                        >
+                          Restore
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </>
             )}
           </tbody>

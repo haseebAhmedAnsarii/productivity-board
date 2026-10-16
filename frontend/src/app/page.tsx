@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { io, Socket } from 'socket.io-client';
 
-import { Column, SelectedTask, Task, ViewMode } from '../types';
+import { Column, SelectedTask, Task, ViewMode, PriorityLevel, DueDateFilter } from '../types';
 import {
   Header,
   AuthView,
@@ -18,7 +18,9 @@ import {
   ListView,
   TableView,
   BoardMinimap,
+  FilterBar,
 } from '../components';
+import { matchesPriorityFilter, matchesDueDateFilter } from '../utils/priorityDateUtils';
 
 let socket: Socket;
 
@@ -40,6 +42,49 @@ export default function Home() {
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [taskToRestore, setTaskToRestore] = useState<Task | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('board');
+
+  // Priority & Due Date Filter States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [dueDateFilter, setDueDateFilter] = useState<DueDateFilter>('all');
+
+  const isFilterActive = searchQuery.trim() !== '' || priorityFilter !== 'all' || dueDateFilter !== 'all';
+
+  const taskMatchesFilter = (task: Task) => {
+    const matchesSearch = !searchQuery.trim() ||
+      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (task.description && task.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesPriority = matchesPriorityFilter(task.priority, priorityFilter);
+    const matchesDueDate = matchesDueDateFilter(task.dueDate, dueDateFilter);
+    return Boolean(matchesSearch && matchesPriority && matchesDueDate);
+  };
+
+  const filteredColumns = useMemo(() => {
+    if (!isFilterActive) return columns;
+    return columns.map(col => ({
+      ...col,
+      tasks: col.tasks.filter(taskMatchesFilter)
+    }));
+  }, [columns, searchQuery, priorityFilter, dueDateFilter, isFilterActive]);
+
+  const filteredDeletedTasks = useMemo(() => {
+    if (!isFilterActive) return deletedTasks;
+    return deletedTasks.filter(taskMatchesFilter);
+  }, [deletedTasks, searchQuery, priorityFilter, dueDateFilter, isFilterActive]);
+
+  const totalTasksCount = useMemo(() => {
+    return columns.reduce((acc, c) => acc + c.tasks.length, 0) + (showDeletedCards ? deletedTasks.length : 0);
+  }, [columns, deletedTasks, showDeletedCards]);
+
+  const filteredTasksCount = useMemo(() => {
+    return filteredColumns.reduce((acc, c) => acc + c.tasks.length, 0) + (showDeletedCards ? filteredDeletedTasks.length : 0);
+  }, [filteredColumns, filteredDeletedTasks, showDeletedCards]);
+
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setPriorityFilter('all');
+    setDueDateFilter('all');
+  };
 
   const deletedColumnRef = useRef<HTMLDivElement>(null);
   const addColumnRef = useRef<HTMLDivElement>(null);
@@ -203,20 +248,40 @@ export default function Home() {
     const sourceCol = columns[sourceColIndex];
     const destCol = columns[destColIndex];
 
-    const sourceTasks = [...sourceCol.tasks];
-    const destTasks = source.droppableId === destination.droppableId ? sourceTasks : [...destCol.tasks];
+    if (!sourceCol || !destCol) return;
 
-    const [movedTask] = sourceTasks.splice(source.index, 1);
-    destTasks.splice(destination.index, 0, movedTask);
+    const movedTaskId = result.draggableId;
+    const movedTask = sourceCol.tasks.find(t => t.id === movedTaskId);
+    if (!movedTask) return;
+
+    const sourceTasks = sourceCol.tasks.filter(t => t.id !== movedTaskId);
+    let destTasks = source.droppableId === destination.droppableId ? [...sourceTasks] : [...destCol.tasks];
+
+    if (isFilterActive) {
+      const filteredDestTasks = destTasks.filter(taskMatchesFilter);
+      if (destination.index < filteredDestTasks.length) {
+        const refTask = filteredDestTasks[destination.index];
+        const refIndex = destTasks.findIndex(t => t.id === refTask.id);
+        destTasks.splice(refIndex >= 0 ? refIndex : destTasks.length, 0, movedTask);
+      } else {
+        destTasks.push(movedTask);
+      }
+    } else {
+      destTasks.splice(destination.index, 0, movedTask);
+    }
 
     const newColumnsForTasks = [...columns];
     newColumnsForTasks[sourceColIndex] = { ...sourceCol, tasks: sourceTasks };
     
     if (source.droppableId !== destination.droppableId) {
       newColumnsForTasks[destColIndex] = { ...destCol, tasks: destTasks };
+    } else {
+      newColumnsForTasks[sourceColIndex] = { ...sourceCol, tasks: destTasks };
     }
 
     setColumns(newColumnsForTasks);
+
+    const realDestIndex = destTasks.findIndex(t => t.id === movedTaskId);
 
     socket.emit('move_task', {
       boardId,
@@ -224,7 +289,7 @@ export default function Home() {
       sourceColumnId: source.droppableId,
       destinationColumnId: destination.droppableId,
       sourceIndex: source.index,
-      destinationIndex: destination.index,
+      destinationIndex: realDestIndex >= 0 ? realDestIndex : destination.index,
     });
   };
 
@@ -362,7 +427,14 @@ export default function Home() {
     await moveTaskToColumn(selectedTask.id, targetColId);
   };
 
-  const saveTaskDetails = async (title: string, description: string, columnId: string, labelIds?: number[]) => {
+  const saveTaskDetails = async (
+    title: string, 
+    description: string, 
+    columnId: string, 
+    labelIds?: number[],
+    priority?: PriorityLevel,
+    dueDate?: string | null
+  ) => {
     if (!selectedTask || !token) return;
     
     try {
@@ -373,7 +445,13 @@ export default function Home() {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ columnId: columnId || selectedTask.columnId, title, description })
+          body: JSON.stringify({ 
+            columnId: columnId || selectedTask.columnId, 
+            title, 
+            description,
+            priority: priority || 'medium',
+            dueDate: dueDate || null
+          })
         });
         if (res.ok && labelIds && labelIds.length > 0) {
           const data = await res.json();
@@ -393,7 +471,13 @@ export default function Home() {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ title, description, columnId })
+          body: JSON.stringify({ 
+            title, 
+            description, 
+            columnId,
+            priority: priority || 'medium',
+            dueDate: dueDate || null
+          })
         });
         if (labelIds !== undefined) {
           await fetch(`http://localhost:4000/api/labels/task/${selectedTask.id}`, {
@@ -444,6 +528,21 @@ export default function Home() {
         onLogoutClick={() => setShowLogoutConfirm(true)}
       />
 
+      {boardId && (
+        <FilterBar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          priorityFilter={priorityFilter}
+          onPriorityChange={setPriorityFilter}
+          dueDateFilter={dueDateFilter}
+          onDueDateChange={setDueDateFilter}
+          isFilterActive={isFilterActive}
+          onClearFilters={handleClearFilters}
+          totalTasksCount={totalTasksCount}
+          filteredTasksCount={filteredTasksCount}
+        />
+      )}
+
       {loading ? (
         <div style={{ padding: '2rem' }}>Loading your board...</div>
       ) : !boardId ? (
@@ -454,7 +553,7 @@ export default function Home() {
         <div className="board-view-wrapper">
           <DragDropContext onDragEnd={onDragEnd}>
             <main ref={boardAreaRef} className="board-area">
-              {columns.map((column) => (
+              {filteredColumns.map((column) => (
                 <KanbanColumn
                   key={column.id}
                   column={column}
@@ -465,10 +564,10 @@ export default function Home() {
               ))}
 
               {/* Deleted Column (Only rendered if showDeletedCards is true and deletedTasks has items) */}
-              {showDeletedCards && deletedTasks.length > 0 && (
+              {showDeletedCards && filteredDeletedTasks.length > 0 && (
                 <DeletedColumn
                   ref={deletedColumnRef}
-                  deletedTasks={deletedTasks}
+                  deletedTasks={filteredDeletedTasks}
                   onTaskClick={(task) => openTaskModal(task, true)}
                   onRestoreTask={(task) => setTaskToRestore(task)}
                 />
@@ -490,8 +589,8 @@ export default function Home() {
 
           <BoardMinimap
             boardAreaRef={boardAreaRef}
-            columns={columns}
-            deletedTasksCount={deletedTasks.length}
+            columns={filteredColumns}
+            deletedTasksCount={filteredDeletedTasks.length}
             showDeletedCards={showDeletedCards}
             onAddColumnClick={() => {
               setIsAddingColumn(true);
@@ -501,8 +600,8 @@ export default function Home() {
         </div>
       ) : viewMode === 'list' ? (
         <ListView
-          columns={columns}
-          deletedTasks={deletedTasks}
+          columns={filteredColumns}
+          deletedTasks={filteredDeletedTasks}
           showDeletedCards={showDeletedCards}
           onTaskClick={(task, isDeleted, colId) => openTaskModal(task, !!isDeleted, colId)}
           onAddTask={(colId) => openNewTaskModal(colId)}
@@ -520,8 +619,8 @@ export default function Home() {
         />
       ) : (
         <TableView
-          columns={columns}
-          deletedTasks={deletedTasks}
+          columns={filteredColumns}
+          deletedTasks={filteredDeletedTasks}
           showDeletedCards={showDeletedCards}
           onTaskClick={(task, isDeleted, colId) => openTaskModal(task, !!isDeleted, colId)}
           onAddTask={(colId) => openNewTaskModal(colId || (columns[0]?.id ?? ''))}
