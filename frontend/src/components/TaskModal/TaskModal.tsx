@@ -530,52 +530,53 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               />
             </div>
 
-            {/* Priority & Due Date Section */}
-            <div className="task-modal-row-grid">
-              <div className="form-group">
-                <label>Priority</label>
-                <div className="priority-selector">
-                  {(['low', 'medium', 'high', 'critical'] as PriorityLevel[]).map((lvl) => {
-                    const meta = PRIORITY_CONFIG[lvl];
-                    const isSelected = editPriority === lvl;
-                    return (
-                      <button
-                        key={lvl}
-                        type="button"
-                        disabled={isDeleted}
-                        className={`priority-select-btn ${isSelected ? 'selected' : ''}`}
-                        style={isSelected ? {
-                          background: meta.bg,
-                          borderColor: meta.color,
-                          color: meta.color,
-                        } : {}}
-                        onClick={() => {
-                          if (!isDeleted) setEditPriority(lvl);
-                        }}
-                      >
-                        <span className="priority-chip-dot" style={{ background: meta.color }} />
-                        {meta.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="form-group">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <label htmlFor="task-due-date-input">Due Date</label>
-                  {editDueDate && !isDeleted && (
+            {/* Priority Section (Dedicated Row) */}
+            <div className="form-group">
+              <label>Priority</label>
+              <div className="priority-selector">
+                {(['low', 'medium', 'high', 'critical'] as PriorityLevel[]).map((lvl) => {
+                  const meta = PRIORITY_CONFIG[lvl];
+                  const isSelected = editPriority === lvl;
+                  return (
                     <button
+                      key={lvl}
                       type="button"
-                      onClick={() => setEditDueDate('')}
-                      className="due-date-clear-btn"
-                      title="Clear due date"
+                      disabled={isDeleted}
+                      className={`priority-select-btn ${isSelected ? 'selected' : ''}`}
+                      style={isSelected ? {
+                        background: meta.bg,
+                        borderColor: meta.color,
+                        color: meta.color,
+                      } : {}}
+                      onClick={() => {
+                        if (!isDeleted) setEditPriority(lvl);
+                      }}
                     >
-                      Clear
+                      <span className="priority-chip-dot" style={{ background: meta.color }} />
+                      {meta.label}
                     </button>
-                  )}
-                </div>
-                <div className="due-date-input-wrapper">
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Due Date Section (Dedicated Row) */}
+            <div className="form-group">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                <label htmlFor="task-due-date-input" style={{ margin: 0 }}>Due Date</label>
+                {editDueDate && !isDeleted && (
+                  <button
+                    type="button"
+                    onClick={() => setEditDueDate('')}
+                    className="due-date-clear-btn"
+                    title="Clear due date"
+                  >
+                    Clear Due Date
+                  </button>
+                )}
+              </div>
+              <div className="due-date-input-wrapper">
+                <div className="due-date-picker-row">
                   <input
                     id="task-due-date-input"
                     type="date"
@@ -598,7 +599,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                           setEditDueDate(`${y}-${m}-${d}`);
                         }}
                       >
-                        Today
+                        ⚡ Today
                       </button>
                       <button
                         type="button"

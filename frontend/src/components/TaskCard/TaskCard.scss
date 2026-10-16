@@ -113,6 +113,15 @@
     text-overflow: ellipsis;
     word-break: break-word;
   }
+
+  .task-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-top: 0.65rem;
+    padding-top: 0.45rem;
+    border-top: 1px dashed var(--border-ui);
+  }
 }
 
 .task-badge {

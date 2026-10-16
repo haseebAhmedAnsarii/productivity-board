@@ -37,29 +37,19 @@ export const DeletedColumn = React.forwardRef<HTMLDivElement, DeletedColumnProps
                 onClick={() => onTaskClick(task)}
               >
                 <div className="task-card-header">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <span className="task-badge task-badge-deleted">#{task.id}</span>
-                    {priorityMeta && (
-                      <span
-                        className="priority-chip"
-                        style={{
-                          color: priorityMeta.color,
-                          borderColor: priorityMeta.borderColor,
-                          background: priorityMeta.bg,
-                        }}
-                        title={`Priority: ${priorityMeta.label}`}
-                      >
-                        <span className="priority-chip-dot" style={{ background: priorityMeta.color }} />
-                        {priorityMeta.label}
-                      </span>
-                    )}
-                  </div>
-                  {dueDateInfo.status !== 'none' && (
+                  <span className="task-badge task-badge-deleted">#{task.id}</span>
+                  {priorityMeta && (
                     <span
-                      className={`due-date-chip status-${dueDateInfo.status}`}
-                      title={dueDateInfo.fullText}
+                      className="priority-chip"
+                      style={{
+                        color: priorityMeta.color,
+                        borderColor: priorityMeta.borderColor,
+                        background: priorityMeta.bg,
+                      }}
+                      title={`Priority: ${priorityMeta.label}`}
                     >
-                      <span>{dueDateInfo.badgeText}</span>
+                      <span className="priority-chip-dot" style={{ background: priorityMeta.color }} />
+                      {priorityMeta.label}
                     </span>
                   )}
                 </div>
@@ -71,7 +61,18 @@ export const DeletedColumn = React.forwardRef<HTMLDivElement, DeletedColumnProps
                     {descSnippet}
                   </div>
                 )}
-                <div style={{ marginTop: '0.65rem', display: 'flex', justifyContent: 'flex-end' }}>
+                <div style={{ marginTop: '0.65rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {dueDateInfo.status !== 'none' ? (
+                    <span
+                      className={`due-date-chip status-${dueDateInfo.status}`}
+                      title={dueDateInfo.fullText}
+                    >
+                      <span className="due-date-icon">
+                        {dueDateInfo.isOverdue ? '⚠️' : dueDateInfo.status === 'today' ? '⚡' : '📅'}
+                      </span>
+                      <span>{dueDateInfo.badgeText}</span>
+                    </span>
+                  ) : <span />}
                   <button
                     className="btn-restore-mini"
                     onClick={(e) => {

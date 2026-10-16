@@ -40,32 +40,19 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           }}
         >
           <div className="task-card-header">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <span className="task-badge">#{task.id}</span>
-              {priorityMeta && (
-                <span
-                  className="priority-chip"
-                  style={{
-                    color: priorityMeta.color,
-                    borderColor: priorityMeta.borderColor,
-                    background: priorityMeta.bg,
-                  }}
-                  title={`Priority: ${priorityMeta.label}`}
-                >
-                  <span className="priority-chip-dot" style={{ background: priorityMeta.color }} />
-                  {priorityMeta.label}
-                </span>
-              )}
-            </div>
-            {dueDateInfo.status !== 'none' && (
+            <span className="task-badge">#{task.id}</span>
+            {priorityMeta && (
               <span
-                className={`due-date-chip status-${dueDateInfo.status}`}
-                title={dueDateInfo.fullText}
+                className="priority-chip"
+                style={{
+                  color: priorityMeta.color,
+                  borderColor: priorityMeta.borderColor,
+                  background: priorityMeta.bg,
+                }}
+                title={`Priority: ${priorityMeta.label}`}
               >
-                <span className="due-date-icon">
-                  {dueDateInfo.isOverdue ? '⚠️' : dueDateInfo.status === 'today' ? '⚡' : '📅'}
-                </span>
-                <span>{dueDateInfo.badgeText}</span>
+                <span className="priority-chip-dot" style={{ background: priorityMeta.color }} />
+                {priorityMeta.label}
               </span>
             )}
           </div>
@@ -90,6 +77,20 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           {descSnippet && (
             <div className="task-desc" title={descSnippet}>
               {descSnippet}
+            </div>
+          )}
+
+          {dueDateInfo.status !== 'none' && (
+            <div className="task-card-footer">
+              <span
+                className={`due-date-chip status-${dueDateInfo.status}`}
+                title={dueDateInfo.fullText}
+              >
+                <span className="due-date-icon">
+                  {dueDateInfo.isOverdue ? '⚠️' : dueDateInfo.status === 'today' ? '⚡' : '📅'}
+                </span>
+                <span>{dueDateInfo.badgeText}</span>
+              </span>
             </div>
           )}
         </div>
