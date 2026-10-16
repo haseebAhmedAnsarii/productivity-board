@@ -4,7 +4,9 @@ import { Column, HistoryItem, Label, PriorityLevel, SelectedTask, Task } from '.
 import { RichTextEditor } from '../RichTextEditor';
 import { stripRichTextToSnippet } from '../RichTextRenderer';
 import { LabelPicker } from '../LabelPicker';
-import { PRIORITY_CONFIG, normalizePriority } from '../../utils/priorityDateUtils';
+import { PRIORITY_CONFIG, normalizePriority, parseLocalDate } from '../../utils/priorityDateUtils';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 interface TaskModalProps {
   selectedTask: SelectedTask;
@@ -577,15 +579,30 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               </div>
               <div className="due-date-input-wrapper">
                 <div className="due-date-picker-row">
-                  <input
-                    id="task-due-date-input"
-                    type="date"
-                    value={editDueDate}
-                    disabled={isDeleted}
-                    onChange={(e) => setEditDueDate(e.target.value)}
-                    className="due-date-input"
-                    style={isDeleted ? { opacity: 0.8, cursor: 'not-allowed' } : {}}
-                  />
+                  <div className="custom-datepicker-container">
+                    <DatePicker
+                      id="task-due-date-input"
+                      selected={editDueDate ? parseLocalDate(editDueDate) : null}
+                      onChange={(date: any) => {
+                        if (!date) {
+                          setEditDueDate('');
+                        } else {
+                          const y = date.getFullYear();
+                          const m = String(date.getMonth() + 1).padStart(2, '0');
+                          const d = String(date.getDate()).padStart(2, '0');
+                          setEditDueDate(`${y}-${m}-${d}`);
+                        }
+                      }}
+                      dateFormat="MMM d, yyyy"
+                      placeholderText="Pick a date..."
+                      disabled={isDeleted}
+                      className="due-date-custom-input"
+                      popperPlacement="bottom-start"
+                      autoComplete="off"
+                      calendarClassName="bento-datepicker-calendar"
+                    />
+                    <span className="calendar-input-icon">📅</span>
+                  </div>
                   {!isDeleted && (
                     <div className="due-date-presets">
                       <button
