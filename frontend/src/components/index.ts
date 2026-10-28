@@ -16,3 +16,4 @@ export * from './TaskCard';
 export * from './TaskModal';
 export * from './FilterBar';
 export * from './CommandPalette';
+export * from './CustomSelect';

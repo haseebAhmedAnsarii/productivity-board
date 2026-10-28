@@ -4,6 +4,7 @@ import { Column, Task } from '../../types';
 import { AddColumn } from '../AddColumn';
 import { stripRichTextToSnippet } from '../RichTextRenderer';
 import { PRIORITY_CONFIG, getDueDateInfo } from '../../utils/priorityDateUtils';
+import { CustomSelect, SelectOption } from '../CustomSelect';
 
 interface TableViewProps {
   columns: Column[];
@@ -38,6 +39,21 @@ export const TableView: React.FC<TableViewProps> = ({
   const [selectedColumnFilter, setSelectedColumnFilter] = useState('ALL');
   const [sortBy, setSortBy] = useState<'id' | 'title' | 'column' | 'priority' | 'dueDate'>('id');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  const columnFilterOptions: SelectOption[] = useMemo(() => {
+    const opts: SelectOption[] = [
+      { value: 'ALL', label: 'All Columns' },
+      ...columns.map((c) => ({ value: c.id, label: c.title })),
+    ];
+    if (showDeletedCards && deletedTasks.length > 0) {
+      opts.push({ value: 'DELETED', label: 'Deleted Tasks', icon: '🗑️' });
+    }
+    return opts;
+  }, [columns, showDeletedCards, deletedTasks]);
+
+  const quickMoveOptions: SelectOption[] = useMemo(() => {
+    return columns.map((c) => ({ value: c.id, label: c.title }));
+  }, [columns]);
 
   // Aggregate active tasks with column info
   const allActiveTasks = useMemo(() => {
@@ -117,21 +133,14 @@ export const TableView: React.FC<TableViewProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <select
-            className="table-filter-select"
+          <CustomSelect
+            className="table-filter-select-custom"
             value={selectedColumnFilter}
-            onChange={(e) => setSelectedColumnFilter(e.target.value)}
-          >
-            <option value="ALL">All Columns</option>
-            {columns.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.title}
-              </option>
-            ))}
-            {showDeletedCards && deletedTasks.length > 0 && (
-              <option value="DELETED">Deleted Tasks</option>
-            )}
-          </select>
+            onChange={(val) => setSelectedColumnFilter(val)}
+            options={columnFilterOptions}
+            size="sm"
+            ariaLabel="Filter by column"
+          />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -177,7 +186,7 @@ export const TableView: React.FC<TableViewProps> = ({
                 Title {sortBy === 'title' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </th>
               <th 
-                style={{ width: '150px', cursor: 'pointer' }}
+                style={{ width: '160px', cursor: 'pointer' }}
                 onClick={() => handleSort('column')}
                 title="Click to sort by Column"
               >
@@ -229,18 +238,15 @@ export const TableView: React.FC<TableViewProps> = ({
                         <span className="table-task-title" title={task.title}>{task.title}</span>
                       </td>
                       <td onClick={(e) => e.stopPropagation()}>
-                        <select
-                          className="table-col-select"
+                        <CustomSelect
+                          className="table-col-select-custom"
                           value={column.id}
-                          onChange={(e) => onQuickMoveTask(task.id, e.target.value)}
+                          onChange={(newColId) => onQuickMoveTask(task.id, newColId)}
+                          options={quickMoveOptions}
+                          size="sm"
                           title="Change column"
-                        >
-                          {columns.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              {c.title}
-                            </option>
-                          ))}
-                        </select>
+                          ariaLabel="Change column"
+                        />
                       </td>
                       <td>
                         {priorityMeta ? (

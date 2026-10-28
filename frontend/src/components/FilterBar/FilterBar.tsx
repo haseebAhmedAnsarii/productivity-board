@@ -1,6 +1,24 @@
 import './FilterBar.scss';
 import React from 'react';
 import { DueDateFilter } from '../../types';
+import { CustomSelect, SelectOption } from '../CustomSelect';
+
+const priorityOptions: SelectOption[] = [
+  { value: 'all', label: 'All Priorities' },
+  { value: 'critical', label: 'Critical', icon: '🔴' },
+  { value: 'high', label: 'High', icon: '🟠' },
+  { value: 'medium', label: 'Medium', icon: '🟡' },
+  { value: 'low', label: 'Low', icon: '🟢' },
+];
+
+const dueDateOptions: SelectOption[] = [
+  { value: 'all', label: 'All Dates' },
+  { value: 'overdue', label: 'Overdue', icon: '⚠️' },
+  { value: 'today', label: 'Due Today', icon: '⚡' },
+  { value: 'week', label: 'Next 7 Days', icon: '📅' },
+  { value: 'has_date', label: 'Has Due Date', icon: '🏷️' },
+  { value: 'no_date', label: 'No Due Date', icon: '⚪' },
+];
 
 interface FilterBarProps {
   searchQuery: string;
@@ -66,42 +84,35 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         </div>
 
         {/* Priority Filter */}
-        <div className="filter-select-wrap">
+        <div className="filter-select-wrap filter-priority-wrap">
           <label className="filter-label" htmlFor="priority-filter-select">
             Priority:
           </label>
-          <select
+          <CustomSelect
             id="priority-filter-select"
-            className={`filter-select ${priorityFilter !== 'all' ? 'filter-active' : ''}`}
+            className={priorityFilter !== 'all' ? 'filter-active' : ''}
             value={priorityFilter}
-            onChange={(e) => onPriorityChange(e.target.value)}
-          >
-            <option value="all">All Priorities</option>
-            <option value="critical">🔴 Critical</option>
-            <option value="high">🟠 High</option>
-            <option value="medium">🟡 Medium</option>
-            <option value="low">🟢 Low</option>
-          </select>
+            onChange={(val) => onPriorityChange(val)}
+            options={priorityOptions}
+            size="sm"
+            ariaLabel="Priority filter"
+          />
         </div>
 
         {/* Due Date Filter */}
-        <div className="filter-select-wrap">
+        <div className="filter-select-wrap filter-duedate-wrap">
           <label className="filter-label" htmlFor="duedate-filter-select">
             Due Date:
           </label>
-          <select
+          <CustomSelect
             id="duedate-filter-select"
-            className={`filter-select ${dueDateFilter !== 'all' ? 'filter-active' : ''}`}
+            className={dueDateFilter !== 'all' ? 'filter-active' : ''}
             value={dueDateFilter}
-            onChange={(e) => onDueDateChange(e.target.value as DueDateFilter)}
-          >
-            <option value="all">All Dates</option>
-            <option value="overdue">⚠️ Overdue</option>
-            <option value="today">⚡ Due Today</option>
-            <option value="week">📅 Next 7 Days</option>
-            <option value="has_date">🏷️ Has Due Date</option>
-            <option value="no_date">⚪ No Due Date</option>
-          </select>
+            onChange={(val) => onDueDateChange(val as DueDateFilter)}
+            options={dueDateOptions}
+            size="sm"
+            ariaLabel="Due date filter"
+          />
         </div>
       </div>
 

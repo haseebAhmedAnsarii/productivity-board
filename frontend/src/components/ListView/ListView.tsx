@@ -1,9 +1,10 @@
 import './ListView.scss';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Column, Task } from '../../types';
 import { AddColumn } from '../AddColumn';
 import { stripRichTextToSnippet } from '../RichTextRenderer';
 import { PRIORITY_CONFIG, getDueDateInfo } from '../../utils/priorityDateUtils';
+import { CustomSelect, SelectOption } from '../CustomSelect';
 
 interface ListViewProps {
   columns: Column[];
@@ -37,6 +38,10 @@ export const ListView: React.FC<ListViewProps> = ({
   deletedColumnRef,
 }) => {
   const [collapsedCols, setCollapsedCols] = useState<Record<string, boolean>>({});
+
+  const quickMoveOptions: SelectOption[] = useMemo(() => {
+    return columns.map((col) => ({ value: col.id, label: col.title }));
+  }, [columns]);
 
   const toggleColumn = (columnId: string) => {
     setCollapsedCols((prev) => ({
@@ -153,18 +158,15 @@ export const ListView: React.FC<ListViewProps> = ({
                               )}
                             </div>
 
-                            <select
-                              className="table-col-select"
+                            <CustomSelect
+                              className="list-col-select-custom"
                               value={column.id}
-                              onChange={(e) => onQuickMoveTask(task.id, e.target.value)}
+                              onChange={(newColId) => onQuickMoveTask(task.id, newColId)}
+                              options={quickMoveOptions}
+                              size="sm"
                               title="Move to another column"
-                            >
-                              {columns.map((col) => (
-                                <option key={col.id} value={col.id}>
-                                  {col.title}
-                                </option>
-                              ))}
-                            </select>
+                              ariaLabel="Move to another column"
+                            />
                             <button
                               type="button"
                               className="table-action-icon"

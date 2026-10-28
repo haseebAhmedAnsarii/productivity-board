@@ -90,7 +90,8 @@
     .filter-select-wrap {
       display: flex;
       align-items: center;
-      gap: 0.45rem;
+      gap: 0.5rem;
+      min-width: 160px;
 
       .filter-label {
         font-size: 0.75rem;
@@ -100,39 +101,33 @@
         text-transform: uppercase;
         letter-spacing: 0.04em;
         user-select: none;
+        flex-shrink: 0;
       }
 
-      .filter-select {
-        padding: 0.38rem 0.75rem;
-        background: var(--bg-input);
-        border: 1px solid var(--border-ui);
-        border-radius: var(--radius-btn);
-        color: var(--text-main);
-        font-family: var(--font-body);
-        font-size: 0.8rem;
-        outline: none;
-        cursor: pointer;
-        transition: var(--transition);
+      .custom-select-container {
+        flex: 1;
 
-        &:hover {
-          border-color: var(--border-card-hover);
-        }
-
-        &:focus {
-          border-color: var(--accent);
-          box-shadow: 0 0 0 1px var(--accent);
-        }
-
-        &.filter-active {
+        &.filter-active .custom-select-trigger {
           border-color: var(--accent);
           background: rgba(199, 90, 71, 0.14);
           color: var(--accent);
           font-weight: 600;
         }
+      }
 
-        option {
-          background: var(--bg-column);
-          color: var(--text-main);
+      &.filter-priority-wrap {
+        min-width: 220px;
+
+        .custom-select-container {
+          min-width: 145px;
+        }
+      }
+
+      &.filter-duedate-wrap {
+        min-width: 255px;
+
+        .custom-select-container {
+          min-width: 175px;
         }
       }
     }

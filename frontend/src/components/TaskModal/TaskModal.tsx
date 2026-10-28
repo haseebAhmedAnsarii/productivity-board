@@ -5,6 +5,7 @@ import { RichTextEditor } from '../RichTextEditor';
 import { stripRichTextToSnippet } from '../RichTextRenderer';
 import { LabelPicker } from '../LabelPicker';
 import { PRIORITY_CONFIG, normalizePriority, parseLocalDate } from '../../utils/priorityDateUtils';
+import { CustomSelect, SelectOption } from '../CustomSelect';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -55,6 +56,26 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   const [taskLabels, setTaskLabels] = useState<Label[]>([]);
   const [allBoardLabels, setAllBoardLabels] = useState<Label[]>([]);
   const overlayMouseDownRef = useRef(false);
+
+  const isNew = Boolean(selectedTask && 'isNew' in selectedTask);
+  const currentTask = selectedTask && !isNew ? (selectedTask as Task) : null;
+
+  const columnMoveOptions: SelectOption[] = React.useMemo(() => {
+    const opts: SelectOption[] = columns.map(col => {
+      const isCurrent = !isDeleted && !isNew && currentTask && col.id === (columns.find(c => c.tasks.some(t => t.id === currentTask.id))?.id);
+      return {
+        value: col.id,
+        label: col.title + (isCurrent ? ' (Current)' : ''),
+      };
+    });
+    if (isDeleted && !columns.some(col => col.id === editColumnId)) {
+      opts.push({
+        value: editColumnId,
+        label: (currentTask?.originalColumnTitle) ? currentTask.originalColumnTitle : 'Original Column',
+      });
+    }
+    return opts;
+  }, [columns, isDeleted, isNew, currentTask, editColumnId]);
 
   useEffect(() => {
     if (!selectedTask) return;
@@ -412,9 +433,6 @@ export const TaskModal: React.FC<TaskModalProps> = ({
 
   if (!selectedTask) return null;
 
-  const isNew = 'isNew' in selectedTask;
-  const currentTask = !isNew ? (selectedTask as Task) : null;
-
   const handleSave = async () => {
     if (!editTitle.trim()) {
       setTitleError(true);
@@ -657,32 +675,19 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 {isDeleted ? 'Column' : 'Move to Column'}
               </label>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <select
-                  id="task-column-select"
-                  value={editColumnId}
-                  disabled={isDeleted}
-                  onChange={(e) => {
-                    if (!isDeleted) setEditColumnId(e.target.value);
-                  }}
-                  style={{
-                    flex: 1,
-                    ...(isDeleted ? { opacity: 0.8, cursor: 'not-allowed' } : {})
-                  }}
-                >
-                  {columns.map(col => {
-                    const isCurrent = !isDeleted && !isNew && currentTask && col.id === (columns.find(c => c.tasks.some(t => t.id === currentTask.id))?.id);
-                    return (
-                      <option key={col.id} value={col.id}>
-                        {col.title}{isCurrent ? ' (Current)' : ''}
-                      </option>
-                    );
-                  })}
-                  {isDeleted && !columns.some(col => col.id === editColumnId) && (
-                    <option value={editColumnId}>
-                      {(currentTask?.originalColumnTitle) ? currentTask.originalColumnTitle : 'Original Column'}
-                    </option>
-                  )}
-                </select>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <CustomSelect
+                    id="task-column-select"
+                    value={editColumnId}
+                    disabled={isDeleted}
+                    onChange={(val) => {
+                      if (!isDeleted) setEditColumnId(val);
+                    }}
+                    options={columnMoveOptions}
+                    size="md"
+                    ariaLabel={isDeleted ? 'Column' : 'Move to Column'}
+                  />
+                </div>
                 {!isDeleted && !isNew && currentTask && editColumnId && editColumnId !== (columns.find(c => c.tasks.some(t => t.id === currentTask.id))?.id) && (
                   <button
                     type="button"

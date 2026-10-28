@@ -1,6 +1,7 @@
 import './RestoreTaskModal.scss';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Column, Task } from '../../types';
+import { CustomSelect, SelectOption } from '../CustomSelect';
 
 interface RestoreTaskModalProps {
   task: Task | null;
@@ -30,9 +31,28 @@ export const RestoreTaskModal: React.FC<RestoreTaskModalProps> = ({
     }
   }, [task, columns]);
 
-  if (!task) return null;
+  const isOriginalDeleted = Boolean(task?.originalColumnId && !columns.some(c => c.id === task.originalColumnId));
 
-  const isOriginalDeleted = task.originalColumnId && !columns.some(c => c.id === task.originalColumnId);
+  const restoreColumnOptions: SelectOption[] = useMemo(() => {
+    if (!task) return [];
+    const opts: SelectOption[] = [];
+    if (isOriginalDeleted) {
+      opts.push({
+        value: task.originalColumnId || '',
+        label: `${task.originalColumnTitle || 'Original Column'} (Resurrect column)`,
+      });
+    }
+    columns.forEach((col) => {
+      const isOrig = col.id === task.originalColumnId;
+      opts.push({
+        value: col.id,
+        label: `${col.title}${isOrig ? ' (Original)' : ''}`,
+      });
+    });
+    return opts;
+  }, [task, columns, isOriginalDeleted]);
+
+  if (!task) return null;
 
   const handleConfirm = async () => {
     await onConfirm(task.id, selectedColumnId || undefined);
@@ -76,25 +96,14 @@ export const RestoreTaskModal: React.FC<RestoreTaskModalProps> = ({
 
         <div className="form-group" style={{ textAlign: 'left', marginTop: '1.25rem' }}>
           <label htmlFor="restore-column-select">Restore to Column</label>
-          <select
+          <CustomSelect
             id="restore-column-select"
             value={selectedColumnId}
-            onChange={(e) => setSelectedColumnId(e.target.value)}
-          >
-            {isOriginalDeleted && (
-              <option value={task.originalColumnId || ''}>
-                {task.originalColumnTitle || 'Original Column'} (Resurrect column)
-              </option>
-            )}
-            {columns.map(col => {
-              const isOrig = col.id === task.originalColumnId;
-              return (
-                <option key={col.id} value={col.id}>
-                  {col.title}{isOrig ? ' (Original)' : ''}
-                </option>
-              );
-            })}
-          </select>
+            onChange={(val) => setSelectedColumnId(val)}
+            options={restoreColumnOptions}
+            size="md"
+            ariaLabel="Restore to Column"
+          />
         </div>
 
         {isOriginalDeleted && selectedColumnId === task.originalColumnId && (

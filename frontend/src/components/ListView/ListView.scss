@@ -184,31 +184,9 @@
               }
             }
 
-            .table-col-select {
-              padding: 0.35rem 0.65rem;
-              background: var(--bg-input);
-              border: 1px solid var(--border-ui);
-              border-radius: 4px;
-              color: var(--text-main);
-              font-family: var(--font-body);
-              font-size: 0.8rem;
-              outline: none;
-              cursor: pointer;
-              transition: var(--transition);
-
-              &:hover {
-                border-color: var(--border-card-hover);
-              }
-
-              &:focus {
-                border-color: var(--accent);
-                box-shadow: 0 0 0 1px var(--accent);
-              }
-
-              option {
-                background: var(--bg-column);
-                color: var(--text-main);
-              }
+            .list-col-select-custom {
+              min-width: 120px;
+              max-width: 160px;
             }
 
             .table-action-icon {
