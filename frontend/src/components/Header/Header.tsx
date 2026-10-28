@@ -38,27 +38,29 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <header className="header">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-        <h1>Bento Board</h1>
-        <div className="view-switcher">
+      <div className="header-left">
+        <h1 className="header-brand">Bento Board</h1>
+        <div className="view-switcher" role="group" aria-label="View Switcher">
           <button 
             type="button"
             className={`view-btn ${viewMode === 'board' ? 'active' : ''}`}
             onClick={() => onViewModeChange('board')}
             title="Board View"
+            aria-label="Board View"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
               <line x1="9" y1="3" x2="9" y2="21" />
               <line x1="15" y1="3" x2="15" y2="21" />
             </svg>
-            <span>Board</span>
+            <span className="view-btn-label">Board</span>
           </button>
           <button 
             type="button"
             className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
             onClick={() => onViewModeChange('list')}
             title="List View"
+            aria-label="List View"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="8" y1="6" x2="21" y2="6" />
@@ -68,18 +70,19 @@ export const Header: React.FC<HeaderProps> = ({
               <line x1="3" y1="12" x2="3.01" y2="12" />
               <line x1="3" y1="18" x2="3.01" y2="18" />
             </svg>
-            <span>List</span>
+            <span className="view-btn-label">List</span>
           </button>
           <button 
             type="button"
             className={`view-btn ${viewMode === 'table' ? 'active' : ''}`}
             onClick={() => onViewModeChange('table')}
             title="Table View"
+            aria-label="Table View"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18" />
             </svg>
-            <span>Table</span>
+            <span className="view-btn-label">Table</span>
           </button>
         </div>
         {onOpenCommandPalette && (
@@ -88,12 +91,14 @@ export const Header: React.FC<HeaderProps> = ({
             className="header-command-trigger"
             onClick={onOpenCommandPalette}
             title="Open Command Palette (Ctrl+K)"
+            aria-label="Open Command Palette"
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
-            <span>Search or command...</span>
+            <span className="cmd-text-full">Search or command...</span>
+            <span className="cmd-text-short">Search...</span>
             <kbd className="cmd-kbd">Ctrl K</kbd>
           </button>
         )}
@@ -101,23 +106,27 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="user-profile">
         {deletedTasksCount > 0 && (
           <button 
+            type="button"
             onClick={onToggleDeletedCards}
-            className={showDeletedCards ? "btn-secondary" : "btn-deleted-cta"}
-            style={{ padding: '0.45rem 0.85rem', fontSize: '0.8rem' }}
+            className={`header-deleted-btn ${showDeletedCards ? "btn-secondary" : "btn-deleted-cta"}`}
+            title={showDeletedCards ? `Hide Deleted Cards (${deletedTasksCount})` : `Show Deleted Cards (${deletedTasksCount})`}
           >
-            {showDeletedCards ? (
-              <>Hide Deleted Cards ({deletedTasksCount})</>
-            ) : (
-              <>Show Deleted Cards ({deletedTasksCount})</>
-            )}
+            <span className="deleted-label-full">
+              {showDeletedCards ? 'Hide Deleted' : 'Show Deleted'} ({deletedTasksCount})
+            </span>
+            <span className="deleted-label-short">
+              🗑️ {deletedTasksCount}
+            </span>
           </button>
         )}
         <button 
-          className="btn-primary" 
+          type="button"
+          className="btn-primary header-add-col-btn" 
           onClick={onAddColumnClick}
-          style={{ padding: '0.45rem 0.85rem', fontSize: '0.8rem' }}
+          title="Add new column"
         >
-          + Add Column
+          <span className="add-col-text-full">+ Add Column</span>
+          <span className="add-col-text-short">+ Column</span>
         </button>
         <div className="header-theme-wrap">
           <CustomSelect
@@ -130,10 +139,10 @@ export const Header: React.FC<HeaderProps> = ({
             ariaLabel="Theme Mode"
           />
         </div>
-        <button onClick={onLogoutClick} className="logout-btn">
+        <button type="button" onClick={onLogoutClick} className="logout-btn" title="Log out">
           Logout
         </button>
-        <div className="user-avatar">
+        <div className="user-avatar" title={`Logged in as ${authUsername || 'User'}`}>
           {authUsername ? authUsername.charAt(0).toUpperCase() : 'U'}
         </div>
       </div>
