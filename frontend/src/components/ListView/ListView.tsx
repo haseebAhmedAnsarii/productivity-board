@@ -105,7 +105,24 @@ export const ListView: React.FC<ListViewProps> = ({
                           <div className="list-task-main">
                             <span className="task-badge">#{task.id}</span>
                             <div className="list-task-content">
-                              <span className="list-task-title" title={task.title}>{task.title}</span>
+                              <div className="list-task-title-wrap">
+                                <span className="list-task-title" title={task.title}>{task.title}</span>
+                                {labels.length > 0 && (
+                                  <div className="list-task-labels">
+                                    {labels.map((label) => (
+                                      <span
+                                        key={label.id}
+                                        className="label-chip label-chip-pill"
+                                        style={{ background: label.color + '22', borderColor: label.color, color: label.color }}
+                                        title={`Label: ${label.name}`}
+                                      >
+                                        <span className="label-chip-dot" style={{ background: label.color }} />
+                                        <span className="label-chip-text">{label.name}</span>
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                               {task.description && (
                                 <span className="list-task-desc" title={stripRichTextToSnippet(task.description)}>
                                   {stripRichTextToSnippet(task.description)}
@@ -116,21 +133,6 @@ export const ListView: React.FC<ListViewProps> = ({
 
                           <div className="list-task-meta" onClick={(e) => e.stopPropagation()}>
                             <div className="list-task-badges">
-                              {labels.length > 0 && (
-                                <div className="list-task-labels">
-                                  {labels.map((label) => (
-                                    <span
-                                      key={label.id}
-                                      className="label-chip"
-                                      style={{ background: label.color + '22', borderColor: label.color, color: label.color }}
-                                      title={label.name}
-                                    >
-                                      <span className="label-chip-dot" style={{ background: label.color }} />
-                                      <span className="label-chip-text">{label.name}</span>
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
                               {priorityMeta && (
                                 <span
                                   className="priority-chip"
@@ -230,9 +232,26 @@ export const ListView: React.FC<ListViewProps> = ({
                       <div className="list-task-main">
                         <span className="task-badge task-badge-deleted">#{task.id}</span>
                         <div className="list-task-content">
-                          <span className="list-task-title" style={{ textDecoration: 'line-through' }} title={task.title}>
-                            {task.title}
-                          </span>
+                          <div className="list-task-title-wrap">
+                            <span className="list-task-title" style={{ textDecoration: 'line-through' }} title={task.title}>
+                              {task.title}
+                            </span>
+                            {labels.length > 0 && (
+                              <div className="list-task-labels">
+                                {labels.map((label) => (
+                                  <span
+                                    key={label.id}
+                                    className="label-chip label-chip-pill"
+                                    style={{ background: label.color + '22', borderColor: label.color, color: label.color }}
+                                    title={`Label: ${label.name}`}
+                                  >
+                                    <span className="label-chip-dot" style={{ background: label.color }} />
+                                    <span className="label-chip-text">{label.name}</span>
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                           {task.description && (
                             <span className="list-task-desc" title={stripRichTextToSnippet(task.description)}>
                               {stripRichTextToSnippet(task.description)}
@@ -243,21 +262,6 @@ export const ListView: React.FC<ListViewProps> = ({
 
                       <div className="list-task-meta" onClick={(e) => e.stopPropagation()}>
                         <div className="list-task-badges">
-                          {labels.length > 0 && (
-                            <div className="list-task-labels">
-                              {labels.map((label) => (
-                                <span
-                                  key={label.id}
-                                  className="label-chip"
-                                  style={{ background: label.color + '22', borderColor: label.color, color: label.color }}
-                                  title={label.name}
-                                >
-                                  <span className="label-chip-dot" style={{ background: label.color }} />
-                                  <span className="label-chip-text">{label.name}</span>
-                                </span>
-                              ))}
-                            </div>
-                          )}
                           {priorityMeta && (
                             <span
                               className="priority-chip"
