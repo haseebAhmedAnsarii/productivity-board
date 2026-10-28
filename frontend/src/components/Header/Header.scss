@@ -73,8 +73,8 @@
     }
 
     .header-theme-wrap {
-      min-width: 105px;
-      max-width: 125px;
+      min-width: 115px;
+      max-width: 135px;
       flex-shrink: 0;
     }
 
@@ -278,8 +278,37 @@
       }
 
       .header-theme-wrap {
-        min-width: 95px;
-        max-width: 105px;
+        min-width: unset;
+        width: auto;
+
+        .theme-select-custom {
+          width: auto;
+
+          .custom-select-trigger {
+            padding: 0.32rem 0.45rem;
+            min-width: 32px;
+            height: 30px;
+            justify-content: center;
+
+            .custom-select-trigger-content {
+              flex: 0 0 auto;
+              gap: 0;
+
+              .custom-select-label {
+                display: none;
+              }
+
+              .custom-select-icon {
+                font-size: 0.95rem;
+                margin: 0;
+              }
+            }
+
+            .custom-select-chevron {
+              display: none;
+            }
+          }
+        }
       }
 
       .logout-btn {
@@ -299,12 +328,6 @@
         .cmd-kbd {
           display: none;
         }
-      }
-    }
-
-    .user-profile {
-      .header-theme-wrap {
-        min-width: 85px;
       }
     }
   }
@@ -374,12 +397,37 @@
       }
 
       .header-theme-wrap {
-        min-width: 78px;
-        max-width: 90px;
+        min-width: unset;
+        width: auto;
 
-        .custom-select-trigger {
-          padding: 0.28rem 0.45rem;
-          font-size: 0.72rem;
+        .theme-select-custom {
+          width: auto;
+
+          .custom-select-trigger {
+            padding: 0.3rem 0.4rem;
+            min-width: 30px;
+            height: 28px;
+            border-radius: var(--radius-btn);
+            justify-content: center;
+
+            .custom-select-trigger-content {
+              flex: 0 0 auto;
+              gap: 0;
+
+              .custom-select-label {
+                display: none;
+              }
+
+              .custom-select-icon {
+                font-size: 0.9rem;
+                margin: 0;
+              }
+            }
+
+            .custom-select-chevron {
+              display: none;
+            }
+          }
         }
       }
 
@@ -455,15 +503,22 @@
       }
 
       .header-theme-wrap {
-        min-width: 70px;
-        max-width: 80px;
+        min-width: unset;
+        width: auto;
 
-        .custom-select-trigger {
-          padding: 0.24rem 0.35rem;
-          font-size: 0.68rem;
+        .theme-select-custom {
+          width: auto;
 
-          .custom-select-trigger-content {
-            gap: 0.25rem;
+          .custom-select-trigger {
+            padding: 0.25rem 0.35rem;
+            min-width: 28px;
+            height: 26px;
+
+            .custom-select-trigger-content {
+              .custom-select-icon {
+                font-size: 0.85rem;
+              }
+            }
           }
         }
       }
