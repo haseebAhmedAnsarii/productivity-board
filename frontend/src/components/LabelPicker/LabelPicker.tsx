@@ -2,20 +2,20 @@ import './LabelPicker.scss';
 import React, { useState, useEffect, useRef } from 'react';
 import { Label } from '../../types';
 
-// Curated palette of warm, harmonious colors that fit the dark theme
+// Curated palette of Japanese Wabi-Sabi tones (Sumi ink, unglazed ceramics, matcha, lacquer)
 export const LABEL_COLOR_PALETTE = [
-  { name: 'Amber',     hex: '#e59a52' },
-  { name: 'Terracotta',hex: '#cf4f44' },
-  { name: 'Sage',      hex: '#6ba87e' },
-  { name: 'Slate Blue',hex: '#5b82c4' },
-  { name: 'Mauve',     hex: '#a47db8' },
-  { name: 'Sand',      hex: '#c4a96a' },
-  { name: 'Coral',     hex: '#d4735a' },
-  { name: 'Steel',     hex: '#7a9db0' },
-  { name: 'Olive',     hex: '#8da44f' },
-  { name: 'Rose',      hex: '#c46a8a' },
-  { name: 'Dusk',      hex: '#8475a0' },
-  { name: 'Ochre',     hex: '#b89050' },
+  { name: 'Terracotta',    hex: '#c75a47' },
+  { name: 'Lacquer Red',   hex: '#d14d41' },
+  { name: 'Matcha Green',  hex: '#567568' },
+  { name: 'Persimmon',     hex: '#d97d4a' },
+  { name: 'Matcha Sage',   hex: '#8a9a86' },
+  { name: 'Bamboo Pine',   hex: '#4e705b' },
+  { name: 'Wisteria Fuji', hex: '#7b6f8a' },
+  { name: 'Sumi Charcoal', hex: '#3e3e46' },
+  { name: 'River Pebble',  hex: '#84848d' },
+  { name: 'Camellia Rose', hex: '#b84a58' },
+  { name: 'Stone Grey',    hex: '#6c757d' },
+  { name: 'Aizome Indigo', hex: '#4d5360' },
 ];
 
 interface LabelPickerProps {

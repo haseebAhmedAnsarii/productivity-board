@@ -52,8 +52,8 @@
   }
 
   mark {
-    background: rgba(245, 158, 11, 0.25);
-    color: #fef3c7;
+    background: rgba(199, 90, 71, 0.25);
+    color: #f1f1f3;
     padding: 0.1rem 0.3rem;
     border-radius: 3px;
   }
@@ -93,7 +93,7 @@
     border-left: 3px solid var(--accent);
     padding: 0.35rem 0.8rem;
     margin: 0.45rem 0;
-    background: rgba(245, 158, 11, 0.05);
+    background: rgba(199, 90, 71, 0.08);
     color: var(--text-secondary);
     border-radius: 0 4px 4px 0;
     font-style: italic;
@@ -133,7 +133,7 @@
     transition: color 0.15s ease;
 
     &:hover {
-      color: #fbbf24;
+      color: #d97d4a;
     }
   }
 

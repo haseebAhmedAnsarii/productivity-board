@@ -239,7 +239,7 @@
         &:hover {
           border-color: var(--accent);
           color: var(--accent);
-          background: rgba(229, 154, 82, 0.12);
+          background: rgba(199, 90, 71, 0.14);
         }
       }
     }
@@ -362,7 +362,7 @@
       }
 
       &.react-datepicker__day--keyboard-selected {
-        background-color: rgba(229, 154, 82, 0.25) !important;
+        background-color: rgba(199, 90, 71, 0.25) !important;
         color: var(--accent) !important;
       }
 

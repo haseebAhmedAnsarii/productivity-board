@@ -125,7 +125,7 @@
 
         &.filter-active {
           border-color: var(--accent);
-          background: rgba(229, 154, 82, 0.12);
+          background: rgba(199, 90, 71, 0.14);
           color: var(--accent);
           font-weight: 600;
         }
@@ -153,8 +153,8 @@
         font-size: 0.75rem;
         font-weight: 600;
         color: var(--accent);
-        background: rgba(229, 154, 82, 0.14);
-        border: 1px solid rgba(229, 154, 82, 0.35);
+        background: rgba(199, 90, 71, 0.14);
+        border: 1px solid rgba(199, 90, 71, 0.35);
         padding: 0.25rem 0.6rem;
         border-radius: var(--radius-badge);
         user-select: none;

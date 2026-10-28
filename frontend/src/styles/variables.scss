@@ -1,57 +1,57 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
-  /* Warm Architectural Obsidian Palette (Zero cyan/purple/indigo/aurora) */
-  --bg-canvas: #121211;
-  --bg-header: #171614;
-  --bg-column: #1a1917;
-  --bg-card: #23211e;
-  --bg-card-hover: #292622;
-  --bg-surface: #1e1c1a;
-  --bg-surface-hover: #272421;
-  --bg-input: #151412;
+  /* Sumi Ink & Muted Terracotta Theme (Japanese Wabi-Sabi Dark - 100% Matte, Zero Gradient, Zero Neon) */
+  --bg-canvas: #161618;          /* Deep Japanese Sumi ink black */
+  --bg-header: #1a1a1d;          /* Dark slate ink header bar */
+  --bg-column: #1c1c20;          /* Weathered slate stone column dock */
+  --bg-card: #242428;            /* Solid flat matte charcoal ceramic card */
+  --bg-card-hover: #2b2b30;      /* Slightly elevated matte charcoal on hover */
+  --bg-surface: #1f1f23;         /* Ceramic modal and floating surface */
+  --bg-surface-hover: #28282d;
+  --bg-input: #141416;           /* Inset matte sumi dark input field */
 
-  /* Solid Tactile Structural Borders (Zero thin white Linear lines) */
-  --border-subtle: #272420;
-  --border-ui: #332f28;
-  --border-card: #3a352c;
-  --border-card-hover: #524b3f;
-  --border-column-top: #4a4336;
+  /* Architectural Solid Structural Borders (Zero glows, razor-sharp flat slate edges) */
+  --border-subtle: #28282d;
+  --border-ui: #323238;          /* Slate stone border */
+  --border-card: #383840;        /* Ceramic tile card border */
+  --border-card-hover: #4e4e58;
+  --border-column-top: #44444c;
 
-  /* Typography Colors (High contrast, warm readability) */
-  --text-main: #f7f4ee;
-  --text-secondary: #c9c2b4;
-  --text-muted: #8c8475;
-  --text-inverse: #141312;
+  /* Typography Colors (High contrast, raw organic rice paper readability) */
+  --text-main: #f1f1f3;          /* Washi rice paper white */
+  --text-secondary: #c5c5cb;     /* Soft stone grey */
+  --text-muted: #84848d;         /* River pebble grey */
+  --text-inverse: #121214;       /* Deep sumi ink on accent elements */
 
-  /* Distinct Accent: Warm Amber Ochre & Terracotta */
-  --accent: #e59a52;
-  --accent-hover: #d9883b;
-  --accent-muted: #2f2316;
-  --danger: #cf4f44;
-  --danger-hover: #b83f35;
-  --danger-muted: #331917;
+  /* Distinct Accent: Muted Japanese Terracotta / Vermilion & Lacquer Red */
+  --accent: #c75a47;             /* Muted Japanese terracotta / vermilion (matte, non-neon) */
+  --accent-hover: #b54e3c;
+  --accent-muted: #2e1d1b;       /* Subtle dark terracotta backing */
+  --danger: #d14d41;             /* Japanese lacquer red */
+  --danger-hover: #bd3e32;
+  --danger-muted: #331a19;
 
   /* Editorial & Architectural Font Pairing */
   --font-heading: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'Space Mono', monospace;
 
-  /* Dynamically Varied Corner Radii (Custom tailored, anti-generic) */
+  /* Precision Architectural Corner Radii */
   --radius-column: 6px;
-  --radius-card: 3px;
-  --radius-badge: 2px;
+  --radius-card: 4px;
+  --radius-badge: 3px;
   --radius-btn: 4px;
-  --radius-input: 3px;
-  --radius-modal: 7px;
+  --radius-input: 4px;
+  --radius-modal: 8px;
   --radius-avatar: 4px;
   --radius-scrollbar: 2px;
 
-  /* Solid tactile depth */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-card: 0 2px 5px rgba(0, 0, 0, 0.45);
-  --shadow-card-hover: 0 8px 18px rgba(0, 0, 0, 0.65);
-  --shadow-modal: 0 24px 48px -12px rgba(0, 0, 0, 0.9);
+  /* Solid tactile depth without blur glow */
+  --shadow-sm: 0 1px 3px rgba(12, 12, 14, 0.4);
+  --shadow-card: 0 2px 4px rgba(12, 12, 14, 0.35);
+  --shadow-card-hover: 0 6px 14px rgba(12, 12, 14, 0.55);
+  --shadow-modal: 0 20px 40px -10px rgba(8, 8, 10, 0.85);
 
   --transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
 }

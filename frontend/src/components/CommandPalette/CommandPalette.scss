@@ -186,12 +186,12 @@
             background: var(--accent);
             color: var(--text-inverse);
             border-color: var(--accent);
-            box-shadow: 0 0 8px rgba(229, 154, 82, 0.45);
+            box-shadow: 0 0 6px rgba(199, 90, 71, 0.4);
           }
         }
 
         &.command-item-active {
-          background: rgba(229, 154, 82, 0.12);
+          background: rgba(199, 90, 71, 0.14);
 
           &::before {
             content: '';
