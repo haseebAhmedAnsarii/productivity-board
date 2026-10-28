@@ -27,6 +27,10 @@
       margin: 0;
       white-space: nowrap;
       flex-shrink: 0;
+
+      .brand-short {
+        display: none;
+      }
     }
   }
 
@@ -59,9 +63,11 @@
       cursor: pointer;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 0.35rem;
 
-      .add-col-text-short {
+      .add-col-text-short,
+      .add-col-text-mini {
         display: none;
       }
     }
@@ -83,6 +89,13 @@
       border-radius: var(--radius-btn);
       cursor: pointer;
       transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      .logout-icon {
+        display: none;
+      }
 
       &:hover {
         color: var(--text-main);
@@ -292,6 +305,173 @@
     .user-profile {
       .header-theme-wrap {
         min-width: 85px;
+      }
+    }
+  }
+
+  /* Mobile Screens (<= 640px) */
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.45rem 0.65rem;
+    gap: 0.45rem;
+
+    .header-left {
+      width: 100%;
+      justify-content: space-between;
+      gap: 0.4rem;
+
+      .header-brand {
+        font-size: 1rem;
+      }
+
+      .view-switcher {
+        .view-btn {
+          padding: 0.3rem 0.4rem;
+          .view-btn-label {
+            display: none;
+          }
+        }
+      }
+
+      .header-command-trigger {
+        padding: 0.3rem 0.5rem;
+        .cmd-text-full,
+        .cmd-text-short,
+        .cmd-kbd {
+          display: none;
+        }
+      }
+    }
+
+    .user-profile {
+      width: 100%;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-ui);
+      padding-top: 0.4rem;
+      gap: 0.4rem;
+
+      .header-deleted-btn {
+        padding: 0.32rem 0.5rem;
+        font-size: 0.74rem;
+        .deleted-label-full {
+          display: none;
+        }
+        .deleted-label-short {
+          display: inline;
+        }
+      }
+
+      .header-add-col-btn {
+        padding: 0.32rem 0.55rem;
+        font-size: 0.74rem;
+        .add-col-text-full {
+          display: none;
+        }
+        .add-col-text-short {
+          display: inline;
+        }
+      }
+
+      .header-theme-wrap {
+        min-width: 78px;
+        max-width: 90px;
+
+        .custom-select-trigger {
+          padding: 0.28rem 0.45rem;
+          font-size: 0.72rem;
+        }
+      }
+
+      .logout-btn {
+        padding: 0.3rem 0.45rem;
+        font-size: 0.75rem;
+      }
+
+      .user-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+      }
+    }
+  }
+
+  /* Ultra-Compact Mobile Screens down to 320px (<= 360px) */
+  @media (max-width: 360px) {
+    padding: 0.35rem 0.5rem;
+    gap: 0.35rem;
+
+    .header-left {
+      gap: 0.3rem;
+
+      .header-brand {
+        font-size: 0.95rem;
+
+        .brand-full {
+          display: none;
+        }
+        .brand-short {
+          display: inline;
+        }
+      }
+
+      .view-switcher {
+        .view-btn {
+          padding: 0.25rem 0.35rem;
+        }
+      }
+
+      .header-command-trigger {
+        padding: 0.25rem 0.45rem;
+      }
+    }
+
+    .user-profile {
+      padding-top: 0.35rem;
+      gap: 0.3rem;
+
+      .header-add-col-btn {
+        padding: 0.28rem 0.45rem;
+        .add-col-text-full,
+        .add-col-text-short {
+          display: none;
+        }
+        .add-col-text-mini {
+          display: inline;
+          font-weight: 700;
+          font-size: 0.85rem;
+        }
+      }
+
+      .logout-btn {
+        padding: 0.25rem 0.35rem;
+
+        .logout-text-full {
+          display: none;
+        }
+        .logout-icon {
+          display: inline-flex;
+        }
+      }
+
+      .header-theme-wrap {
+        min-width: 70px;
+        max-width: 80px;
+
+        .custom-select-trigger {
+          padding: 0.24rem 0.35rem;
+          font-size: 0.68rem;
+
+          .custom-select-trigger-content {
+            gap: 0.25rem;
+          }
+        }
+      }
+
+      .user-avatar {
+        width: 26px;
+        height: 26px;
+        font-size: 0.7rem;
       }
     }
   }

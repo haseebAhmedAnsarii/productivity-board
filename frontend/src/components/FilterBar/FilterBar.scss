@@ -221,4 +221,69 @@
       gap: 0.5rem;
     }
   }
+
+  @media (max-width: 640px) {
+    padding: 0.45rem 0.65rem;
+    gap: 0.45rem;
+    flex-direction: column;
+    align-items: stretch;
+
+    .filter-bar-left {
+      width: 100%;
+      gap: 0.45rem;
+      display: flex;
+      flex-wrap: wrap;
+
+      .filter-search-wrap {
+        width: 100%;
+        min-width: 100%;
+        max-width: 100%;
+      }
+
+      .filter-select-wrap {
+        flex: 1 1 calc(50% - 0.25rem);
+        min-width: 0 !important;
+
+        .filter-label {
+          display: none;
+        }
+
+        .custom-select-container {
+          min-width: 0 !important;
+          width: 100%;
+        }
+      }
+    }
+
+    .filter-bar-right {
+      width: 100%;
+
+      .filter-active-status {
+        width: 100%;
+        justify-content: space-between;
+
+        .filter-count-badge {
+          font-size: 0.7rem;
+          padding: 0.2rem 0.45rem;
+        }
+
+        .filter-reset-btn {
+          font-size: 0.72rem;
+          padding: 0.25rem 0.5rem;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 360px) {
+    padding: 0.35rem 0.5rem;
+
+    .filter-bar-left {
+      gap: 0.35rem;
+
+      .filter-select-wrap {
+        flex: 1 1 100%;
+      }
+    }
+  }
 }

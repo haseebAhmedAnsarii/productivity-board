@@ -294,6 +294,62 @@
       }
     }
   }
+
+  @media (max-width: 640px) {
+    padding: 3vh 0.5rem 1rem;
+
+    .command-palette-dialog {
+      border-radius: 10px;
+
+      .command-palette-search {
+        padding: 0.75rem 0.85rem;
+        gap: 0.5rem;
+
+        .command-palette-input {
+          font-size: 0.88rem;
+        }
+
+        .command-esc-hint {
+          display: none;
+        }
+      }
+
+      .command-palette-list {
+        max-height: 55vh;
+
+        .command-item {
+          padding: 0.55rem 0.75rem;
+          gap: 0.65rem;
+
+          .command-item-content {
+            .command-item-title {
+              font-size: 0.825rem;
+            }
+            .command-item-subtitle {
+              font-size: 0.7rem;
+            }
+          }
+
+          .command-item-shortcut {
+            display: none;
+          }
+        }
+      }
+
+      .command-palette-footer {
+        padding: 0.45rem 0.75rem;
+        justify-content: center;
+
+        .footer-shortcut-hints {
+          display: none;
+        }
+
+        .footer-brand-hint {
+          font-size: 0.68rem;
+        }
+      }
+    }
+  }
 }
 
 @keyframes cmdBackdropFadeIn {

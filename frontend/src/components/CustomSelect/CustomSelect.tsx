@@ -80,7 +80,8 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
     // Open upward if space below is too small (< 220px) and space above is larger
     const openUpward = spaceBelow < 220 && spaceAbove > spaceBelow;
 
-    const dropdownWidth = Math.max(rect.width, 160);
+    const maxAllowedWidth = Math.max(120, viewportWidth - 24);
+    const dropdownWidth = Math.min(Math.max(rect.width, 140), maxAllowedWidth);
     let left = rect.left;
 
     // Clamp horizontally to avoid off-screen overflow

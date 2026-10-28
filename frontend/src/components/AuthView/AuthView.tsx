@@ -44,36 +44,34 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-canvas)' }}>
-      <div style={{ background: 'var(--bg-column)', padding: '2.5rem', borderRadius: 'var(--radius-modal)', width: '380px', border: '1px solid var(--border-ui)', boxShadow: 'var(--shadow-modal)' }}>
-        <h2 style={{ marginBottom: '1.5rem', textAlign: 'center', fontSize: '1.35rem', fontWeight: 700, fontFamily: 'var(--font-heading)', letterSpacing: '-0.02em', color: 'var(--text-main)', textTransform: 'uppercase' }}>
+    <div className="auth-view-container">
+      <div className="auth-card">
+        <h2 className="auth-title">
           {isLoginMode ? 'Welcome Back' : 'Create Account'}
         </h2>
-        <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {authError && <p style={{ color: 'var(--danger)', fontSize: '0.85rem', textAlign: 'center' }}>{authError}</p>}
+        <form onSubmit={handleAuth} className="auth-form">
+          {authError && <p className="auth-error">{authError}</p>}
           <input 
             type="text" 
             placeholder="Username" 
             value={authUsername} 
             onChange={e => setAuthUsername(e.target.value)} 
-            style={{ padding: '0.75rem', borderRadius: 'var(--radius-input)', border: '1px solid var(--border-ui)', background: 'var(--bg-input)', color: 'var(--text-main)', fontSize: '0.925rem', outline: 'none', fontFamily: 'var(--font-body)' }} 
+            className="auth-input"
           />
           <input 
             type="password" 
             placeholder="Password" 
             value={authPassword} 
             onChange={e => setAuthPassword(e.target.value)} 
-            style={{ padding: '0.75rem', borderRadius: 'var(--radius-input)', border: '1px solid var(--border-ui)', background: 'var(--bg-input)', color: 'var(--text-main)', fontSize: '0.925rem', outline: 'none', fontFamily: 'var(--font-body)' }} 
+            className="auth-input"
           />
-          <button type="submit" className="btn-primary" style={{ padding: '0.8rem', fontSize: '0.925rem' }}>
+          <button type="submit" className="btn-primary auth-submit-btn">
             {isLoginMode ? 'Login' : 'Sign Up'}
           </button>
         </form>
         <p 
-          style={{ marginTop: '1.5rem', textAlign: 'center', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.875rem', transition: 'color 0.2s ease' }} 
+          className="auth-toggle-mode"
           onClick={() => setIsLoginMode(!isLoginMode)} 
-          onMouseOver={e => e.currentTarget.style.color = 'var(--text-main)'} 
-          onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}
         >
           {isLoginMode ? "Don't have an account? Register" : "Already have an account? Login"}
         </p>

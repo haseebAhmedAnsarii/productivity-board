@@ -243,6 +243,35 @@
         }
       }
     }
+
+    @media (max-width: 480px) {
+      gap: 0.5rem;
+
+      .custom-datepicker-container {
+        width: 100%;
+
+        .react-datepicker-wrapper {
+          width: 100%;
+        }
+
+        .due-date-custom-input {
+          width: 100%;
+        }
+      }
+
+      .due-date-presets {
+        width: 100%;
+        display: flex;
+        gap: 0.35rem;
+
+        .preset-btn {
+          flex: 1;
+          text-align: center;
+          padding: 0.38rem 0.25rem;
+          font-size: 0.72rem;
+        }
+      }
+    }
   }
 }
 
@@ -381,6 +410,17 @@
         opacity: 0.2;
         cursor: not-allowed !important;
       }
+    }
+  }
+
+  @media (max-width: 360px) {
+    width: 275px !important;
+
+    .react-datepicker__day-name,
+    .react-datepicker__day {
+      width: 27px !important;
+      line-height: 27px !important;
+      font-size: 0.72rem !important;
     }
   }
 }

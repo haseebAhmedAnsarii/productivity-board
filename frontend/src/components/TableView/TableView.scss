@@ -193,4 +193,53 @@
       }
     }
   }
+
+  @media (max-width: 640px) {
+    padding: 0.65rem 0.5rem 1rem;
+    gap: 0.65rem;
+
+    .table-toolbar {
+      .table-toolbar-left {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        gap: 0.45rem;
+
+        .table-search-input {
+          width: 100%;
+        }
+
+        .table-filter-select-custom {
+          width: 100%;
+          min-width: 100%;
+        }
+      }
+    }
+
+    .table-card-container {
+      .kanban-table {
+        min-width: 660px;
+
+        th, td {
+          padding: 0.65rem 0.75rem;
+          font-size: 0.8rem;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 360px) {
+    padding: 0.5rem 0.35rem 0.75rem;
+
+    .table-card-container {
+      .kanban-table {
+        min-width: 630px;
+
+        th, td {
+          padding: 0.55rem 0.65rem;
+          font-size: 0.78rem;
+        }
+      }
+    }
+  }
 }

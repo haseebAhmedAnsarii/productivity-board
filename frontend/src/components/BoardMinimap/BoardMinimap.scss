@@ -321,3 +321,44 @@
     }
   }
 }
+
+@media (max-width: 640px) {
+  .board-minimap-wrapper {
+    bottom: 0.5rem;
+
+    .minimap-toggle-pill {
+      padding: 0.35rem 0.65rem;
+      font-size: 0.7rem;
+
+      .minimap-count-chip {
+        font-size: 0.65rem;
+        padding: 0.05rem 0.35rem;
+      }
+    }
+
+    .board-minimap {
+      max-width: calc(100vw - 1rem);
+      padding: 0.25rem 0.35rem;
+      gap: 0.25rem;
+
+      .minimap-nav-btn {
+        width: 22px;
+        height: 34px;
+        font-size: 0.65rem;
+      }
+
+      .minimap-collapse-btn {
+        width: 20px;
+        height: 20px;
+        font-size: 0.65rem;
+      }
+
+      .minimap-track {
+        width: calc(100vw - 5.5rem);
+        max-width: 210px;
+        min-width: 130px;
+        height: 34px;
+      }
+    }
+  }
+}

@@ -220,6 +220,30 @@
       }
     }
   }
+
+  @media (max-width: 480px) {
+    .rich-editor-header {
+      padding: 0.3rem 0.4rem;
+      gap: 0.35rem;
+
+      .rich-editor-toolbar {
+        gap: 0.15rem;
+
+        .rich-toolbar-group {
+          .rich-toolbar-btn {
+            min-width: 24px;
+            height: 24px;
+            font-size: 0.75rem;
+          }
+        }
+      }
+
+      .rich-editor-tabs {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+  }
 }
 
 /* Link Modal */

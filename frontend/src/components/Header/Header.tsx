@@ -39,7 +39,10 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="header">
       <div className="header-left">
-        <h1 className="header-brand">Bento Board</h1>
+        <h1 className="header-brand">
+          <span className="brand-full">Bento Board</span>
+          <span className="brand-short">Bento</span>
+        </h1>
         <div className="view-switcher" role="group" aria-label="View Switcher">
           <button 
             type="button"
@@ -127,6 +130,7 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <span className="add-col-text-full">+ Add Column</span>
           <span className="add-col-text-short">+ Column</span>
+          <span className="add-col-text-mini">+</span>
         </button>
         <div className="header-theme-wrap">
           <CustomSelect
@@ -139,8 +143,13 @@ export const Header: React.FC<HeaderProps> = ({
             ariaLabel="Theme Mode"
           />
         </div>
-        <button type="button" onClick={onLogoutClick} className="logout-btn" title="Log out">
-          Logout
+        <button type="button" onClick={onLogoutClick} className="logout-btn" title="Log out" aria-label="Log out">
+          <span className="logout-text-full">Logout</span>
+          <svg className="logout-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
         </button>
         <div className="user-avatar" title={`Logged in as ${authUsername || 'User'}`}>
           {authUsername ? authUsername.charAt(0).toUpperCase() : 'U'}
