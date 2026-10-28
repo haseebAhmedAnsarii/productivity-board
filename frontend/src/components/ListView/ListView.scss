@@ -18,7 +18,7 @@
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
-    background: #14161a;
+    background: var(--bg-column);
     border: 1px solid var(--border-ui);
     border-radius: var(--radius-column);
     box-shadow: var(--shadow-sm);

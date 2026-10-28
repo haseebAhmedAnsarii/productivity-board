@@ -41,4 +41,5 @@ export interface Column {
 }
 
 export type ViewMode = 'board' | 'list' | 'table';
+export type ThemeMode = 'default' | 'dark' | 'light';
 

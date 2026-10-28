@@ -6,14 +6,35 @@ export const metadata: Metadata = {
   description: "Bespoke architectural task management.",
 };
 
+const themeScript = `
+(function() {
+  try {
+    var saved = localStorage.getItem('pb_theme_mode') || 'default';
+    var resolved = saved;
+    if (saved === 'default') {
+      resolved = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    }
+    document.documentElement.setAttribute('data-theme', resolved);
+  } catch (e) {}
+})();
+`;
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <head suppressHydrationWarning />
+      <body suppressHydrationWarning>
+        <script
+          id="theme-initializer"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: themeScript }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

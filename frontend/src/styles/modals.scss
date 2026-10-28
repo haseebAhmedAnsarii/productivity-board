@@ -5,7 +5,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(16, 16, 18, 0.82);
+  background: var(--modal-backdrop, rgba(16, 16, 18, 0.82));
   display: flex;
   justify-content: center;
   align-items: center;
@@ -13,7 +13,7 @@
   padding: 1.5rem;
 
   .modal-content {
-    background: var(--bg-column);
+    background: var(--bg-surface);
     border: 1px solid var(--border-ui);
     border-radius: var(--radius-modal);
     padding: 2rem;

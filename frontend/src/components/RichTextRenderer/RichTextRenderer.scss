@@ -38,7 +38,7 @@
   }
 
   em {
-    color: #d1d5db;
+    color: var(--text-secondary);
   }
 
   del,
@@ -52,8 +52,8 @@
   }
 
   mark {
-    background: rgba(199, 90, 71, 0.25);
-    color: #f1f1f3;
+    background: rgba(199, 90, 71, 0.22);
+    color: var(--text-main);
     padding: 0.1rem 0.3rem;
     border-radius: 3px;
   }
@@ -100,7 +100,8 @@
   }
 
   code {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--bg-input);
+    border: 1px solid var(--border-ui);
     padding: 0.15rem 0.35rem;
     border-radius: 4px;
     font-family: var(--font-mono);
@@ -109,7 +110,7 @@
   }
 
   pre {
-    background: #0d0e12;
+    background: var(--bg-input);
     border: 1px solid var(--border-ui);
     padding: 0.65rem 0.85rem;
     border-radius: 6px;
@@ -120,8 +121,9 @@
 
     code {
       background: transparent;
+      border: none;
       padding: 0;
-      color: #e2e8f0;
+      color: var(--text-main);
       font-size: 1em;
     }
   }

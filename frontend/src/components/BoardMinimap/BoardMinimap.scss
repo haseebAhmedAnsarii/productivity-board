@@ -57,11 +57,11 @@
     display: flex;
     align-items: center;
     gap: 0.45rem;
-    background: rgba(18, 18, 20, 0.92);
+    background: var(--bg-surface);
     border: 1px solid var(--border-ui);
     border-radius: 12px;
     padding: 0.35rem 0.55rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(255, 255, 255, 0.05) inset;
+    box-shadow: var(--shadow-modal);
     backdrop-filter: blur(14px);
     user-select: none;
     max-width: calc(100vw - 4rem);
@@ -82,7 +82,7 @@
       flex-shrink: 0;
 
       &:hover:not(:disabled) {
-        background: var(--bg-hover);
+        background: var(--surface-hover);
         border-color: var(--accent);
         color: var(--accent);
       }
@@ -110,8 +110,8 @@
       margin-left: 0.15rem;
 
       &:hover {
-        background: var(--bg-hover);
-        color: var(--text-primary);
+        background: var(--surface-hover);
+        color: var(--text-main);
       }
     }
 
@@ -120,8 +120,8 @@
       width: 380px;
       max-width: 60vw;
       height: 44px;
-      background: rgba(10, 10, 12, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--bg-input);
+      border: 1px solid var(--border-ui);
       border-radius: 8px;
       overflow: hidden;
       cursor: pointer;
@@ -138,8 +138,8 @@
           flex: 1;
           min-width: 0;
           height: 100%;
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          background: var(--bg-column);
+          border: 1px solid var(--border-ui);
           border-radius: 4px;
           padding: 3px 4px;
           display: flex;
@@ -151,7 +151,7 @@
           transition: background 0.15s ease, border-color 0.15s ease;
 
           &:hover {
-            background: rgba(255, 255, 255, 0.09);
+            background: var(--surface-hover);
             border-color: rgba(199, 90, 71, 0.45);
           }
 
@@ -186,7 +186,8 @@
 
             .minimap-card-bar {
               height: 2.5px;
-              background: rgba(255, 255, 255, 0.2);
+              background: var(--text-muted);
+              opacity: 0.35;
               border-radius: 1px;
               width: 85%;
             }
@@ -215,7 +216,7 @@
             align-items: center;
             justify-content: center;
             border-style: dashed;
-            border-color: rgba(255, 255, 255, 0.14);
+            border-color: var(--border-ui);
             background: transparent;
 
             &:hover {

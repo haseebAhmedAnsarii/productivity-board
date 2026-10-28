@@ -36,6 +36,12 @@
       justify-content: center;
       user-select: none;
     }
+
+    .header-theme-wrap {
+      min-width: 110px;
+      max-width: 130px;
+      flex-shrink: 0;
+    }
   }
 
   /* View Mode Switcher (Board / List / Table) */

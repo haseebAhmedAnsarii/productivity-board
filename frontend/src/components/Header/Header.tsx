@@ -1,6 +1,13 @@
 import './Header.scss';
 import React from 'react';
-import { ViewMode } from '../../types';
+import { ViewMode, ThemeMode } from '../../types';
+import { CustomSelect, SelectOption } from '../CustomSelect';
+
+const themeOptions: SelectOption[] = [
+  { value: 'default', label: 'Default', icon: '💻' },
+  { value: 'dark', label: 'Dark', icon: '🌙' },
+  { value: 'light', label: 'Light', icon: '☀️' },
+];
 
 interface HeaderProps {
   authUsername: string;
@@ -12,6 +19,8 @@ interface HeaderProps {
   onAddColumnClick: () => void;
   onLogoutClick: () => void;
   onOpenCommandPalette?: () => void;
+  themeMode: ThemeMode;
+  onThemeModeChange: (mode: ThemeMode) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -24,6 +33,8 @@ export const Header: React.FC<HeaderProps> = ({
   onAddColumnClick,
   onLogoutClick,
   onOpenCommandPalette,
+  themeMode,
+  onThemeModeChange,
 }) => {
   return (
     <header className="header">
@@ -108,6 +119,17 @@ export const Header: React.FC<HeaderProps> = ({
         >
           + Add Column
         </button>
+        <div className="header-theme-wrap">
+          <CustomSelect
+            className="theme-select-custom"
+            value={themeMode}
+            onChange={(val) => onThemeModeChange(val as ThemeMode)}
+            options={themeOptions}
+            size="sm"
+            title="Theme Mode (Default, Dark, Light)"
+            ariaLabel="Theme Mode"
+          />
+        </div>
         <button onClick={onLogoutClick} className="logout-btn">
           Logout
         </button>

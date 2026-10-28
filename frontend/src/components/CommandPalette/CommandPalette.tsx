@@ -1,6 +1,6 @@
 import './CommandPalette.scss';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Column, DueDateFilter, Task, ViewMode } from '../../types';
+import { Column, DueDateFilter, Task, ViewMode, ThemeMode } from '../../types';
 import { PRIORITY_CONFIG, getDueDateInfo } from '../../utils/priorityDateUtils';
 
 interface CommandItem {
@@ -32,6 +32,8 @@ interface CommandPaletteProps {
   onClearFilters: () => void;
   isFilterActive: boolean;
   onLogout: () => void;
+  themeMode?: ThemeMode;
+  onThemeModeChange?: (mode: ThemeMode) => void;
 }
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({
@@ -51,6 +53,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   onClearFilters,
   isFilterActive,
   onLogout,
+  themeMode,
+  onThemeModeChange,
 }) => {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -165,6 +169,47 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         },
       },
     ];
+
+    if (onThemeModeChange) {
+      actionItems.push(
+        {
+          id: 'act-theme-default',
+          category: 'Actions',
+          title: 'Theme: System Default',
+          subtitle: 'Synchronize theme automatically with operating system',
+          icon: '💻',
+          badge: themeMode === 'default' ? 'Active' : undefined,
+          action: () => {
+            onThemeModeChange('default');
+            onClose();
+          },
+        },
+        {
+          id: 'act-theme-dark',
+          category: 'Actions',
+          title: 'Theme: Sumi Ink & Muted Terracotta (Dark)',
+          subtitle: 'Japanese Wabi-Sabi dark matte aesthetic',
+          icon: '🌙',
+          badge: themeMode === 'dark' ? 'Active' : undefined,
+          action: () => {
+            onThemeModeChange('dark');
+            onClose();
+          },
+        },
+        {
+          id: 'act-theme-light',
+          category: 'Actions',
+          title: 'Theme: Shikkui Plaster & Ceramic Stoneware (Light)',
+          subtitle: 'Japanese architectural limestone & ceramic light aesthetic',
+          icon: '☀️',
+          badge: themeMode === 'light' ? 'Active' : undefined,
+          action: () => {
+            onThemeModeChange('light');
+            onClose();
+          },
+        }
+      );
+    }
 
     if (isFilterActive) {
       actionItems.push({

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { io, Socket } from 'socket.io-client';
 
-import { Column, SelectedTask, Task, ViewMode, PriorityLevel, DueDateFilter } from '../types';
+import { Column, SelectedTask, Task, ViewMode, PriorityLevel, DueDateFilter, ThemeMode } from '../types';
 import {
   Header,
   AuthView,
@@ -44,6 +44,42 @@ export default function Home() {
   const [taskToRestore, setTaskToRestore] = useState<Task | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('board');
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [themeMode, setThemeMode] = useState<ThemeMode>('default');
+
+  // Initialize and persist theme mode
+  useEffect(() => {
+    const saved = (localStorage.getItem('pb_theme_mode') as ThemeMode) || 'default';
+    setThemeMode(saved);
+  }, []);
+
+  // Synchronize data-theme on document root and listen for OS system preference changes
+  useEffect(() => {
+    const applyTheme = (mode: ThemeMode) => {
+      let resolved: 'dark' | 'light' = 'dark';
+      if (mode === 'default') {
+        resolved = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+      } else {
+        resolved = mode;
+      }
+      document.documentElement.setAttribute('data-theme', resolved);
+    };
+
+    applyTheme(themeMode);
+
+    if (themeMode === 'default' && typeof window !== 'undefined' && window.matchMedia) {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const listener = (e: MediaQueryListEvent) => {
+        document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+      };
+      mediaQuery.addEventListener('change', listener);
+      return () => mediaQuery.removeEventListener('change', listener);
+    }
+  }, [themeMode]);
+
+  const handleThemeModeChange = (newMode: ThemeMode) => {
+    setThemeMode(newMode);
+    localStorage.setItem('pb_theme_mode', newMode);
+  };
 
   // Priority & Due Date Filter States
   const [searchQuery, setSearchQuery] = useState('');
@@ -581,6 +617,8 @@ export default function Home() {
         }}
         onLogoutClick={() => setShowLogoutConfirm(true)}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+        themeMode={themeMode}
+        onThemeModeChange={handleThemeModeChange}
       />
 
       {boardId && (
@@ -758,6 +796,8 @@ export default function Home() {
         onClearFilters={handleClearFilters}
         isFilterActive={isFilterActive}
         onLogout={() => setShowLogoutConfirm(true)}
+        themeMode={themeMode}
+        onThemeModeChange={handleThemeModeChange}
       />
     </div>
   );
