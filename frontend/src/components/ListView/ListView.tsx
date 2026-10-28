@@ -126,7 +126,7 @@ export const ListView: React.FC<ListViewProps> = ({
                                       title={label.name}
                                     >
                                       <span className="label-chip-dot" style={{ background: label.color }} />
-                                      {label.name}
+                                      <span className="label-chip-text">{label.name}</span>
                                     </span>
                                   ))}
                                 </div>
@@ -218,6 +218,7 @@ export const ListView: React.FC<ListViewProps> = ({
                   const priority = task.priority || 'medium';
                   const priorityMeta = PRIORITY_CONFIG[priority];
                   const dueDateInfo = getDueDateInfo(task.dueDate);
+                  const labels = task.labels ?? [];
 
                   return (
                     <div
@@ -242,6 +243,21 @@ export const ListView: React.FC<ListViewProps> = ({
 
                       <div className="list-task-meta" onClick={(e) => e.stopPropagation()}>
                         <div className="list-task-badges">
+                          {labels.length > 0 && (
+                            <div className="list-task-labels">
+                              {labels.map((label) => (
+                                <span
+                                  key={label.id}
+                                  className="label-chip"
+                                  style={{ background: label.color + '22', borderColor: label.color, color: label.color }}
+                                  title={label.name}
+                                >
+                                  <span className="label-chip-dot" style={{ background: label.color }} />
+                                  <span className="label-chip-text">{label.name}</span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
                           {priorityMeta && (
                             <span
                               className="priority-chip"

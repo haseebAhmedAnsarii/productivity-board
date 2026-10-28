@@ -67,7 +67,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   title={label.name}
                 >
                   <span className="label-chip-dot" style={{ background: label.color }} />
-                  {label.name}
+                  <span className="label-chip-text">{label.name}</span>
                 </span>
               ))}
             </div>
