@@ -3,9 +3,9 @@
    ========================================================================== */
 
 /* Design Tokens & Foundations */
-@import '../styles/variables.scss';
-@import '../styles/base.scss';
+@use '../styles/variables.scss' as *;
+@use '../styles/base.scss' as *;
 
 /* Global Board Canvas & Modal Overlays */
-@import '../styles/board.scss';
-@import '../styles/modals.scss';
+@use '../styles/board.scss' as *;
+@use '../styles/modals.scss' as *;
