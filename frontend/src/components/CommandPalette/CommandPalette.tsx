@@ -60,17 +60,85 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previousActiveElementRef = useRef<HTMLElement | null>(null);
 
-  // Focus input and reset query on open
+  // Focus trap: Save previous active element on open, restore on close
   useEffect(() => {
     if (isOpen) {
+      previousActiveElementRef.current = document.activeElement as HTMLElement | null;
       setQuery('');
       setSelectedIndex(0);
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         inputRef.current?.focus();
-      }, 50);
+      }, 30);
+      return () => clearTimeout(timer);
+    } else {
+      if (previousActiveElementRef.current && typeof previousActiveElementRef.current.focus === 'function') {
+        previousActiveElementRef.current.focus();
+      }
     }
   }, [isOpen]);
+
+  // Focus trap: Confine Tab/Shift+Tab inside dialog and prevent focus leaks
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const getFocusableElements = (): HTMLElement[] => {
+      if (!dialogRef.current) return [];
+      const selector = 'input:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+      return Array.from(dialogRef.current.querySelectorAll<HTMLElement>(selector))
+        .filter((el) => el.offsetParent !== null || el.offsetWidth > 0 || el.offsetHeight > 0);
+    };
+
+    const handleWindowKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Tab') {
+        const focusable = getFocusableElements();
+        if (focusable.length === 0) {
+          e.preventDefault();
+          return;
+        }
+
+        const firstElement = focusable[0];
+        const lastElement = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          // Shift + Tab: Wrap from first element to last
+          if (document.activeElement === firstElement || !dialogRef.current?.contains(document.activeElement)) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          // Tab: Wrap from last element to first
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+
+    const handleFocusIn = (e: FocusEvent) => {
+      if (dialogRef.current && !dialogRef.current.contains(e.target as Node)) {
+        e.preventDefault();
+        const focusable = getFocusableElements();
+        if (focusable.length > 0) {
+          focusable[0].focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleWindowKeyDown, true);
+    document.addEventListener('focusin', handleFocusIn, true);
+
+    return () => {
+      window.removeEventListener('keydown', handleWindowKeyDown, true);
+      document.removeEventListener('focusin', handleFocusIn, true);
+    };
+  }, [isOpen, onClose]);
 
   // All active tasks flat list
   const allActiveTasks = useMemo(() => {
@@ -463,6 +531,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   return (
     <div className="command-palette-backdrop" onClick={onClose}>
       <div
+        ref={dialogRef}
         className="command-palette-dialog"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
@@ -493,9 +562,15 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
           />
-          <kbd className="command-esc-hint" onClick={onClose}>
+          <button
+            type="button"
+            className="command-esc-hint"
+            onClick={onClose}
+            title="Close Command Palette (Esc)"
+            aria-label="Close Command Palette"
+          >
             ESC
-          </kbd>
+          </button>
         </div>
 
         <div ref={listRef} className="command-palette-list">

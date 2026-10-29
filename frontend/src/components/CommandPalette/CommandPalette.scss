@@ -66,10 +66,18 @@
         cursor: pointer;
         user-select: none;
         transition: var(--transition);
+        line-height: 1.4;
 
         &:hover {
           color: var(--text-main);
           border-color: var(--border-card-hover);
+        }
+
+        &:focus-visible {
+          outline: none;
+          border-color: var(--accent);
+          color: var(--text-main);
+          box-shadow: 0 0 0 1px var(--accent);
         }
       }
     }
