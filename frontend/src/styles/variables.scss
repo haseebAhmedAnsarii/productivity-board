@@ -1,8 +1,8 @@
 /* ==========================================================================
    Design Tokens & Foundations
    Japanese Wabi-Sabi Dual Palette:
-   - Dark: Sumi Ink & Muted Terracotta (Active Default)
-   - Light: Option 2 - Shikkui Plaster & Ceramic Stoneware
+   - Dark: Sumi Ink & Celadon Teal (Active Default)
+   - Light: Option 2 - Shikkui Plaster & Celadon Stoneware
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap');
@@ -28,7 +28,7 @@
 }
 
 /* ==========================================================================
-   Dark Theme (Default): Sumi Ink & Muted Terracotta
+   Dark Theme (Default): Sumi Ink & Celadon Teal
    ========================================================================== */
 :root,
 [data-theme='dark'] {
@@ -54,10 +54,10 @@
   --text-muted: #84848d;         /* River pebble grey */
   --text-inverse: #121214;       /* Deep sumi ink on accent elements */
 
-  /* Distinct Accent: Muted Japanese Terracotta / Vermilion & Lacquer Red */
-  --accent: #c75a47;             /* Muted Japanese terracotta / vermilion (matte, non-neon) */
-  --accent-hover: #b54e3c;
-  --accent-muted: #2e1d1b;       /* Subtle dark terracotta backing */
+  /* Distinct Accent: Japanese Celadon & Kurogane Oxidized Teal */
+  --accent: #3db4a8;             /* Serene Japanese celadon mineral teal (matte, authentic) */
+  --accent-hover: #31948a;
+  --accent-muted: rgba(61, 180, 168, 0.16); /* Subtle dark celadon backing */
   --danger: #d14d41;             /* Japanese lacquer red */
   --danger-hover: #bd3e32;
   --danger-muted: #331a19;
@@ -96,12 +96,12 @@
   --text-main: #1e2022;          /* Graphite Sumi ink */
   --text-secondary: #52565e;     /* Cool slate stone */
   --text-muted: #7e838e;         /* Mineral pebble gray */
-  --text-inverse: #ffffff;       /* Pure white on terracotta buttons */
+  --text-inverse: #ffffff;       /* Pure white on accent buttons */
 
-  /* Distinct Accent: Muted Japanese Terracotta & Lacquer Red */
-  --accent: #bf503d;             /* Terracotta clay (matte, authentic) */
-  --accent-hover: #ac4331;
-  --accent-muted: rgba(191, 80, 61, 0.12);
+  /* Distinct Accent: Deep Spruce Mineral Celadon & Lacquer Red */
+  --accent: #1c8579;             /* Deep spruce mineral celadon (matte, authentic) */
+  --accent-hover: #156a60;
+  --accent-muted: rgba(28, 133, 121, 0.12);
   --danger: #d14d41;             /* Japanese lacquer red */
   --danger-hover: #bc3f34;
   --danger-muted: rgba(209, 77, 65, 0.12);

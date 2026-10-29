@@ -175,9 +175,9 @@
         }
 
         &:hover {
-          color: #ff7b72;
-          border-color: rgba(239, 68, 68, 0.5);
-          background: rgba(239, 68, 68, 0.1);
+          color: var(--danger);
+          border-color: var(--danger);
+          background: var(--danger-muted);
         }
       }
     }

@@ -187,7 +187,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         {
           id: 'act-theme-dark',
           category: 'Actions',
-          title: 'Theme: Sumi Ink & Muted Terracotta (Dark)',
+          title: 'Theme: Sumi Ink & Celadon Teal (Dark)',
           subtitle: 'Japanese Wabi-Sabi dark matte aesthetic',
           icon: '🌙',
           badge: themeMode === 'dark' ? 'Active' : undefined,

@@ -4,10 +4,10 @@ import { Label } from '../../types';
 
 // Curated palette of Japanese Wabi-Sabi tones (Sumi ink, unglazed ceramics, matcha, lacquer)
 export const LABEL_COLOR_PALETTE = [
-  { name: 'Terracotta',    hex: '#c75a47' },
+  { name: 'Celadon Teal',  hex: '#3db4a8' },
   { name: 'Lacquer Red',   hex: '#d14d41' },
   { name: 'Matcha Green',  hex: '#567568' },
-  { name: 'Persimmon',     hex: '#d97d4a' },
+  { name: 'Spruce Celadon', hex: '#1c8579' },
   { name: 'Matcha Sage',   hex: '#8a9a86' },
   { name: 'Bamboo Pine',   hex: '#4e705b' },
   { name: 'Wisteria Fuji', hex: '#7b6f8a' },

@@ -239,7 +239,7 @@
         &:hover {
           border-color: var(--accent);
           color: var(--accent);
-          background: rgba(199, 90, 71, 0.14);
+          background: var(--accent-muted);
         }
       }
     }
@@ -278,7 +278,7 @@
 .due-date-clear-btn {
   background: transparent;
   border: none;
-  color: #ff7b72;
+  color: var(--danger);
   font-size: 0.75rem;
   font-family: var(--font-body);
   font-weight: 600;
@@ -391,7 +391,7 @@
       }
 
       &.react-datepicker__day--keyboard-selected {
-        background-color: rgba(199, 90, 71, 0.25) !important;
+        background-color: var(--accent-muted) !important;
         color: var(--accent) !important;
       }
 

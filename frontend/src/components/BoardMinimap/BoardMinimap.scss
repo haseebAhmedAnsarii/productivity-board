@@ -152,7 +152,7 @@
 
           &:hover {
             background: var(--surface-hover);
-            border-color: rgba(199, 90, 71, 0.45);
+            border-color: var(--accent);
           }
 
           .minimap-col-accent {
@@ -221,7 +221,7 @@
 
             &:hover {
               border-color: var(--accent);
-              background: rgba(199, 90, 71, 0.12);
+              background: var(--accent-muted);
 
               .minimap-add-plus {
                 color: var(--accent);
@@ -242,10 +242,10 @@
         position: absolute;
         top: 0;
         bottom: 0;
-        background: rgba(199, 90, 71, 0.18);
+        background: var(--accent-muted);
         border: 1.5px solid var(--accent);
         border-radius: 6px;
-        box-shadow: 0 0 10px rgba(199, 90, 71, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.4);
         cursor: grab;
         z-index: 5;
         display: flex;
@@ -256,15 +256,15 @@
         touch-action: none; // prevent browser scroll hijack during touch drag
 
         &:hover {
-          background: rgba(199, 90, 71, 0.26);
-          box-shadow: 0 0 14px rgba(199, 90, 71, 0.35);
+          background: var(--accent-muted);
+          box-shadow: 0 0 14px rgba(0, 0, 0, 0.35);
         }
 
         &.dragging {
           cursor: grabbing;
-          background: rgba(199, 90, 71, 0.34);
-          border-color: #d97d4a;
-          box-shadow: 0 0 16px rgba(199, 90, 71, 0.5);
+          background: var(--accent-muted);
+          border-color: var(--accent-hover);
+          box-shadow: 0 0 16px rgba(0, 0, 0, 0.5);
         }
 
         .minimap-lens-handle {

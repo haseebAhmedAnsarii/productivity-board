@@ -80,7 +80,7 @@ body {
   &.status-today {
     color: var(--accent);
     background: var(--accent-muted);
-    border-color: rgba(199, 90, 71, 0.45);
+    border-color: var(--accent);
     font-weight: 700;
   }
 
