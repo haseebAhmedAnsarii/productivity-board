@@ -78,31 +78,41 @@ export const BoardMinimap: React.FC<BoardMinimapProps> = ({
   const maxLensTravel = Math.max(1, trackWidth - lensWidth);
   const lensLeft = maxScroll > 0 ? Math.max(0, Math.min(maxLensTravel, (scrollLeft / maxScroll) * maxLensTravel)) : 0;
 
-  // Viewport Lens Drag Interaction
-  const handleLensMouseDown = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
+  // Shared drag logic used by both mouse and touch handlers
+  const startDrag = (startX: number) => {
     if (!boardAreaRef.current || maxScroll <= 0) return;
 
     setIsDragging(true);
     dragStartRef.current = {
-      startX: e.clientX,
+      startX,
       startScrollLeft: boardAreaRef.current.scrollLeft,
     };
+  };
 
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      if (!dragStartRef.current || !boardAreaRef.current) return;
-      const deltaX = moveEvent.clientX - dragStartRef.current.startX;
-      const scrollDelta = (deltaX / maxLensTravel) * maxScroll;
-      boardAreaRef.current.scrollLeft = Math.max(
-        0,
-        Math.min(maxScroll, dragStartRef.current.startScrollLeft + scrollDelta)
-      );
-    };
+  const moveDrag = (currentX: number) => {
+    if (!dragStartRef.current || !boardAreaRef.current) return;
+    const deltaX = currentX - dragStartRef.current.startX;
+    const scrollDelta = (deltaX / maxLensTravel) * maxScroll;
+    boardAreaRef.current.scrollLeft = Math.max(
+      0,
+      Math.min(maxScroll, dragStartRef.current.startScrollLeft + scrollDelta)
+    );
+  };
 
+  const endDrag = () => {
+    setIsDragging(false);
+    dragStartRef.current = null;
+  };
+
+  // Viewport Lens — Mouse Drag
+  const handleLensMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    startDrag(e.clientX);
+
+    const handleMouseMove = (moveEvent: MouseEvent) => moveDrag(moveEvent.clientX);
     const handleMouseUp = () => {
-      setIsDragging(false);
-      dragStartRef.current = null;
+      endDrag();
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
@@ -111,12 +121,49 @@ export const BoardMinimap: React.FC<BoardMinimapProps> = ({
     window.addEventListener('mouseup', handleMouseUp);
   };
 
-  // Click on Track to jump to location
+  // Viewport Lens — Touch Drag
+  const handleLensTouchStart = (e: React.TouchEvent) => {
+    e.stopPropagation();
+    // Do NOT call e.preventDefault() here — it would break passive listener rules.
+    // touch-action: none on the element suppresses browser scroll instead.
+    startDrag(e.touches[0].clientX);
+
+    const handleTouchMove = (moveEvent: TouchEvent) => {
+      moveEvent.preventDefault(); // safe inside a non-passive window listener
+      moveDrag(moveEvent.touches[0].clientX);
+    };
+    const handleTouchEnd = () => {
+      endDrag();
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd);
+  };
+
+  // Click on Track to jump to location (mouse)
   const handleTrackClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!trackRef.current || !boardAreaRef.current || maxScroll <= 0) return;
     const rect = trackRef.current.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const targetLensCenter = clickX - lensWidth / 2;
+    const targetRatio = Math.max(0, Math.min(1, targetLensCenter / maxLensTravel));
+    const targetScroll = targetRatio * maxScroll;
+
+    boardAreaRef.current.scrollTo({
+      left: targetScroll,
+      behavior: 'smooth',
+    });
+  };
+
+  // Tap on Track to jump to location (touch)
+  const handleTrackTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!trackRef.current || !boardAreaRef.current || maxScroll <= 0) return;
+    const touch = e.changedTouches[0];
+    const rect = trackRef.current.getBoundingClientRect();
+    const tapX = touch.clientX - rect.left;
+    const targetLensCenter = tapX - lensWidth / 2;
     const targetRatio = Math.max(0, Math.min(1, targetLensCenter / maxLensTravel));
     const targetScroll = targetRatio * maxScroll;
 
@@ -181,6 +228,7 @@ export const BoardMinimap: React.FC<BoardMinimapProps> = ({
             ref={trackRef}
             className="minimap-track"
             onClick={handleTrackClick}
+            onTouchEnd={handleTrackTouchEnd}
             title="Click or drag to navigate board"
           >
             <div className="minimap-columns-grid">
@@ -238,6 +286,7 @@ export const BoardMinimap: React.FC<BoardMinimapProps> = ({
                 width: `${lensWidth}px`,
               }}
               onMouseDown={handleLensMouseDown}
+              onTouchStart={handleLensTouchStart}
               title="Drag to pan board"
             >
               <div className="minimap-lens-handle">
