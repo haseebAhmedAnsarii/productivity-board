@@ -136,6 +136,7 @@ export default function Home() {
   const deletedColumnRef = useRef<HTMLDivElement>(null);
   const addColumnRef = useRef<HTMLDivElement>(null);
   const boardAreaRef = useRef<HTMLElement>(null);
+  const prevShowDeletedCardsRef = useRef(false);
 
   const scrollToAddColumn = () => {
     setTimeout(() => {
@@ -155,7 +156,12 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (showDeletedCards && deletedTasks.length > 0) {
+    // Only auto-scroll when user explicitly turns on deleted cards (false -> true).
+    // Switching viewMode while deleted cards are already visible must NOT trigger scroll.
+    const isNewlyOpened = !prevShowDeletedCardsRef.current && showDeletedCards;
+    prevShowDeletedCardsRef.current = showDeletedCards;
+
+    if (isNewlyOpened && deletedTasks.length > 0) {
       const timer = setTimeout(() => {
         if (viewMode === 'board' && boardAreaRef.current) {
           boardAreaRef.current.scrollTo({
@@ -172,7 +178,7 @@ export default function Home() {
       }, 80);
       return () => clearTimeout(timer);
     }
-  }, [showDeletedCards, viewMode]);
+  }, [showDeletedCards, deletedTasks.length, viewMode]);
 
   useEffect(() => {
     if (isAddingColumn) {
