@@ -759,6 +759,7 @@ export default function Home() {
           onCancelAddColumn={() => setIsAddingColumn(false)}
           onCreateColumn={handleCreateColumn}
           addColumnRef={addColumnRef}
+          deletedColumnRef={deletedColumnRef}
         />
       )}
 

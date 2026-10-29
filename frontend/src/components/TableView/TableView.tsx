@@ -1,5 +1,5 @@
 import './TableView.scss';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Column, Task } from '../../types';
 import { AddColumn } from '../AddColumn';
 import { stripRichTextToSnippet } from '../RichTextRenderer';
@@ -19,6 +19,7 @@ interface TableViewProps {
   onCancelAddColumn: () => void;
   onCreateColumn: (title: string) => Promise<void>;
   addColumnRef?: React.Ref<HTMLDivElement>;
+  deletedColumnRef?: React.Ref<HTMLTableRowElement | HTMLDivElement>;
 }
 
 export const TableView: React.FC<TableViewProps> = ({
@@ -34,11 +35,20 @@ export const TableView: React.FC<TableViewProps> = ({
   onCancelAddColumn,
   onCreateColumn,
   addColumnRef,
+  deletedColumnRef,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedColumnFilter, setSelectedColumnFilter] = useState('ALL');
   const [sortBy, setSortBy] = useState<'id' | 'title' | 'column' | 'priority' | 'dueDate'>('id');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  // When user toggles showDeletedCards while filtered to a specific active column,
+  // reset filter to 'ALL' so the deleted tasks section is visible and scroll target exists
+  useEffect(() => {
+    if (showDeletedCards && selectedColumnFilter !== 'ALL' && selectedColumnFilter !== 'DELETED') {
+      setSelectedColumnFilter('ALL');
+    }
+  }, [showDeletedCards, selectedColumnFilter]);
 
   const columnFilterOptions: SelectOption[] = useMemo(() => {
     const opts: SelectOption[] = [
@@ -299,6 +309,25 @@ export const TableView: React.FC<TableViewProps> = ({
                     </tr>
                   );
                 })}
+
+                {/* Soft-Deleted Tasks Header & Section */}
+                {filteredDeletedTasks.length > 0 && (
+                  <tr
+                    ref={deletedColumnRef as any}
+                    className="table-deleted-section-header"
+                  >
+                    <td colSpan={7}>
+                      <div className="table-deleted-header-content">
+                        <span className="table-deleted-header-title">
+                          🗑️ Deleted Tasks
+                        </span>
+                        <span className="task-count">
+                          {filteredDeletedTasks.length}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                )}
 
                 {/* Soft-Deleted Tasks */}
                 {filteredDeletedTasks.map((task) => {

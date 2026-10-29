@@ -180,6 +180,44 @@
         &.table-row-deleted td {
           opacity: 0.85;
         }
+
+        &.table-deleted-section-header {
+          scroll-margin-top: 45px;
+
+          td {
+            background: var(--danger-muted) !important;
+            border-top: 2px solid var(--danger);
+            border-bottom: 1px solid var(--border-ui);
+            padding: 0.65rem 1.25rem;
+
+            .table-deleted-header-content {
+              display: flex;
+              align-items: center;
+              gap: 0.6rem;
+
+              .table-deleted-header-title {
+                color: var(--danger);
+                font-family: var(--font-heading);
+                font-weight: 700;
+                font-size: 0.8rem;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+              }
+
+              .task-count {
+                background: var(--border-subtle);
+                border: 1px solid var(--danger);
+                border-radius: var(--radius-badge);
+                padding: 1px 7px;
+                font-family: var(--font-mono);
+                font-size: 0.7rem;
+                font-weight: 700;
+                color: var(--danger);
+                letter-spacing: 0.05em;
+              }
+            }
+          }
+        }
       }
     }
   }
