@@ -169,14 +169,6 @@ export const ListView: React.FC<ListViewProps> = ({
                               title="Move to another column"
                               ariaLabel="Move to another column"
                             />
-                            <button
-                              type="button"
-                              className="table-action-icon"
-                              onClick={() => onTaskClick(task, false, column.id)}
-                              title="Open details"
-                            >
-                              ✎
-                            </button>
                           </div>
                         </div>
                       );
