@@ -56,6 +56,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   const [taskLabels, setTaskLabels] = useState<Label[]>([]);
   const [allBoardLabels, setAllBoardLabels] = useState<Label[]>([]);
   const overlayMouseDownRef = useRef(false);
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
   const isNew = Boolean(selectedTask && 'isNew' in selectedTask);
   const currentTask = selectedTask && !isNew ? (selectedTask as Task) : null;
@@ -436,6 +437,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   const handleSave = async () => {
     if (!editTitle.trim()) {
       setTitleError(true);
+      titleInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      titleInputRef.current?.focus({ preventScroll: true });
       return;
     }
     await onSave(
@@ -522,6 +525,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 {titleError && <span style={{ color: 'var(--danger)', marginLeft: '0.5rem', fontSize: '0.75rem', fontWeight: 600 }}>*Required</span>}
               </label>
               <input 
+                ref={titleInputRef}
                 type="text" 
                 value={editTitle} 
                 readOnly={isDeleted}
