@@ -201,7 +201,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         id: 'nav-toggle-deleted',
         category: 'Navigation',
         title: showDeletedCards ? 'Hide Deleted Tasks' : 'Show Deleted Tasks',
-        subtitle: `${deletedTasks.length} archived card${deletedTasks.length === 1 ? '' : 's'}`,
+        subtitle: showDeletedCards
+          ? 'Hide the archived cards column from board'
+          : 'Display the archived cards column on board',
         icon: '🗑️',
         badge: deletedTasks.length > 0 ? `${deletedTasks.length} cards` : undefined,
         action: () => {
