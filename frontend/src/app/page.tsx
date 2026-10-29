@@ -85,8 +85,17 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [dueDateFilter, setDueDateFilter] = useState<DueDateFilter>('all');
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   const isFilterActive = searchQuery.trim() !== '' || priorityFilter !== 'all' || dueDateFilter !== 'all';
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (searchQuery.trim()) count++;
+    if (priorityFilter !== 'all') count++;
+    if (dueDateFilter !== 'all') count++;
+    return count;
+  }, [searchQuery, priorityFilter, dueDateFilter]);
 
   const taskMatchesFilter = (task: Task) => {
     const matchesSearch = !searchQuery.trim() ||
@@ -619,6 +628,10 @@ export default function Home() {
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         themeMode={themeMode}
         onThemeModeChange={handleThemeModeChange}
+        isFilterActive={isFilterActive}
+        activeFiltersCount={activeFiltersCount}
+        isMobileFilterOpen={isMobileFilterOpen}
+        onToggleMobileFilter={() => setIsMobileFilterOpen(prev => !prev)}
       />
 
       {boardId && (
@@ -633,6 +646,8 @@ export default function Home() {
           onClearFilters={handleClearFilters}
           totalTasksCount={totalTasksCount}
           filteredTasksCount={filteredTasksCount}
+          isMobileExpanded={isMobileFilterOpen}
+          onToggleMobileExpand={() => setIsMobileFilterOpen(prev => !prev)}
         />
       )}
 
@@ -690,6 +705,17 @@ export default function Home() {
               scrollToAddColumn();
             }}
           />
+
+          {/* Mobile Quick Add Task FAB */}
+          <button
+            type="button"
+            className="mobile-fab-add-btn"
+            onClick={() => openNewTaskModal(columns[0]?.id)}
+            title="Add New Task"
+            aria-label="Add New Task"
+          >
+            +
+          </button>
         </div>
       ) : viewMode === 'list' ? (
         <ListView

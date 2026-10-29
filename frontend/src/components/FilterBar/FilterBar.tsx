@@ -6,8 +6,8 @@ import { CustomSelect, SelectOption } from '../CustomSelect';
 const priorityOptions: SelectOption[] = [
   { value: 'all', label: 'All Priorities' },
   { value: 'critical', label: 'Critical', icon: '🔴' },
-  { value: 'high', label: 'High', icon: '🟠' },
-  { value: 'medium', label: 'Medium', icon: '🟡' },
+  { value: 'high', label: 'High', icon: '🔺' },
+  { value: 'medium', label: 'Medium', icon: '🔵' },
   { value: 'low', label: 'Low', icon: '🟢' },
 ];
 
@@ -31,6 +31,8 @@ interface FilterBarProps {
   onClearFilters: () => void;
   totalTasksCount: number;
   filteredTasksCount: number;
+  isMobileExpanded?: boolean;
+  onToggleMobileExpand?: () => void;
 }
 
 export const FilterBar: React.FC<FilterBarProps> = ({
@@ -44,10 +46,49 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onClearFilters,
   totalTasksCount,
   filteredTasksCount,
+  isMobileExpanded = false,
+  onToggleMobileExpand,
 }) => {
   return (
-    <div className="filter-bar">
-      <div className="filter-bar-left">
+    <div className={`filter-bar ${isMobileExpanded ? 'mobile-expanded' : 'mobile-collapsed'} ${isFilterActive ? 'has-active-filter' : ''}`}>
+      {/* Mobile Compact Active Filter Pill Bar (Shown when collapsed and filter active) */}
+      {isFilterActive && !isMobileExpanded && (
+        <div className="filter-mobile-active-strip">
+          <div className="filter-mobile-strip-left" onClick={onToggleMobileExpand}>
+            <span className="filter-strip-badge">Filtered:</span>
+            {searchQuery && (
+              <span className="filter-tag-pill">
+                "{searchQuery}"
+              </span>
+            )}
+            {priorityFilter !== 'all' && (
+              <span className="filter-tag-pill">
+                {priorityFilter.toUpperCase()}
+              </span>
+            )}
+            {dueDateFilter !== 'all' && (
+              <span className="filter-tag-pill">
+                {dueDateFilter.toUpperCase()}
+              </span>
+            )}
+            <span className="filter-strip-count">
+              ({filteredTasksCount}/{totalTasksCount})
+            </span>
+          </div>
+          <button
+            type="button"
+            className="filter-strip-clear-btn"
+            onClick={onClearFilters}
+            title="Clear all filters"
+          >
+            ✕ Clear
+          </button>
+        </div>
+      )}
+
+      {/* Main Filter Toolbar Controls */}
+      <div className="filter-bar-content">
+        <div className="filter-bar-left">
         {/* Search Input */}
         <div className="filter-search-wrap">
           <svg
@@ -133,6 +174,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             </button>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

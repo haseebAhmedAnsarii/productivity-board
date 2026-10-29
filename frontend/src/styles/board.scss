@@ -40,4 +40,45 @@
       gap: 0.5rem;
     }
   }
+
+  /* Mobile Floating Action Button (FAB) */
+  .mobile-fab-add-btn {
+    display: none;
+
+    @media (max-width: 640px) {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      right: 1.15rem;
+      bottom: 4.25rem;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--text-inverse);
+      border: none;
+      font-size: 1.4rem;
+      font-weight: 700;
+      line-height: 1;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+      cursor: pointer;
+      z-index: 35;
+      transition: transform 0.15s ease, background 0.15s ease;
+
+      &:hover,
+      &:active {
+        transform: scale(1.08);
+        background: var(--accent-hover);
+      }
+    }
+
+    @media (max-width: 360px) {
+      right: 0.85rem;
+      bottom: 3.85rem;
+      width: 40px;
+      height: 40px;
+      font-size: 1.25rem;
+    }
+  }
 }
