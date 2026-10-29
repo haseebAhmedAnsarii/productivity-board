@@ -163,19 +163,39 @@ export default function Home() {
 
     if (isNewlyOpened && deletedTasks.length > 0) {
       const timer = setTimeout(() => {
-        if (viewMode === 'board' && boardAreaRef.current) {
-          boardAreaRef.current.scrollTo({
-            left: boardAreaRef.current.scrollWidth,
-            behavior: 'smooth'
-          });
+        if (viewMode === 'board' && deletedColumnRef.current && boardAreaRef.current) {
+          const col = deletedColumnRef.current;
+          const board = boardAreaRef.current;
+          const isMobile = typeof window !== 'undefined' && window.innerWidth <= 640;
+
+          if (isMobile) {
+            // On mobile (<=640px), precisely center the DeletedColumn in the viewport
+            // rather than scrolling to scrollWidth (which overshoots onto AddColumn).
+            const targetLeft = col.offsetLeft - (board.clientWidth - col.offsetWidth) / 2;
+            board.scrollTo({
+              left: Math.max(0, targetLeft),
+              behavior: 'smooth',
+            });
+          } else {
+            col.scrollIntoView({
+              behavior: 'smooth',
+              inline: 'end',
+              block: 'nearest',
+            });
+          }
         } else if (deletedColumnRef.current) {
           deletedColumnRef.current.scrollIntoView({
             behavior: 'smooth',
-            inline: viewMode === 'board' ? 'end' : 'nearest',
-            block: viewMode === 'board' ? 'nearest' : 'center'
+            inline: 'nearest',
+            block: 'center',
+          });
+        } else if (viewMode === 'board' && boardAreaRef.current) {
+          boardAreaRef.current.scrollTo({
+            left: boardAreaRef.current.scrollWidth,
+            behavior: 'smooth',
           });
         }
-      }, 80);
+      }, 100);
       return () => clearTimeout(timer);
     }
   }, [showDeletedCards, deletedTasks.length, viewMode]);
