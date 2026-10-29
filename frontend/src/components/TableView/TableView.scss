@@ -97,6 +97,18 @@
         padding: 0.85rem 1.25rem;
         border-bottom: 1px solid var(--border-ui);
         user-select: none;
+
+        &.sortable {
+          cursor: pointer;
+        }
+
+        &.th-col-id { width: 70px; }
+        &.th-col-title { width: 240px; }
+        &.th-col-column { width: 160px; }
+        &.th-col-priority { width: 115px; }
+        &.th-col-due-date { width: 140px; }
+        &.th-col-desc { width: 190px; }
+        &.th-col-actions { width: 95px; text-align: right; }
       }
 
       td {
@@ -218,11 +230,28 @@
 
     .table-card-container {
       .kanban-table {
-        min-width: 660px;
+        min-width: 860px;
 
         th, td {
           padding: 0.65rem 0.75rem;
           font-size: 0.8rem;
+        }
+
+        th {
+          &.th-col-id { width: 55px; }
+          &.th-col-title { width: 220px; }
+          &.th-col-column { width: 130px; }
+          &.th-col-priority { width: 95px; }
+          &.th-col-due-date { width: 115px; }
+          &.th-col-desc { width: 170px; }
+          &.th-col-actions { width: 75px; }
+        }
+
+        td {
+          .table-col-select-custom {
+            min-width: 115px;
+            max-width: 100%;
+          }
         }
       }
     }
@@ -233,11 +262,28 @@
 
     .table-card-container {
       .kanban-table {
-        min-width: 630px;
+        min-width: 800px;
 
         th, td {
           padding: 0.55rem 0.65rem;
           font-size: 0.78rem;
+        }
+
+        th {
+          &.th-col-id { width: 50px; }
+          &.th-col-title { width: 200px; }
+          &.th-col-column { width: 120px; }
+          &.th-col-priority { width: 90px; }
+          &.th-col-due-date { width: 110px; }
+          &.th-col-desc { width: 160px; }
+          &.th-col-actions { width: 70px; }
+        }
+
+        td {
+          .table-col-select-custom {
+            min-width: 105px;
+            max-width: 100%;
+          }
         }
       }
     }

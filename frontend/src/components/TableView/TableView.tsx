@@ -172,42 +172,42 @@ export const TableView: React.FC<TableViewProps> = ({
           <thead>
             <tr>
               <th 
-                style={{ width: '70px', cursor: 'pointer' }}
+                className="th-col-id sortable"
                 onClick={() => handleSort('id')}
                 title="Click to sort by ID"
               >
                 #ID {sortBy === 'id' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </th>
               <th 
-                style={{ width: '24%', cursor: 'pointer' }}
+                className="th-col-title sortable"
                 onClick={() => handleSort('title')}
                 title="Click to sort by Title"
               >
                 Title {sortBy === 'title' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </th>
               <th 
-                style={{ width: '160px', cursor: 'pointer' }}
+                className="th-col-column sortable"
                 onClick={() => handleSort('column')}
                 title="Click to sort by Column"
               >
                 Column {sortBy === 'column' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </th>
               <th 
-                style={{ width: '115px', cursor: 'pointer' }}
+                className="th-col-priority sortable"
                 onClick={() => handleSort('priority')}
                 title="Click to sort by Priority"
               >
                 Priority {sortBy === 'priority' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </th>
               <th 
-                style={{ width: '140px', cursor: 'pointer' }}
+                className="th-col-due-date sortable"
                 onClick={() => handleSort('dueDate')}
                 title="Click to sort by Due Date"
               >
                 Due Date {sortBy === 'dueDate' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </th>
-              <th>Description</th>
-              <th style={{ width: '95px', textAlign: 'right' }}>Actions</th>
+              <th className="th-col-desc">Description</th>
+              <th className="th-col-actions">Actions</th>
             </tr>
           </thead>
           <tbody>
