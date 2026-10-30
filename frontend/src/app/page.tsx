@@ -137,19 +137,23 @@ export default function Home() {
   const addColumnRef = useRef<HTMLDivElement>(null);
   const boardAreaRef = useRef<HTMLElement>(null);
   const prevShowArchivedCardsRef = useRef(false);
+  const addColumnTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const scrollToAddColumn = () => {
-    setTimeout(() => {
-      if (addColumnRef.current) {
-        addColumnRef.current.scrollIntoView({
-          behavior: 'smooth',
-          inline: viewMode === 'board' ? 'end' : 'nearest',
-          block: viewMode === 'board' ? 'nearest' : 'center',
-        });
-      } else if (boardAreaRef.current) {
+    if (addColumnTimerRef.current) {
+      clearTimeout(addColumnTimerRef.current);
+    }
+    addColumnTimerRef.current = setTimeout(() => {
+      if (viewMode === 'board' && boardAreaRef.current) {
         boardAreaRef.current.scrollTo({
           left: boardAreaRef.current.scrollWidth,
           behavior: 'smooth'
+        });
+      } else if (addColumnRef.current) {
+        addColumnRef.current.scrollIntoView({
+          behavior: 'smooth',
+          inline: 'nearest',
+          block: 'nearest',
         });
       }
     }, 60);
@@ -202,10 +206,46 @@ export default function Home() {
 
   useEffect(() => {
     if (isAddingColumn) {
-      const timer = setTimeout(scrollToAddColumn, 60);
-      return () => clearTimeout(timer);
+      scrollToAddColumn();
     }
   }, [isAddingColumn]);
+
+  // Reset inline Add Column form and scroll position whenever the user switches views
+  useEffect(() => {
+    if (addColumnTimerRef.current) {
+      clearTimeout(addColumnTimerRef.current);
+      addColumnTimerRef.current = null;
+    }
+    setIsAddingColumn(false);
+
+    const resetViewScroll = () => {
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        if (document.documentElement) {
+          document.documentElement.scrollTop = 0;
+          document.documentElement.scrollLeft = 0;
+        }
+        if (document.body) {
+          document.body.scrollTop = 0;
+          document.body.scrollLeft = 0;
+        }
+      }
+      if (boardAreaRef.current) {
+        boardAreaRef.current.scrollTo({ left: 0, top: 0, behavior: 'instant' });
+      }
+      const listContainer = document.querySelector('.list-card-container');
+      if (listContainer) listContainer.scrollTop = 0;
+      const tableContainer = document.querySelector('.table-card-container');
+      if (tableContainer) {
+        tableContainer.scrollTop = 0;
+        tableContainer.scrollLeft = 0;
+      }
+    };
+
+    resetViewScroll();
+    const rafId = requestAnimationFrame(resetViewScroll);
+    return () => cancelAnimationFrame(rafId);
+  }, [viewMode]);
 
   useEffect(() => {
     setIsBrowser(true);
