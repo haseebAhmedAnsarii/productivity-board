@@ -27,9 +27,14 @@
       color: var(--text-main);
       transform: translateY(-1px);
     }
+
+    &:active {
+      transform: translateY(0) scale(0.99);
+    }
   }
 
   .add-column-card {
+    animation: addColSlideIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     background: var(--bg-column);
     border: 1px solid var(--border-ui);
     border-radius: var(--radius-column);
@@ -76,5 +81,16 @@
   @media (max-width: 360px) {
     min-width: calc(100vw - 1rem);
     max-width: calc(100vw - 1rem);
+  }
+}
+
+@keyframes addColSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }

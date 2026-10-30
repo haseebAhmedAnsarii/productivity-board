@@ -110,6 +110,10 @@
       border-color: var(--accent);
       color: var(--text-main);
     }
+
+    &:active {
+      transform: scale(0.99);
+    }
   }
 
   @media (max-width: 640px) {

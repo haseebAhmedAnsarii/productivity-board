@@ -42,6 +42,11 @@
 
     .header-deleted-btn {
       padding: 0.42rem 0.8rem;
+      transition: var(--transition);
+
+      &:active {
+        transform: scale(0.97);
+      }
       font-size: 0.78rem;
       font-weight: 600;
       white-space: nowrap;
@@ -57,6 +62,11 @@
 
     .header-add-col-btn {
       padding: 0.42rem 0.85rem;
+      transition: var(--transition);
+
+      &:active {
+        transform: scale(0.97);
+      }
       font-size: 0.78rem;
       font-weight: 600;
       white-space: nowrap;
@@ -160,6 +170,10 @@
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
       }
 
+      &:active {
+        transform: scale(0.96);
+      }
+
       svg {
         flex-shrink: 0;
       }
@@ -187,6 +201,10 @@
       border-color: var(--border-card-hover);
       color: var(--text-main);
       background: var(--surface-hover);
+    }
+
+    &:active {
+      transform: scale(0.98);
     }
 
     .cmd-text-short {
