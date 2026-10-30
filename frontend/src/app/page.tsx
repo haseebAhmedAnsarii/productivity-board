@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { io, Socket } from 'socket.io-client';
 
@@ -45,6 +45,39 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<ViewMode>('board');
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [themeMode, setThemeMode] = useState<ThemeMode>('default');
+
+  // Synchronize viewMode with URL query parameter (?view=list, ?view=table)
+  const handleViewModeChange = useCallback((mode: ViewMode) => {
+    setViewMode(mode);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (mode === 'board') {
+        url.searchParams.delete('view');
+      } else {
+        url.searchParams.set('view', mode);
+      }
+      const newUrl = url.pathname + (url.search ? url.search : '') + url.hash;
+      window.history.replaceState(null, '', newUrl);
+    }
+  }, []);
+
+  // Initialize and persist view mode from URL query parameter, and listen for browser back/forward (popstate)
+  useEffect(() => {
+    const syncViewFromUrl = () => {
+      if (typeof window === 'undefined') return;
+      const params = new URLSearchParams(window.location.search);
+      const viewParam = params.get('view');
+      if (viewParam === 'list' || viewParam === 'table') {
+        setViewMode(viewParam);
+      } else {
+        setViewMode('board');
+      }
+    };
+
+    syncViewFromUrl();
+    window.addEventListener('popstate', syncViewFromUrl);
+    return () => window.removeEventListener('popstate', syncViewFromUrl);
+  }, []);
 
   // Initialize and persist theme mode
   useEffect(() => {
@@ -293,19 +326,19 @@ export default function Home() {
       const key = e.key.toLowerCase();
       if (key === 'b') {
         e.preventDefault();
-        setViewMode('board');
+        handleViewModeChange('board');
       } else if (key === 'l') {
         e.preventDefault();
-        setViewMode('list');
+        handleViewModeChange('list');
       } else if (key === 't') {
         e.preventDefault();
-        setViewMode('table');
+        handleViewModeChange('table');
       }
     };
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [token, isCommandPaletteOpen, selectedTask, showLogoutConfirm, columnToArchive, taskToRestore]);
+  }, [token, isCommandPaletteOpen, selectedTask, showLogoutConfirm, columnToArchive, taskToRestore, handleViewModeChange]);
 
   const fetchBoard = async (currentToken: string) => {
     try {
@@ -685,7 +718,7 @@ export default function Home() {
         archivedTasksCount={archivedTasks.length}
         showArchivedCards={showArchivedCards}
         viewMode={viewMode}
-        onViewModeChange={setViewMode}
+        onViewModeChange={handleViewModeChange}
         onToggleArchivedCards={() => setShowArchivedCards(!showArchivedCards)}
         onAddColumnClick={() => {
           setIsAddingColumn(true);
@@ -877,7 +910,7 @@ export default function Home() {
         archivedTasks={archivedTasks}
         showArchivedCards={showArchivedCards}
         viewMode={viewMode}
-        onViewModeChange={setViewMode}
+        onViewModeChange={handleViewModeChange}
         onToggleArchivedCards={() => setShowArchivedCards(!showArchivedCards)}
         onOpenNewTaskModal={(colId) => openNewTaskModal(colId || columns[0]?.id || '')}
         onStartAddColumn={() => {
