@@ -17,6 +17,8 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
   onTaskClick,
   onAddTask,
 }) => {
+  const hasTasks = column.tasks.length > 0;
+
   return (
     <div className="kanban-column">
       <div className="column-header">
@@ -28,7 +30,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
               e.stopPropagation();
               onArchiveColumn(column);
             }}
-            title="Archive column"
+            title={hasTasks ? "Archive column" : "Delete column"}
             className="archive-col-btn"
           >
             &times;

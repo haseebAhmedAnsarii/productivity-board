@@ -17,6 +17,9 @@ export const ArchiveColumnModal: React.FC<ArchiveColumnModalProps> = ({
 
   if (!column) return null;
 
+  const hasTasks = column.tasks.length > 0;
+  const actionLabel = hasTasks ? 'Archive Column' : 'Delete Column';
+
   return (
     <div
       className="modal-overlay"
@@ -37,7 +40,7 @@ export const ArchiveColumnModal: React.FC<ArchiveColumnModalProps> = ({
         style={{ maxWidth: '440px', textAlign: 'center' }}
       >
         <div className="modal-header" style={{ justifyContent: 'center', position: 'relative' }}>
-          <h2>Archive Column</h2>
+          <h2>{actionLabel}</h2>
           <button 
             className="close-btn" 
             onClick={onClose}
@@ -48,9 +51,9 @@ export const ArchiveColumnModal: React.FC<ArchiveColumnModalProps> = ({
         </div>
         
         <p style={{ color: 'var(--text-main)', fontSize: '1rem', lineHeight: 1.5, margin: '0.5rem 0' }}>
-          Are you sure you want to archive <strong>&ldquo;{column.title}&rdquo;</strong>?
+          Are you sure you want to {hasTasks ? 'archive' : 'delete'} <strong>&ldquo;{column.title}&rdquo;</strong>?
         </p>
-        {column.tasks.length > 0 && (
+        {hasTasks && (
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>
             Note: All {column.tasks.length} {column.tasks.length === 1 ? 'task' : 'tasks'} inside this column will be safely moved to the Archived column.
           </p>
@@ -69,7 +72,7 @@ export const ArchiveColumnModal: React.FC<ArchiveColumnModalProps> = ({
             className="btn-danger"
             style={{ flex: 1 }}
           >
-            Archive Column
+            {actionLabel}
           </button>
         </div>
       </div>
