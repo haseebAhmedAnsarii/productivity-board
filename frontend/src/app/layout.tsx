@@ -4,6 +4,12 @@ import "./globals.scss";
 export const metadata: Metadata = {
   title: "Bento Board",
   description: "Bespoke architectural task management.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "32x32" },
+    ],
+  },
 };
 
 const themeScript = `

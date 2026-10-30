@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <style>
+      .bento-bg {
+        fill: #161618;
+        stroke: #323238;
+        stroke-width: 1.5;
+      }
+      .bento-left {
+        fill: #3db4a8;
+      }
+      .bento-top {
+        fill: #f1f1f3;
+      }
+      .bento-bottom {
+        fill: #d14d41;
+      }
+      @media (prefers-color-scheme: light) {
+        .bento-bg {
+          fill: #1a1a1d;
+          stroke: #2e2e34;
+        }
+        .bento-left {
+          fill: #3db4a8;
+        }
+        .bento-top {
+          fill: #ffffff;
+        }
+        .bento-bottom {
+          fill: #d14d41;
+        }
+      }
+    </style>
+  </defs>
+  <!-- Bento Outer Tray -->
+  <rect class="bento-bg" x="2" y="2" width="28" height="28" rx="6.5" />
+  
+  <!-- Left Architectural Column (Japanese Celadon Teal) -->
+  <rect class="bento-left" x="6" y="6" width="7" height="20" rx="2" />
+  
+  <!-- Top Right Compartment (Washi White) -->
+  <rect class="bento-top" x="15.5" y="6" width="10.5" height="9" rx="2" />
+  
+  <!-- Bottom Right Compartment (Urushi Lacquer Red) -->
+  <rect class="bento-bottom" x="15.5" y="17" width="10.5" height="9" rx="2" />
+</svg>
+
