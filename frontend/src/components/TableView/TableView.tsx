@@ -351,9 +351,26 @@ export const TableView: React.FC<TableViewProps> = ({
                         </span>
                       </td>
                       <td>
-                        <span style={{ color: 'var(--danger)', fontSize: '0.78rem', fontWeight: 600, textTransform: 'uppercase' }}>
-                          Archived
-                        </span>
+                        {task.originalColumnTitle ? (
+                          <span 
+                            style={{ 
+                              color: 'var(--text-muted)', 
+                              fontSize: '0.82rem',
+                              fontStyle: 'italic',
+                              display: 'inline-block',
+                              maxWidth: '200px',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              verticalAlign: 'middle',
+                            }}
+                            title={`From "${task.originalColumnTitle}"`}
+                          >
+                            From &ldquo;{task.originalColumnTitle}&rdquo;
+                          </span>
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)', opacity: 0.6 }}>—</span>
+                        )}
                       </td>
                       <td>
                         {priorityMeta ? (
