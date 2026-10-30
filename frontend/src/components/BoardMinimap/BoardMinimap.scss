@@ -200,11 +200,11 @@
             }
           }
 
-          &.minimap-col-deleted {
+          &.minimap-col-archived {
             background: rgba(239, 68, 68, 0.07);
             border-color: rgba(239, 68, 68, 0.25);
 
-            .minimap-del-count {
+            .minimap-arc-count {
               font-size: 0.55rem;
               color: var(--danger);
               font-weight: 700;

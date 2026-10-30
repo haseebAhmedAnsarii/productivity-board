@@ -1,30 +1,30 @@
-import './DeletedColumn.scss';
+import './ArchivedColumn.scss';
 import React from 'react';
 import { Task } from '../../types';
 import { stripRichTextToSnippet } from '../RichTextRenderer';
 import { PRIORITY_CONFIG, getDueDateInfo } from '../../utils/priorityDateUtils';
 
-interface DeletedColumnProps {
-  deletedTasks: Task[];
+interface ArchivedColumnProps {
+  archivedTasks: Task[];
   onTaskClick: (task: Task) => void;
   onRestoreTask: (task: Task) => void;
 }
 
-export const DeletedColumn = React.forwardRef<HTMLDivElement, DeletedColumnProps>(
-  ({ deletedTasks, onTaskClick, onRestoreTask }, ref) => {
+export const ArchivedColumn = React.forwardRef<HTMLDivElement, ArchivedColumnProps>(
+  ({ archivedTasks, onTaskClick, onRestoreTask }, ref) => {
     return (
-      <div ref={ref} className="kanban-column deleted-column">
+      <div ref={ref} className="kanban-column archived-column">
         <div className="column-header">
           <span className="column-header-title" style={{ color: 'var(--danger)' }}>
-            Deleted
+            🗃️ Archived
           </span>
           <span className="task-count" style={{ borderColor: 'var(--danger-muted)', color: 'var(--danger)' }}>
-            {deletedTasks.length}
+            {archivedTasks.length}
           </span>
         </div>
         
         <div className="task-list">
-          {deletedTasks.map((task) => {
+          {archivedTasks.map((task) => {
             const descSnippet = stripRichTextToSnippet(task.description);
             const priority = task.priority || 'medium';
             const priorityMeta = PRIORITY_CONFIG[priority];
@@ -33,11 +33,11 @@ export const DeletedColumn = React.forwardRef<HTMLDivElement, DeletedColumnProps
             return (
               <div
                 key={task.id}
-                className="task-card task-card-deleted"
+                className="task-card task-card-archived"
                 onClick={() => onTaskClick(task)}
               >
                 <div className="task-card-header">
-                  <span className="task-badge task-badge-deleted">#{task.id}</span>
+                  <span className="task-badge task-badge-archived">#{task.id}</span>
                   {priorityMeta && (
                     <span
                       className="priority-chip"
@@ -68,7 +68,7 @@ export const DeletedColumn = React.forwardRef<HTMLDivElement, DeletedColumnProps
                       title={dueDateInfo.fullText}
                     >
                       <span className="due-date-icon">
-                        {dueDateInfo.isOverdue ? '⚠️' : dueDateInfo.status === 'today' ? '⚡' : '📅'}
+                        {dueDateInfo.isOverdue ? '⚠️' : dueDateInfo.status === 'today' ? '⏰' : '📅'}
                       </span>
                       <span>{dueDateInfo.badgeText}</span>
                     </span>
@@ -93,4 +93,4 @@ export const DeletedColumn = React.forwardRef<HTMLDivElement, DeletedColumnProps
 );
 
 
-DeletedColumn.displayName = 'DeletedColumn';
+ArchivedColumn.displayName = 'ArchivedColumn';

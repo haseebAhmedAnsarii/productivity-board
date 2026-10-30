@@ -11,11 +11,11 @@ const themeOptions: SelectOption[] = [
 
 interface HeaderProps {
   authUsername: string;
-  deletedTasksCount: number;
-  showDeletedCards: boolean;
+  archivedTasksCount: number;
+  showArchivedCards: boolean;
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
-  onToggleDeletedCards: () => void;
+  onToggleArchivedCards: () => void;
   onAddColumnClick: () => void;
   onLogoutClick: () => void;
   onOpenCommandPalette?: () => void;
@@ -29,11 +29,11 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   authUsername,
-  deletedTasksCount,
-  showDeletedCards,
+  archivedTasksCount,
+  showArchivedCards,
   viewMode,
   onViewModeChange,
-  onToggleDeletedCards,
+  onToggleArchivedCards,
   onAddColumnClick,
   onLogoutClick,
   onOpenCommandPalette,
@@ -152,18 +152,18 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Desktop User Profile Group (Hidden on <= 640px) */}
         <div className="user-profile">
-          {deletedTasksCount > 0 && (
+          {archivedTasksCount > 0 && (
             <button 
               type="button"
-              onClick={onToggleDeletedCards}
-              className={`header-deleted-btn ${showDeletedCards ? "btn-secondary" : "btn-deleted-cta"}`}
-              title={showDeletedCards ? `Hide Deleted Cards (${deletedTasksCount})` : `Show Deleted Cards (${deletedTasksCount})`}
+              onClick={onToggleArchivedCards}
+              className={`header-archived-btn ${showArchivedCards ? "btn-secondary" : "btn-archived-cta"}`}
+              title={showArchivedCards ? `Hide Archived Cards (${archivedTasksCount})` : `Show Archived Cards (${archivedTasksCount})`}
             >
-              <span className="deleted-label-full">
-                {showDeletedCards ? 'Hide Deleted' : 'Show Deleted'} ({deletedTasksCount})
+              <span className="archived-label-full">
+                🗃️ {showArchivedCards ? 'Hide Archived' : 'Show Archived'} ({archivedTasksCount})
               </span>
-              <span className="deleted-label-short">
-                🗑️ {deletedTasksCount}
+              <span className="archived-label-short">
+                🗃️ {archivedTasksCount}
               </span>
             </button>
           )}
@@ -264,20 +264,20 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="action-icon">➕</span>
             <span className="action-text">Add New Column</span>
           </button>
-          {deletedTasksCount > 0 && (
+          {archivedTasksCount > 0 && (
             <button 
               type="button"
               className="drawer-action-btn"
               onClick={() => {
                 closeDrawer();
-                onToggleDeletedCards();
+                onToggleArchivedCards();
               }}
             >
-              <span className="action-icon">🗑️</span>
+              <span className="action-icon">🗃️</span>
               <span className="action-text">
-                {showDeletedCards ? 'Hide Deleted Tasks' : 'Show Deleted Tasks'}
+                {showArchivedCards ? 'Hide Archived Tasks' : 'Show Archived Tasks'}
               </span>
-              <span className="drawer-badge">{deletedTasksCount}</span>
+              <span className="drawer-badge">{archivedTasksCount}</span>
             </button>
           )}
           {onOpenCommandPalette && (

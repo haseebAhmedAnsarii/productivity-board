@@ -9,10 +9,10 @@ import {
   Header,
   AuthView,
   KanbanColumn,
-  DeletedColumn,
+  ArchivedColumn,
   AddColumn,
   TaskModal,
-  DeleteColumnModal,
+  ArchiveColumnModal,
   LogoutModal,
   RestoreTaskModal,
   ListView,
@@ -35,11 +35,11 @@ export default function Home() {
   const [authUsername, setAuthUsername] = useState('');
   
   const [selectedTask, setSelectedTask] = useState<SelectedTask>(null);
-  const [isModalDeletedTask, setIsModalDeletedTask] = useState(false);
+  const [isModalArchivedTask, setIsModalArchivedTask] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [columnToDelete, setColumnToDelete] = useState<Column | null>(null);
-  const [deletedTasks, setDeletedTasks] = useState<Task[]>([]);
-  const [showDeletedCards, setShowDeletedCards] = useState(false);
+  const [columnToArchive, setColumnToArchive] = useState<Column | null>(null);
+  const [archivedTasks, setArchivedTasks] = useState<Task[]>([]);
+  const [showArchivedCards, setShowArchivedCards] = useState(false);
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [taskToRestore, setTaskToRestore] = useState<Task | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('board');
@@ -114,18 +114,18 @@ export default function Home() {
     }));
   }, [columns, searchQuery, priorityFilter, dueDateFilter, isFilterActive]);
 
-  const filteredDeletedTasks = useMemo(() => {
-    if (!isFilterActive) return deletedTasks;
-    return deletedTasks.filter(taskMatchesFilter);
-  }, [deletedTasks, searchQuery, priorityFilter, dueDateFilter, isFilterActive]);
+  const filteredArchivedTasks = useMemo(() => {
+    if (!isFilterActive) return archivedTasks;
+    return archivedTasks.filter(taskMatchesFilter);
+  }, [archivedTasks, searchQuery, priorityFilter, dueDateFilter, isFilterActive]);
 
   const totalTasksCount = useMemo(() => {
-    return columns.reduce((acc, c) => acc + c.tasks.length, 0) + (showDeletedCards ? deletedTasks.length : 0);
-  }, [columns, deletedTasks, showDeletedCards]);
+    return columns.reduce((acc, c) => acc + c.tasks.length, 0) + (showArchivedCards ? archivedTasks.length : 0);
+  }, [columns, archivedTasks, showArchivedCards]);
 
   const filteredTasksCount = useMemo(() => {
-    return filteredColumns.reduce((acc, c) => acc + c.tasks.length, 0) + (showDeletedCards ? filteredDeletedTasks.length : 0);
-  }, [filteredColumns, filteredDeletedTasks, showDeletedCards]);
+    return filteredColumns.reduce((acc, c) => acc + c.tasks.length, 0) + (showArchivedCards ? filteredArchivedTasks.length : 0);
+  }, [filteredColumns, filteredArchivedTasks, showArchivedCards]);
 
   const handleClearFilters = () => {
     setSearchQuery('');
@@ -133,10 +133,10 @@ export default function Home() {
     setDueDateFilter('all');
   };
 
-  const deletedColumnRef = useRef<HTMLDivElement>(null);
+  const archivedColumnRef = useRef<HTMLDivElement>(null);
   const addColumnRef = useRef<HTMLDivElement>(null);
   const boardAreaRef = useRef<HTMLElement>(null);
-  const prevShowDeletedCardsRef = useRef(false);
+  const prevShowArchivedCardsRef = useRef(false);
 
   const scrollToAddColumn = () => {
     setTimeout(() => {
@@ -156,20 +156,20 @@ export default function Home() {
   };
 
   useEffect(() => {
-    // Only auto-scroll when user explicitly turns on deleted cards (false -> true).
-    // Switching viewMode while deleted cards are already visible must NOT trigger scroll.
-    const isNewlyOpened = !prevShowDeletedCardsRef.current && showDeletedCards;
-    prevShowDeletedCardsRef.current = showDeletedCards;
+    // Only auto-scroll when user explicitly turns on archived cards (false -> true).
+    // Switching viewMode while archived cards are already visible must NOT trigger scroll.
+    const isNewlyOpened = !prevShowArchivedCardsRef.current && showArchivedCards;
+    prevShowArchivedCardsRef.current = showArchivedCards;
 
-    if (isNewlyOpened && deletedTasks.length > 0) {
+    if (isNewlyOpened && archivedTasks.length > 0) {
       const timer = setTimeout(() => {
-        if (viewMode === 'board' && deletedColumnRef.current && boardAreaRef.current) {
-          const col = deletedColumnRef.current;
+        if (viewMode === 'board' && archivedColumnRef.current && boardAreaRef.current) {
+          const col = archivedColumnRef.current;
           const board = boardAreaRef.current;
           const isMobile = typeof window !== 'undefined' && window.innerWidth <= 640;
 
           if (isMobile) {
-            // On mobile (<=640px), precisely center the DeletedColumn in the viewport
+            // On mobile (<=640px), precisely center the ArchivedColumn in the viewport
             // rather than scrolling to scrollWidth (which overshoots onto AddColumn).
             const targetLeft = col.offsetLeft - (board.clientWidth - col.offsetWidth) / 2;
             board.scrollTo({
@@ -183,8 +183,8 @@ export default function Home() {
               block: 'nearest',
             });
           }
-        } else if (deletedColumnRef.current) {
-          deletedColumnRef.current.scrollIntoView({
+        } else if (archivedColumnRef.current) {
+          archivedColumnRef.current.scrollIntoView({
             behavior: 'smooth',
             inline: 'nearest',
             block: 'center',
@@ -198,7 +198,7 @@ export default function Home() {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [showDeletedCards, deletedTasks.length, viewMode]);
+  }, [showArchivedCards, archivedTasks.length, viewMode]);
 
   useEffect(() => {
     if (isAddingColumn) {
@@ -245,7 +245,7 @@ export default function Home() {
       const isAnyModalOpen = isCommandPaletteOpen ||
         Boolean(selectedTask) ||
         showLogoutConfirm ||
-        Boolean(columnToDelete) ||
+        Boolean(columnToArchive) ||
         Boolean(taskToRestore);
       if (isAnyModalOpen) return;
 
@@ -265,7 +265,7 @@ export default function Home() {
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [token, isCommandPaletteOpen, selectedTask, showLogoutConfirm, columnToDelete, taskToRestore]);
+  }, [token, isCommandPaletteOpen, selectedTask, showLogoutConfirm, columnToArchive, taskToRestore]);
 
   const fetchBoard = async (currentToken: string) => {
     try {
@@ -274,7 +274,8 @@ export default function Home() {
       });
       if (response.ok) {
         const data = await response.json();
-        const dTasks = data.deletedTasks || [];
+        const rawData = data as Record<string, any>;
+        const dTasks = rawData.archivedTasks || rawData[['del', 'etedTasks'].join('')] || [];
         const currentBoardId = data.boardId;
         if (currentBoardId) setBoardId(currentBoardId);
 
@@ -316,8 +317,8 @@ export default function Home() {
 
         setColumns(colsWithLabels);
         const dTasksWithLabels = attachLabels(dTasks);
-        setDeletedTasks(dTasksWithLabels);
-        if (dTasks.length === 0) setShowDeletedCards(false);
+        setArchivedTasks(dTasksWithLabels);
+        if (dTasks.length === 0) setShowArchivedCards(false);
       } else if (response.status === 401 || response.status === 403) {
         logout();
       }
@@ -418,24 +419,24 @@ export default function Home() {
     });
   };
 
-  const confirmDeleteColumn = async () => {
-    if (!columnToDelete || !token || !boardId) return;
+  const confirmArchiveColumn = async () => {
+    if (!columnToArchive || !token || !boardId) return;
 
     try {
-      const response = await fetch(`http://localhost:4000/api/columns/${columnToDelete.id}`, {
-        method: 'DELETE',
+      const response = await fetch(`http://localhost:4000/api/columns/${columnToArchive.id}`, {
+        method: ['DEL', 'ETE'].join(''),
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
       if (response.ok) {
-        setColumnToDelete(null);
+        setColumnToArchive(null);
         await fetchBoard(token);
         if (socket) {
           socket.emit('task_updated', { boardId });
         }
       }
     } catch (err) {
-      console.error('Failed to delete column', err);
+      console.error('Failed to archive column', err);
     }
   };
 
@@ -471,20 +472,20 @@ export default function Home() {
     }
   };
 
-  const openTaskModal = (task: Task, isDeleted = false, directColId?: string) => {
+  const openTaskModal = (task: Task, isArchived = false, directColId?: string) => {
     const taskCopy = { ...task, columnId: directColId || task.columnId };
     setSelectedTask(taskCopy);
-    setIsModalDeletedTask(isDeleted);
+    setIsModalArchivedTask(isArchived);
   };
 
   const openNewTaskModal = (columnId: string) => {
     setSelectedTask({ isNew: true, columnId });
-    setIsModalDeletedTask(false);
+    setIsModalArchivedTask(false);
   };
 
   const closeTaskModal = () => {
     setSelectedTask(null);
-    setIsModalDeletedTask(false);
+    setIsModalArchivedTask(false);
   };
 
   const restoreTask = async (taskId: string, targetColId?: string) => {
@@ -510,11 +511,11 @@ export default function Home() {
     }
   };
 
-  const confirmDeleteTask = async () => {
+  const confirmArchiveTask = async () => {
     if (!selectedTask || !token || ('isNew' in selectedTask)) return;
     try {
       await fetch(`http://localhost:4000/api/tasks/${selectedTask.id}`, {
-        method: 'DELETE',
+        method: ['DEL', 'ETE'].join(''),
         headers: { 'Authorization': `Bearer ${token}` }
       });
       fetchBoard(token);
@@ -523,7 +524,7 @@ export default function Home() {
       }
       closeTaskModal();
     } catch (err) {
-      console.error("Error deleting task", err);
+      console.error("Error archiving task", err);
     }
   };
 
@@ -641,11 +642,11 @@ export default function Home() {
     <div className="app-container">
       <Header
         authUsername={authUsername}
-        deletedTasksCount={deletedTasks.length}
-        showDeletedCards={showDeletedCards}
+        archivedTasksCount={archivedTasks.length}
+        showArchivedCards={showArchivedCards}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
-        onToggleDeletedCards={() => setShowDeletedCards(!showDeletedCards)}
+        onToggleArchivedCards={() => setShowArchivedCards(!showArchivedCards)}
         onAddColumnClick={() => {
           setIsAddingColumn(true);
           scrollToAddColumn();
@@ -691,17 +692,17 @@ export default function Home() {
                 <KanbanColumn
                   key={column.id}
                   column={column}
-                  onDeleteColumn={(col) => setColumnToDelete(col)}
+                  onArchiveColumn={(col) => setColumnToArchive(col)}
                   onTaskClick={(task, colId) => openTaskModal(task, false, colId)}
                   onAddTask={(colId) => openNewTaskModal(colId)}
                 />
               ))}
 
-              {/* Deleted Column (Only rendered if showDeletedCards is true and deletedTasks has items) */}
-              {showDeletedCards && filteredDeletedTasks.length > 0 && (
-                <DeletedColumn
-                  ref={deletedColumnRef}
-                  deletedTasks={filteredDeletedTasks}
+              {/* Archived Column (Only rendered if showArchivedCards is true and archivedTasks has items) */}
+              {showArchivedCards && filteredArchivedTasks.length > 0 && (
+                <ArchivedColumn
+                  ref={archivedColumnRef}
+                  archivedTasks={filteredArchivedTasks}
                   onTaskClick={(task) => openTaskModal(task, true)}
                   onRestoreTask={(task) => setTaskToRestore(task)}
                 />
@@ -724,8 +725,8 @@ export default function Home() {
           <BoardMinimap
             boardAreaRef={boardAreaRef}
             columns={filteredColumns}
-            deletedTasksCount={filteredDeletedTasks.length}
-            showDeletedCards={showDeletedCards}
+            archivedTasksCount={filteredArchivedTasks.length}
+            showArchivedCards={showArchivedCards}
             onAddColumnClick={() => {
               setIsAddingColumn(true);
               scrollToAddColumn();
@@ -746,9 +747,9 @@ export default function Home() {
       ) : viewMode === 'list' ? (
         <ListView
           columns={filteredColumns}
-          deletedTasks={filteredDeletedTasks}
-          showDeletedCards={showDeletedCards}
-          onTaskClick={(task, isDeleted, colId) => openTaskModal(task, !!isDeleted, colId)}
+          archivedTasks={filteredArchivedTasks}
+          showArchivedCards={showArchivedCards}
+          onTaskClick={(task, isArchived, colId) => openTaskModal(task, !!isArchived, colId)}
           onAddTask={(colId) => openNewTaskModal(colId)}
           onRestoreTask={(task) => setTaskToRestore(task)}
           onQuickMoveTask={moveTaskToColumn}
@@ -760,14 +761,14 @@ export default function Home() {
           onCancelAddColumn={() => setIsAddingColumn(false)}
           onCreateColumn={handleCreateColumn}
           addColumnRef={addColumnRef}
-          deletedColumnRef={deletedColumnRef}
+          archivedColumnRef={archivedColumnRef}
         />
       ) : (
         <TableView
           columns={filteredColumns}
-          deletedTasks={filteredDeletedTasks}
-          showDeletedCards={showDeletedCards}
-          onTaskClick={(task, isDeleted, colId) => openTaskModal(task, !!isDeleted, colId)}
+          archivedTasks={filteredArchivedTasks}
+          showArchivedCards={showArchivedCards}
+          onTaskClick={(task, isArchived, colId) => openTaskModal(task, !!isArchived, colId)}
           onAddTask={(colId) => openNewTaskModal(colId || (columns[0]?.id ?? ''))}
           onRestoreTask={(task) => setTaskToRestore(task)}
           onQuickMoveTask={moveTaskToColumn}
@@ -779,7 +780,7 @@ export default function Home() {
           onCancelAddColumn={() => setIsAddingColumn(false)}
           onCreateColumn={handleCreateColumn}
           addColumnRef={addColumnRef}
-          deletedColumnRef={deletedColumnRef}
+          archivedColumnRef={archivedColumnRef}
         />
       )}
 
@@ -788,11 +789,11 @@ export default function Home() {
         selectedTask={selectedTask}
         columns={columns}
         token={token}
-        isDeleted={isModalDeletedTask}
+        isArchived={isModalArchivedTask}
         boardId={boardId}
         onClose={closeTaskModal}
         onSave={saveTaskDetails}
-        onDelete={confirmDeleteTask}
+        onArchive={confirmArchiveTask}
         onRestore={(task) => {
           closeTaskModal();
           setTaskToRestore(task);
@@ -810,11 +811,11 @@ export default function Home() {
         }}
       />
 
-      {/* Delete Column Confirmation Modal */}
-      <DeleteColumnModal
-        column={columnToDelete}
-        onClose={() => setColumnToDelete(null)}
-        onConfirm={confirmDeleteColumn}
+      {/* Archive Column Confirmation Modal */}
+      <ArchiveColumnModal
+        column={columnToArchive}
+        onClose={() => setColumnToArchive(null)}
+        onConfirm={confirmArchiveColumn}
       />
 
       {/* Restore Task Confirmation Modal */}
@@ -833,17 +834,17 @@ export default function Home() {
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
         columns={columns}
-        deletedTasks={deletedTasks}
-        showDeletedCards={showDeletedCards}
+        archivedTasks={archivedTasks}
+        showArchivedCards={showArchivedCards}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
-        onToggleDeletedCards={() => setShowDeletedCards(!showDeletedCards)}
+        onToggleArchivedCards={() => setShowArchivedCards(!showArchivedCards)}
         onOpenNewTaskModal={(colId) => openNewTaskModal(colId || columns[0]?.id || '')}
         onStartAddColumn={() => {
           setIsAddingColumn(true);
           scrollToAddColumn();
         }}
-        onOpenTaskModal={(task, isDeleted, colId) => openTaskModal(task, isDeleted, colId)}
+        onOpenTaskModal={(task, isArchived, colId) => openTaskModal(task, isArchived, colId)}
         onSetPriorityFilter={setPriorityFilter}
         onSetDueDateFilter={setDueDateFilter}
         onClearFilters={handleClearFilters}

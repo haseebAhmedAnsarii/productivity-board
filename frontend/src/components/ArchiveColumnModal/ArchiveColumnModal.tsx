@@ -1,14 +1,14 @@
-import './DeleteColumnModal.scss';
+import './ArchiveColumnModal.scss';
 import React, { useRef } from 'react';
 import { Column } from '../../types';
 
-interface DeleteColumnModalProps {
+interface ArchiveColumnModalProps {
   column: Column | null;
   onClose: () => void;
   onConfirm: () => Promise<void>;
 }
 
-export const DeleteColumnModal: React.FC<DeleteColumnModalProps> = ({
+export const ArchiveColumnModal: React.FC<ArchiveColumnModalProps> = ({
   column,
   onClose,
   onConfirm,
@@ -37,7 +37,7 @@ export const DeleteColumnModal: React.FC<DeleteColumnModalProps> = ({
         style={{ maxWidth: '440px', textAlign: 'center' }}
       >
         <div className="modal-header" style={{ justifyContent: 'center', position: 'relative' }}>
-          <h2>Delete Column</h2>
+          <h2>Archive Column</h2>
           <button 
             className="close-btn" 
             onClick={onClose}
@@ -48,11 +48,11 @@ export const DeleteColumnModal: React.FC<DeleteColumnModalProps> = ({
         </div>
         
         <p style={{ color: 'var(--text-main)', fontSize: '1rem', lineHeight: 1.5, margin: '0.5rem 0' }}>
-          Are you sure you want to delete <strong>&ldquo;{column.title}&rdquo;</strong>?
+          Are you sure you want to archive <strong>&ldquo;{column.title}&rdquo;</strong>?
         </p>
         {column.tasks.length > 0 && (
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>
-            Note: All {column.tasks.length} {column.tasks.length === 1 ? 'task' : 'tasks'} inside this column will be safely moved to the Deleted column.
+            Note: All {column.tasks.length} {column.tasks.length === 1 ? 'task' : 'tasks'} inside this column will be safely moved to the Archived column.
           </p>
         )}
 
@@ -69,7 +69,7 @@ export const DeleteColumnModal: React.FC<DeleteColumnModalProps> = ({
             className="btn-danger"
             style={{ flex: 1 }}
           >
-            Delete Column
+            Archive Column
           </button>
         </div>
       </div>

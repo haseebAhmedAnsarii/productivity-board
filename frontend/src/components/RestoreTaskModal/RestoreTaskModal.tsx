@@ -31,12 +31,12 @@ export const RestoreTaskModal: React.FC<RestoreTaskModalProps> = ({
     }
   }, [task, columns]);
 
-  const isOriginalDeleted = Boolean(task?.originalColumnId && !columns.some(c => c.id === task.originalColumnId));
+  const isOriginalArchived = Boolean(task?.originalColumnId && !columns.some(c => c.id === task.originalColumnId));
 
   const restoreColumnOptions: SelectOption[] = useMemo(() => {
     if (!task) return [];
     const opts: SelectOption[] = [];
-    if (isOriginalDeleted) {
+    if (isOriginalArchived) {
       opts.push({
         value: task.originalColumnId || '',
         label: `${task.originalColumnTitle || 'Original Column'} (Resurrect column)`,
@@ -50,7 +50,7 @@ export const RestoreTaskModal: React.FC<RestoreTaskModalProps> = ({
       });
     });
     return opts;
-  }, [task, columns, isOriginalDeleted]);
+  }, [task, columns, isOriginalArchived]);
 
   if (!task) return null;
 
@@ -106,7 +106,7 @@ export const RestoreTaskModal: React.FC<RestoreTaskModalProps> = ({
           />
         </div>
 
-        {isOriginalDeleted && selectedColumnId === task.originalColumnId && (
+        {isOriginalArchived && selectedColumnId === task.originalColumnId && (
           <p style={{ color: 'var(--text-muted)', fontSize: '0.825rem', marginTop: '0.5rem', textAlign: 'left', fontStyle: 'italic' }}>
             Note: The original column &ldquo;{task.originalColumnTitle}&rdquo; will be automatically resurrected back to your board.
           </p>

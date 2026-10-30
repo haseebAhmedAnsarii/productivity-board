@@ -19,14 +19,14 @@ interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
   columns: Column[];
-  deletedTasks: Task[];
-  showDeletedCards: boolean;
+  archivedTasks: Task[];
+  showArchivedCards: boolean;
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
-  onToggleDeletedCards: () => void;
+  onToggleArchivedCards: () => void;
   onOpenNewTaskModal: (columnId?: string) => void;
   onStartAddColumn: () => void;
-  onOpenTaskModal: (task: Task, isDeleted: boolean, columnId?: string) => void;
+  onOpenTaskModal: (task: Task, isArchived: boolean, columnId?: string) => void;
   onSetPriorityFilter: (priority: string) => void;
   onSetDueDateFilter: (filter: DueDateFilter) => void;
   onClearFilters: () => void;
@@ -40,11 +40,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   isOpen,
   onClose,
   columns,
-  deletedTasks,
-  showDeletedCards,
+  archivedTasks,
+  showArchivedCards,
   viewMode,
   onViewModeChange,
-  onToggleDeletedCards,
+  onToggleArchivedCards,
   onOpenNewTaskModal,
   onStartAddColumn,
   onOpenTaskModal,
@@ -198,16 +198,16 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         },
       },
       {
-        id: 'nav-toggle-deleted',
+        id: 'nav-toggle-archived',
         category: 'Navigation',
-        title: showDeletedCards ? 'Hide Deleted Tasks' : 'Show Deleted Tasks',
-        subtitle: showDeletedCards
+        title: showArchivedCards ? 'Hide Archived Tasks' : 'Show Archived Tasks',
+        subtitle: showArchivedCards
           ? 'Hide the archived cards column from board'
           : 'Display the archived cards column on board',
-        icon: '🗑️',
-        badge: deletedTasks.length > 0 ? `${deletedTasks.length} cards` : undefined,
+        icon: '🗃️',
+        badge: archivedTasks.length > 0 ? `${archivedTasks.length} cards` : undefined,
         action: () => {
-          onToggleDeletedCards();
+          onToggleArchivedCards();
           onClose();
         },
       },
@@ -433,9 +433,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         });
       });
 
-      // 4. Search Deleted Tasks if showDeletedCards is active
-      if (showDeletedCards && deletedTasks.length > 0) {
-        const matchedDeleted = deletedTasks.filter((t) => {
+      // 4. Search Archived Tasks if showArchivedCards is active
+      if (showArchivedCards && archivedTasks.length > 0) {
+        const matchedArchived = archivedTasks.filter((t) => {
           const idMatch = t.id.toString() === q.replace(/^#/, '');
           if (idMatch) return true;
 
@@ -450,14 +450,14 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
           return titleMatch || descMatch;
         });
 
-        matchedDeleted.slice(0, 5).forEach((task) => {
+        matchedArchived.slice(0, 5).forEach((task) => {
           items.push({
-            id: `del-task-${task.id}`,
+            id: `arc-task-${task.id}`,
             category: 'Tasks',
             title: task.title,
-            subtitle: 'Deleted Card (Click to open / restore)',
-            icon: '🗑️',
-            badge: `#${task.id} (Deleted)`,
+            subtitle: 'Archived Card (Click to open / restore)',
+            icon: '🗃️',
+            badge: `#${task.id} (Archived)`,
             action: () => {
               onOpenTaskModal(task, true);
               onClose();
@@ -472,12 +472,12 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     query,
     viewMode,
     columns,
-    deletedTasks,
-    showDeletedCards,
+    archivedTasks,
+    showArchivedCards,
     allActiveTasks,
     isFilterActive,
     onViewModeChange,
-    onToggleDeletedCards,
+    onToggleArchivedCards,
     onOpenNewTaskModal,
     onStartAddColumn,
     onOpenTaskModal,

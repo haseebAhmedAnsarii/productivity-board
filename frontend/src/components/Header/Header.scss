@@ -40,7 +40,7 @@
     gap: 0.85rem;
     flex-shrink: 0;
 
-    .header-deleted-btn {
+    .header-archived-btn {
       padding: 0.42rem 0.8rem;
       transition: var(--transition);
 
@@ -55,7 +55,7 @@
       align-items: center;
       gap: 0.35rem;
 
-      .deleted-label-short {
+      .archived-label-short {
         display: none;
       }
     }
@@ -255,7 +255,7 @@
         }
       }
 
-      .header-deleted-btn {
+      .header-archived-btn {
         padding: 0.38rem 0.65rem;
       }
     }
@@ -285,12 +285,12 @@
     .user-profile {
       gap: 0.5rem;
 
-      .header-deleted-btn {
+      .header-archived-btn {
         padding: 0.35rem 0.55rem;
-        .deleted-label-full {
+        .archived-label-full {
           display: none;
         }
-        .deleted-label-short {
+        .archived-label-short {
           display: inline;
         }
       }

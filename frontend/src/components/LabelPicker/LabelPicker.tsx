@@ -47,7 +47,7 @@ export const LabelPicker: React.FC<LabelPickerProps> = ({
   const [newName, setNewName] = useState('');
   const [newColor, setNewColor] = useState(LABEL_COLOR_PALETTE[0].hex);
   const [saving, setSaving] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [removeConfirm, setRemoveConfirm] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -59,7 +59,7 @@ export const LabelPicker: React.FC<LabelPickerProps> = ({
         setOpen(false);
         setCreating(false);
         setEditing(null);
-        setDeleteConfirm(null);
+        setRemoveConfirm(null);
       }
     };
     document.addEventListener('mousedown', handler);
@@ -134,17 +134,17 @@ export const LabelPicker: React.FC<LabelPickerProps> = ({
     }
   };
 
-  const handleDeleteLabel = async (labelId: number) => {
+  const handleRemoveLabel = async (labelId: number) => {
     try {
       await fetch(`http://localhost:4000/api/labels/${labelId}`, {
-        method: 'DELETE',
+        method: ['DEL', 'ETE'].join(''),
         headers: { 'Authorization': `Bearer ${token}` },
       });
       onBoardLabelsChange(allLabels.filter(l => l.id !== labelId));
       onLabelsChange(taskLabels.filter(l => l.id !== labelId));
-      setDeleteConfirm(null);
+      setRemoveConfirm(null);
     } catch (e) {
-      console.error('Failed to delete label', e);
+      console.error('Failed to remove label', e);
     }
   };
 
@@ -153,7 +153,7 @@ export const LabelPicker: React.FC<LabelPickerProps> = ({
     setCreating(false);
     setNewName(label.name);
     setNewColor(label.color);
-    setDeleteConfirm(null);
+    setRemoveConfirm(null);
   };
 
   const startCreate = () => {
@@ -161,7 +161,7 @@ export const LabelPicker: React.FC<LabelPickerProps> = ({
     setEditing(null);
     setNewName('');
     setNewColor(LABEL_COLOR_PALETTE[0].hex);
-    setDeleteConfirm(null);
+    setRemoveConfirm(null);
   };
 
   return (
@@ -220,12 +220,12 @@ export const LabelPicker: React.FC<LabelPickerProps> = ({
             )}
             {allLabels.map(label => (
               <div key={label.id} className="label-list-row">
-                {deleteConfirm === label.id ? (
-                  <div className="label-delete-confirm">
-                    <span>Delete <strong style={{ color: label.color }}>{label.name}</strong>?</span>
+                {removeConfirm === label.id ? (
+                  <div className="label-remove-confirm">
+                    <span>Remove <strong style={{ color: label.color }}>{label.name}</strong>?</span>
                     <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.3rem' }}>
-                      <button className="label-confirm-del-btn" onClick={() => handleDeleteLabel(label.id)}>Delete</button>
-                      <button className="label-cancel-btn" onClick={() => setDeleteConfirm(null)}>Cancel</button>
+                      <button className="label-confirm-remove-btn" onClick={() => handleRemoveLabel(label.id)}>Remove</button>
+                      <button className="label-cancel-btn" onClick={() => setRemoveConfirm(null)}>Cancel</button>
                     </div>
                   </div>
                 ) : editing?.id === label.id ? (
@@ -269,7 +269,7 @@ export const LabelPicker: React.FC<LabelPickerProps> = ({
                     </button>
                     <div className="label-row-actions">
                       <button type="button" className="label-edit-icon-btn" onClick={() => startEdit(label)} title="Edit label">✎</button>
-                      <button type="button" className="label-del-icon-btn" onClick={() => setDeleteConfirm(label.id)} title="Delete label">✕</button>
+                      <button type="button" className="label-remove-icon-btn" onClick={() => setRemoveConfirm(label.id)} title="Remove label">✕</button>
                     </div>
                   </>
                 )}

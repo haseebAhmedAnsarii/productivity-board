@@ -8,9 +8,9 @@ import { CustomSelect, SelectOption } from '../CustomSelect';
 
 interface ListViewProps {
   columns: Column[];
-  deletedTasks: Task[];
-  showDeletedCards: boolean;
-  onTaskClick: (task: Task, isDeleted?: boolean, columnId?: string) => void;
+  archivedTasks: Task[];
+  showArchivedCards: boolean;
+  onTaskClick: (task: Task, isArchived?: boolean, columnId?: string) => void;
   onAddTask: (columnId: string) => void;
   onRestoreTask: (task: Task) => void;
   onQuickMoveTask: (taskId: string, targetColId: string) => Promise<void>;
@@ -19,13 +19,13 @@ interface ListViewProps {
   onCancelAddColumn: () => void;
   onCreateColumn: (title: string) => Promise<void>;
   addColumnRef?: React.Ref<HTMLDivElement>;
-  deletedColumnRef?: React.Ref<HTMLDivElement>;
+  archivedColumnRef?: React.Ref<HTMLDivElement>;
 }
 
 export const ListView: React.FC<ListViewProps> = ({
   columns,
-  deletedTasks,
-  showDeletedCards,
+  archivedTasks,
+  showArchivedCards,
   onTaskClick,
   onAddTask,
   onRestoreTask,
@@ -35,7 +35,7 @@ export const ListView: React.FC<ListViewProps> = ({
   onCancelAddColumn,
   onCreateColumn,
   addColumnRef,
-  deletedColumnRef,
+  archivedColumnRef,
 }) => {
   const [collapsedCols, setCollapsedCols] = useState<Record<string, boolean>>({});
 
@@ -180,35 +180,35 @@ export const ListView: React.FC<ListViewProps> = ({
           );
         })}
 
-        {/* Deleted Tasks Section in List View */}
-        {showDeletedCards && deletedTasks.length > 0 && (
+        {/* Archived Tasks Section in List View */}
+        {showArchivedCards && archivedTasks.length > 0 && (
           <div
-            ref={deletedColumnRef}
+            ref={archivedColumnRef}
             className="list-group"
             style={{ borderTop: '2px solid var(--danger)' }}
           >
             <div
               className="list-group-header"
-              onClick={() => toggleColumn('__DELETED__')}
+              onClick={() => toggleColumn('__ARCHIVED__')}
               title="Click to expand/collapse"
               style={{ background: 'rgba(239, 68, 68, 0.08)' }}
             >
               <div className="list-group-title-wrap">
                 <span className="list-group-chevron">
-                  {collapsedCols['__DELETED__'] ? '▶' : '▼'}
+                  {collapsedCols['__ARCHIVED__'] ? '▶' : '▼'}
                 </span>
                 <span className="list-group-title" style={{ color: 'var(--danger)' }}>
-                  Deleted Tasks
+                  🗃️ Archived Tasks
                 </span>
                 <span className="task-count" style={{ borderColor: 'var(--danger-muted)', color: 'var(--danger)' }}>
-                  {deletedTasks.length}
+                  {archivedTasks.length}
                 </span>
               </div>
             </div>
 
-            {!collapsedCols['__DELETED__'] && (
+            {!collapsedCols['__ARCHIVED__'] && (
               <div className="list-task-items">
-                {deletedTasks.map((task) => {
+                {archivedTasks.map((task) => {
                   const priority = task.priority || 'medium';
                   const priorityMeta = PRIORITY_CONFIG[priority];
                   const dueDateInfo = getDueDateInfo(task.dueDate);
@@ -222,7 +222,7 @@ export const ListView: React.FC<ListViewProps> = ({
                       onClick={() => onTaskClick(task, true)}
                     >
                       <div className="list-task-main">
-                        <span className="task-badge task-badge-deleted">#{task.id}</span>
+                        <span className="task-badge task-badge-archived">#{task.id}</span>
                         <div className="list-task-content">
                           <div className="list-task-title-wrap">
                             <span className="list-task-title" style={{ textDecoration: 'line-through' }} title={task.title}>

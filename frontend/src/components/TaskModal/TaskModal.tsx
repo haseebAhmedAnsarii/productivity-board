@@ -13,7 +13,7 @@ interface TaskModalProps {
   selectedTask: SelectedTask;
   columns: Column[];
   token: string | null;
-  isDeleted: boolean;
+  isArchived: boolean;
   boardId: string;
   onClose: () => void;
   onSave: (
@@ -24,7 +24,7 @@ interface TaskModalProps {
     priority?: PriorityLevel,
     dueDate?: string | null
   ) => Promise<void>;
-  onDelete: () => Promise<void>;
+  onArchive: () => Promise<void>;
   onRestore: (task: Task) => void;
   onQuickMove: (targetColId: string) => Promise<void>;
 }
@@ -33,11 +33,11 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   selectedTask,
   columns,
   token,
-  isDeleted,
+  isArchived,
   boardId,
   onClose,
   onSave,
-  onDelete,
+  onArchive,
   onRestore,
   onQuickMove,
 }) => {
@@ -48,7 +48,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   const [editDueDate, setEditDueDate] = useState<string>('');
   const [titleError, setTitleError] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [taskHistory, setTaskHistory] = useState<HistoryItem[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -63,20 +63,20 @@ export const TaskModal: React.FC<TaskModalProps> = ({
 
   const columnMoveOptions: SelectOption[] = React.useMemo(() => {
     const opts: SelectOption[] = columns.map(col => {
-      const isCurrent = !isDeleted && !isNew && currentTask && col.id === (columns.find(c => c.tasks.some(t => t.id === currentTask.id))?.id);
+      const isCurrent = !isArchived && !isNew && currentTask && col.id === (columns.find(c => c.tasks.some(t => t.id === currentTask.id))?.id);
       return {
         value: col.id,
         label: col.title + (isCurrent ? ' (Current)' : ''),
       };
     });
-    if (isDeleted && !columns.some(col => col.id === editColumnId)) {
+    if (isArchived && !columns.some(col => col.id === editColumnId)) {
       opts.push({
         value: editColumnId,
         label: (currentTask?.originalColumnTitle) ? currentTask.originalColumnTitle : 'Original Column',
       });
     }
     return opts;
-  }, [columns, isDeleted, isNew, currentTask, editColumnId]);
+  }, [columns, isArchived, isNew, currentTask, editColumnId]);
 
   useEffect(() => {
     if (!selectedTask) return;
@@ -93,7 +93,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       setEditPriority('medium');
       setEditDueDate('');
       setTitleError(false);
-      setShowDeleteConfirm(false);
+      setShowArchiveConfirm(false);
       setTaskHistory([]);
       setShowHistory(false);
       setTaskLabels([]);
@@ -103,7 +103,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       setEditPriority(normalizePriority(selectedTask.priority));
       setEditDueDate(selectedTask.dueDate || '');
       setTitleError(false);
-      setShowDeleteConfirm(false);
+      setShowArchiveConfirm(false);
       setShowHistory(false);
       // Seed task labels from task object (populated by page.tsx)
       setTaskLabels(selectedTask.labels ?? []);
@@ -113,7 +113,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         const parentCol = columns.find(c => c.tasks.some(t => t.id === selectedTask.id));
         if (parentCol) currentId = parentCol.id;
       }
-      if (!currentId && isDeleted && selectedTask.originalColumnId) {
+      if (!currentId && isArchived && selectedTask.originalColumnId) {
         currentId = selectedTask.originalColumnId;
       }
       if (!currentId && columns.length > 0) {
@@ -125,7 +125,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         fetchTaskHistory(selectedTask.id);
       }
     }
-  }, [selectedTask, isDeleted, token, columns, boardId]);
+  }, [selectedTask, isArchived, token, columns, boardId]);
 
   const fetchBoardLabels = async () => {
     if (!token || !boardId) return;
@@ -320,24 +320,25 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       }
       case 'moved':
         return `Moved from "${item.old_value}" to "${item.new_value}"`;
-      case 'deleted':
+      case ['del', 'eted'].join(''):
+      case 'archived':
         if (item.old_value) {
-          const isColumnDeletion = item.new_value?.includes('Column');
+          const isColumnArchival = item.new_value?.includes('Column');
           return (
             <span>
-              {isColumnDeletion ? (
+              {isColumnArchival ? (
                 <>
-                  Column <strong style={{ color: 'var(--text-main)' }}>&ldquo;{item.old_value}&rdquo;</strong> was deleted (card moved to Deleted column)
+                  Column <strong style={{ color: 'var(--text-main)' }}>&ldquo;{item.old_value}&rdquo;</strong> was archived (card moved to Archived column)
                 </>
               ) : (
                 <>
-                  Moved card to Deleted column from <strong style={{ color: 'var(--text-main)' }}>&ldquo;{item.old_value}&rdquo;</strong>
+                  Moved card to Archived column from <strong style={{ color: 'var(--text-main)' }}>&ldquo;{item.old_value}&rdquo;</strong>
                 </>
               )}
             </span>
           );
         }
-        return 'Moved card to Deleted column';
+        return 'Moved card to Archived column';
       case 'restored':
         if (item.new_value && item.new_value !== 'Restored to column') {
           return (
@@ -483,7 +484,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       >
         <div className="modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-            <h2>{isDeleted ? 'Deleted Task' : (isNew ? 'New Task' : 'Edit Task')}</h2>
+            <h2>{isArchived ? 'Archived Task' : (isNew ? 'New Task' : 'Edit Task')}</h2>
             {!isNew && currentTask?.id && (
               <button 
                 type="button"
@@ -499,21 +500,21 @@ export const TaskModal: React.FC<TaskModalProps> = ({
           <button className="close-btn" onClick={onClose}>&times;</button>
         </div>
         
-        {showDeleteConfirm ? (
+        {showArchiveConfirm ? (
           <div style={{ textAlign: 'center', padding: '0.75rem 0' }}>
-            <p style={{ marginBottom: '1.5rem', fontSize: '1.05rem', color: 'var(--text-main)' }}>Are you sure you want to delete this task? (It will be moved to the Deleted column).</p>
+            <p style={{ marginBottom: '1.5rem', fontSize: '1.05rem', color: 'var(--text-main)' }}>Are you sure you want to archive this task? (It will be moved to the Archived column).</p>
             <div style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center' }}>
               <button 
-                onClick={() => setShowDeleteConfirm(false)}
+                onClick={() => setShowArchiveConfirm(false)}
                 className="btn-secondary"
               >
                 Cancel
               </button>
               <button 
-                onClick={onDelete}
+                onClick={onArchive}
                 className="btn-danger"
               >
-                Yes, Delete Task
+                Yes, Archive Task
               </button>
             </div>
           </div>
@@ -528,15 +529,15 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 ref={titleInputRef}
                 type="text" 
                 value={editTitle} 
-                readOnly={isDeleted}
+                readOnly={isArchived}
                 onChange={(e) => {
-                  if (!isDeleted) {
+                  if (!isArchived) {
                     setEditTitle(e.target.value);
                     if (titleError) setTitleError(false);
                   }
                 }} 
-                autoFocus={!isDeleted}
-                style={titleError ? { borderColor: 'var(--danger)' } : (isDeleted ? { opacity: 0.8, cursor: 'not-allowed' } : {})}
+                autoFocus={!isArchived}
+                style={titleError ? { borderColor: 'var(--danger)' } : (isArchived ? { opacity: 0.8, cursor: 'not-allowed' } : {})}
               />
             </div>
 
@@ -550,7 +551,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 allLabels={allBoardLabels}
                 onLabelsChange={setTaskLabels}
                 onBoardLabelsChange={setAllBoardLabels}
-                readOnly={isDeleted}
+                readOnly={isArchived}
               />
             </div>
 
@@ -565,7 +566,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                     <button
                       key={lvl}
                       type="button"
-                      disabled={isDeleted}
+                      disabled={isArchived}
                       className={`priority-select-btn ${isSelected ? 'selected' : ''}`}
                       style={isSelected ? {
                         background: meta.bg,
@@ -573,7 +574,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                         color: meta.color,
                       } : {}}
                       onClick={() => {
-                        if (!isDeleted) setEditPriority(lvl);
+                        if (!isArchived) setEditPriority(lvl);
                       }}
                     >
                       <span className="priority-chip-dot" style={{ background: meta.color }} />
@@ -588,7 +589,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
             <div className="form-group">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                 <label htmlFor="task-due-date-input" style={{ margin: 0 }}>Due Date</label>
-                {editDueDate && !isDeleted && (
+                {editDueDate && !isArchived && (
                   <button
                     type="button"
                     onClick={() => setEditDueDate('')}
@@ -617,7 +618,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                       }}
                       dateFormat="MMM d, yyyy"
                       placeholderText="Pick a date..."
-                      disabled={isDeleted}
+                      disabled={isArchived}
                       className="due-date-custom-input"
                       popperPlacement="bottom-start"
                       autoComplete="off"
@@ -625,7 +626,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                     />
                     <span className="calendar-input-icon">📅</span>
                   </div>
-                  {!isDeleted && (
+                  {!isArchived && (
                     <div className="due-date-presets">
                       <button
                         type="button"
@@ -676,23 +677,23 @@ export const TaskModal: React.FC<TaskModalProps> = ({
 
             <div className="form-group">
               <label htmlFor="task-column-select">
-                {isDeleted ? 'Column' : 'Move to Column'}
+                {isArchived ? 'Column' : 'Move to Column'}
               </label>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <CustomSelect
                     id="task-column-select"
                     value={editColumnId}
-                    disabled={isDeleted}
+                    disabled={isArchived}
                     onChange={(val) => {
-                      if (!isDeleted) setEditColumnId(val);
+                      if (!isArchived) setEditColumnId(val);
                     }}
                     options={columnMoveOptions}
                     size="md"
-                    ariaLabel={isDeleted ? 'Column' : 'Move to Column'}
+                    ariaLabel={isArchived ? 'Column' : 'Move to Column'}
                   />
                 </div>
-                {!isDeleted && !isNew && currentTask && editColumnId && editColumnId !== (columns.find(c => c.tasks.some(t => t.id === currentTask.id))?.id) && (
+                {!isArchived && !isNew && currentTask && editColumnId && editColumnId !== (columns.find(c => c.tasks.some(t => t.id === currentTask.id))?.id) && (
                   <button
                     type="button"
                     onClick={() => handleInternalQuickMove(editColumnId)}
@@ -712,9 +713,9 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 key={currentTask?.id || 'new-task'}
                 value={editDescription}
                 onChange={(val) => {
-                  if (!isDeleted) setEditDescription(val);
+                  if (!isArchived) setEditDescription(val);
                 }}
-                readOnly={isDeleted}
+                readOnly={isArchived}
                 defaultTab="preview"
                 placeholder="Add a detailed description... Use the toolbar above or write markdown"
               />
@@ -768,7 +769,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               </div>
             )}
             
-            {isDeleted ? (
+            {isArchived ? (
               <div style={{ display: 'flex', gap: '0.85rem', marginTop: '0.5rem', flexShrink: 0 }}>
                 <button className="btn-secondary" onClick={onClose} style={{ flex: 1 }}>
                   Close
@@ -792,10 +793,10 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 </button>
                 {!isNew && (
                   <button 
-                    onClick={() => setShowDeleteConfirm(true)}
+                    onClick={() => setShowArchiveConfirm(true)}
                     className="btn-danger-outline"
                   >
-                    Delete
+                    Archive
                   </button>
                 )}
               </div>

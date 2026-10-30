@@ -1,11 +1,11 @@
-/* Deleted Column & Card Styles */
-.deleted-column {
+/* Archived Column & Card Styles */
+.archived-column {
   border-top: 2px solid var(--danger);
   border-style: solid;
   background: var(--bg-column);
 
   .task-list {
-    .task-card-deleted {
+    .task-card-archived {
       opacity: 0.82;
       cursor: pointer;
       border-color: var(--border-subtle);
@@ -47,7 +47,7 @@
   }
 }
 
-.btn-deleted-cta {
+.btn-archived-cta {
   background: var(--danger-muted);
   border: 1px solid var(--danger);
   color: var(--danger);

@@ -64,7 +64,7 @@
       transition: var(--transition);
       user-select: none;
 
-      &.task-badge-deleted {
+      &.task-badge-archived {
         color: var(--danger);
         border-color: var(--danger-muted);
         background: rgba(207, 79, 68, 0.08);
@@ -160,7 +160,7 @@
   transition: var(--transition);
   user-select: none;
 
-  &.task-badge-deleted {
+  &.task-badge-archived {
     color: var(--danger);
     border-color: var(--danger-muted);
     background: rgba(207, 79, 68, 0.08);

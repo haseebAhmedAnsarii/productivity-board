@@ -8,9 +8,9 @@ import { CustomSelect, SelectOption } from '../CustomSelect';
 
 interface TableViewProps {
   columns: Column[];
-  deletedTasks: Task[];
-  showDeletedCards: boolean;
-  onTaskClick: (task: Task, isDeleted?: boolean, columnId?: string) => void;
+  archivedTasks: Task[];
+  showArchivedCards: boolean;
+  onTaskClick: (task: Task, isArchived?: boolean, columnId?: string) => void;
   onAddTask: (columnId?: string) => void;
   onRestoreTask: (task: Task) => void;
   onQuickMoveTask: (taskId: string, targetColId: string) => Promise<void>;
@@ -19,13 +19,13 @@ interface TableViewProps {
   onCancelAddColumn: () => void;
   onCreateColumn: (title: string) => Promise<void>;
   addColumnRef?: React.Ref<HTMLDivElement>;
-  deletedColumnRef?: React.Ref<HTMLTableRowElement | HTMLDivElement>;
+  archivedColumnRef?: React.Ref<HTMLTableRowElement | HTMLDivElement>;
 }
 
 export const TableView: React.FC<TableViewProps> = ({
   columns,
-  deletedTasks,
-  showDeletedCards,
+  archivedTasks,
+  showArchivedCards,
   onTaskClick,
   onAddTask,
   onRestoreTask,
@@ -35,31 +35,31 @@ export const TableView: React.FC<TableViewProps> = ({
   onCancelAddColumn,
   onCreateColumn,
   addColumnRef,
-  deletedColumnRef,
+  archivedColumnRef,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedColumnFilter, setSelectedColumnFilter] = useState('ALL');
   const [sortBy, setSortBy] = useState<'id' | 'title' | 'column' | 'priority' | 'dueDate'>('id');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  // When user toggles showDeletedCards while filtered to a specific active column,
-  // reset filter to 'ALL' so the deleted tasks section is visible and scroll target exists
+  // When user toggles showArchivedCards while filtered to a specific active column,
+  // reset filter to 'ALL' so the archived tasks section is visible and scroll target exists
   useEffect(() => {
-    if (showDeletedCards && selectedColumnFilter !== 'ALL' && selectedColumnFilter !== 'DELETED') {
+    if (showArchivedCards && selectedColumnFilter !== 'ALL' && selectedColumnFilter !== 'ARCHIVED') {
       setSelectedColumnFilter('ALL');
     }
-  }, [showDeletedCards, selectedColumnFilter]);
+  }, [showArchivedCards, selectedColumnFilter]);
 
   const columnFilterOptions: SelectOption[] = useMemo(() => {
     const opts: SelectOption[] = [
       { value: 'ALL', label: 'All Columns' },
       ...columns.map((c) => ({ value: c.id, label: c.title })),
     ];
-    if (showDeletedCards && deletedTasks.length > 0) {
-      opts.push({ value: 'DELETED', label: 'Deleted Tasks', icon: '🗑️' });
+    if (showArchivedCards && archivedTasks.length > 0) {
+      opts.push({ value: 'ARCHIVED', label: 'Archived Tasks', icon: '🗃️' });
     }
     return opts;
-  }, [columns, showDeletedCards, deletedTasks]);
+  }, [columns, showArchivedCards, archivedTasks]);
 
   const quickMoveOptions: SelectOption[] = useMemo(() => {
     return columns.map((c) => ({ value: c.id, label: c.title }));
@@ -107,18 +107,18 @@ export const TableView: React.FC<TableViewProps> = ({
       });
   }, [allActiveTasks, searchTerm, selectedColumnFilter, sortBy, sortOrder]);
 
-  // Filter deleted tasks
-  const filteredDeletedTasks = useMemo(() => {
-    if (!showDeletedCards) return [];
-    return deletedTasks.filter((t) => {
+  // Filter archived tasks
+  const filteredArchivedTasks = useMemo(() => {
+    if (!showArchivedCards) return [];
+    return archivedTasks.filter((t) => {
       const matchesSearch =
         t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (t.description && t.description.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesColumn =
-        selectedColumnFilter === 'ALL' || selectedColumnFilter === 'DELETED';
+        selectedColumnFilter === 'ALL' || selectedColumnFilter === 'ARCHIVED';
       return matchesSearch && matchesColumn;
     });
-  }, [deletedTasks, showDeletedCards, searchTerm, selectedColumnFilter]);
+  }, [archivedTasks, showArchivedCards, searchTerm, selectedColumnFilter]);
 
   const handleSort = (field: 'id' | 'title' | 'column' | 'priority' | 'dueDate') => {
     if (sortBy === field) {
@@ -155,7 +155,7 @@ export const TableView: React.FC<TableViewProps> = ({
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-            {filteredActiveTasks.length + filteredDeletedTasks.length} {filteredActiveTasks.length + filteredDeletedTasks.length === 1 ? 'task' : 'tasks'}
+            {filteredActiveTasks.length + filteredArchivedTasks.length} {filteredActiveTasks.length + filteredArchivedTasks.length === 1 ? 'task' : 'tasks'}
           </span>
           <button
             type="button"
@@ -221,7 +221,7 @@ export const TableView: React.FC<TableViewProps> = ({
             </tr>
           </thead>
           <tbody>
-            {filteredActiveTasks.length === 0 && filteredDeletedTasks.length === 0 ? (
+            {filteredActiveTasks.length === 0 && filteredArchivedTasks.length === 0 ? (
               <tr>
                 <td colSpan={7} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
                   No tasks found matching your filter criteria.
@@ -310,27 +310,27 @@ export const TableView: React.FC<TableViewProps> = ({
                   );
                 })}
 
-                {/* Soft-Deleted Tasks Header & Section */}
-                {filteredDeletedTasks.length > 0 && (
+                {/* Soft-Archived Tasks Header & Section */}
+                {filteredArchivedTasks.length > 0 && (
                   <tr
-                    ref={deletedColumnRef as any}
-                    className="table-deleted-section-header"
+                    ref={archivedColumnRef as any}
+                    className="table-archived-section-header"
                   >
                     <td colSpan={7}>
-                      <div className="table-deleted-header-content">
-                        <span className="table-deleted-header-title">
-                          🗑️ Deleted Tasks
+                      <div className="table-archived-header-content">
+                        <span className="table-archived-header-title">
+                          🗃️ Archived Tasks
                         </span>
                         <span className="task-count">
-                          {filteredDeletedTasks.length}
+                          {filteredArchivedTasks.length}
                         </span>
                       </div>
                     </td>
                   </tr>
                 )}
 
-                {/* Soft-Deleted Tasks */}
-                {filteredDeletedTasks.map((task) => {
+                {/* Soft-Archived Tasks */}
+                {filteredArchivedTasks.map((task) => {
                   const priority = task.priority || 'medium';
                   const priorityMeta = PRIORITY_CONFIG[priority];
                   const dueDateInfo = getDueDateInfo(task.dueDate);
@@ -338,21 +338,21 @@ export const TableView: React.FC<TableViewProps> = ({
                   return (
                     <tr
                       key={task.id}
-                      className="table-row-deleted"
+                      className="table-row-archived"
                       onClick={() => onTaskClick(task, true)}
                       style={{ cursor: 'pointer', background: 'rgba(239, 68, 68, 0.04)' }}
                     >
                       <td>
-                        <span className="task-badge task-badge-deleted">#{task.id}</span>
+                        <span className="task-badge task-badge-archived">#{task.id}</span>
                       </td>
                       <td>
-                        <span className="table-task-title table-task-title-deleted" title={task.title}>
+                        <span className="table-task-title table-task-title-archived" title={task.title}>
                           {task.title}
                         </span>
                       </td>
                       <td>
                         <span style={{ color: 'var(--danger)', fontSize: '0.78rem', fontWeight: 600, textTransform: 'uppercase' }}>
-                          Deleted
+                          Archived
                         </span>
                       </td>
                       <td>

@@ -136,7 +136,7 @@
           line-height: 1.35;
           max-width: 100%;
 
-          &.table-task-title-deleted {
+          &.table-task-title-archived {
             text-decoration: line-through;
           }
         }
@@ -184,11 +184,11 @@
           background: var(--surface-hover);
         }
 
-        &.table-row-deleted td {
+        &.table-row-archived td {
           opacity: 0.85;
         }
 
-        &.table-deleted-section-header {
+        &.table-archived-section-header {
           scroll-margin-top: 45px;
 
           td {
@@ -197,12 +197,12 @@
             border-bottom: 1px solid var(--border-ui);
             padding: 0.65rem 1.25rem;
 
-            .table-deleted-header-content {
+            .table-archived-header-content {
               display: flex;
               align-items: center;
               gap: 0.6rem;
 
-              .table-deleted-header-title {
+              .table-archived-header-title {
                 color: var(--danger);
                 font-family: var(--font-heading);
                 font-weight: 700;

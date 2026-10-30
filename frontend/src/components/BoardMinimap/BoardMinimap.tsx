@@ -5,16 +5,16 @@ import { Column } from '../../types';
 interface BoardMinimapProps {
   boardAreaRef: React.RefObject<HTMLElement | null>;
   columns: Column[];
-  deletedTasksCount: number;
-  showDeletedCards: boolean;
+  archivedTasksCount: number;
+  showArchivedCards: boolean;
   onAddColumnClick: () => void;
 }
 
 export const BoardMinimap: React.FC<BoardMinimapProps> = ({
   boardAreaRef,
   columns,
-  deletedTasksCount,
-  showDeletedCards,
+  archivedTasksCount,
+  showArchivedCards,
   onAddColumnClick,
 }) => {
   const [scrollInfo, setScrollInfo] = useState({
@@ -66,7 +66,7 @@ export const BoardMinimap: React.FC<BoardMinimapProps> = ({
       window.removeEventListener('resize', updateMetrics);
       resizeObserver.disconnect();
     };
-  }, [boardAreaRef, updateMetrics, columns.length, showDeletedCards]);
+  }, [boardAreaRef, updateMetrics, columns.length, showArchivedCards]);
 
   const { scrollLeft, scrollWidth, clientWidth } = scrollInfo;
   const maxScroll = Math.max(0, scrollWidth - clientWidth);
@@ -252,16 +252,16 @@ export const BoardMinimap: React.FC<BoardMinimapProps> = ({
                 </div>
               ))}
 
-              {/* Deleted Column preview if active */}
-              {showDeletedCards && deletedTasksCount > 0 && (
+              {/* Archived Column preview if active */}
+              {showArchivedCards && archivedTasksCount > 0 && (
                 <div
-                  className="minimap-col-node minimap-col-deleted"
+                  className="minimap-col-node minimap-col-archived"
                   onClick={(e) => handleColumnJump(columns.length, e)}
-                  title={`Deleted Cards (${deletedTasksCount})`}
+                  title={`Archived Cards (${archivedTasksCount})`}
                 >
                   <div className="minimap-col-accent minimap-accent-danger" />
-                  <span className="minimap-col-label" style={{ color: 'var(--danger)' }}>DEL</span>
-                  <span className="minimap-del-count">{deletedTasksCount}</span>
+                  <span className="minimap-col-label" style={{ color: 'var(--danger)' }}>ARC</span>
+                  <span className="minimap-arc-count">{archivedTasksCount}</span>
                 </div>
               )}
 

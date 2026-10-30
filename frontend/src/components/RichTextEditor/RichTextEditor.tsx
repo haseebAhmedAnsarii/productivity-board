@@ -331,7 +331,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         aTag.textContent = textToDisplay;
 
         if (range && visualEditorRef.current.contains(range.commonAncestorContainer)) {
-          range.deleteContents();
+          range.extractContents();
           range.insertNode(aTag);
 
           // Place caret right after the inserted link

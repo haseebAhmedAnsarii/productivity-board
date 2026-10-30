@@ -6,14 +6,14 @@ import { TaskCard } from '../TaskCard';
 
 interface KanbanColumnProps {
   column: Column;
-  onDeleteColumn: (column: Column) => void;
+  onArchiveColumn: (column: Column) => void;
   onTaskClick: (task: Task, columnId: string) => void;
   onAddTask: (columnId: string) => void;
 }
 
 export const KanbanColumn: React.FC<KanbanColumnProps> = ({
   column,
-  onDeleteColumn,
+  onArchiveColumn,
   onTaskClick,
   onAddTask,
 }) => {
@@ -26,10 +26,10 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onDeleteColumn(column);
+              onArchiveColumn(column);
             }}
-            title="Delete column"
-            className="delete-col-btn"
+            title="Archive column"
+            className="archive-col-btn"
           >
             &times;
           </button>

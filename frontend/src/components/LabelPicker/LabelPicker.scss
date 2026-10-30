@@ -244,7 +244,7 @@
           }
 
           .label-edit-icon-btn,
-          .label-del-icon-btn {
+          .label-remove-icon-btn {
             background: none;
             border: none;
             cursor: pointer;
@@ -264,7 +264,7 @@
             }
           }
 
-          .label-del-icon-btn {
+          .label-remove-icon-btn {
             color: var(--text-muted);
 
             &:hover {
@@ -274,13 +274,13 @@
           }
         }
 
-        .label-delete-confirm {
+        .label-remove-confirm {
           flex: 1;
           padding: 0.35rem 0.35rem;
           font-size: 0.75rem;
           color: var(--text-secondary);
 
-          .label-confirm-del-btn {
+          .label-confirm-remove-btn {
             background: var(--danger);
             color: #fff;
             border: none;
