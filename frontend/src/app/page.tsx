@@ -46,6 +46,12 @@ export default function Home() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [themeMode, setThemeMode] = useState<ThemeMode>('default');
 
+  const initialCardCheckedRef = useRef(false);
+  const columnsRef = useRef<Column[]>(columns);
+  columnsRef.current = columns;
+  const archivedTasksRef = useRef<Task[]>(archivedTasks);
+  archivedTasksRef.current = archivedTasks;
+
   // Synchronize viewMode with URL query parameter (?view=list, ?view=table)
   const handleViewModeChange = useCallback((mode: ViewMode) => {
     setViewMode(mode);
@@ -61,10 +67,62 @@ export default function Home() {
     }
   }, []);
 
-  // Initialize and persist view mode from URL query parameter, and listen for browser back/forward (popstate)
+  // Initialize and persist view mode & card modal from URL query parameters, and listen for browser back/forward (popstate)
   useEffect(() => {
-    const syncViewFromUrl = () => {
+    const handlePopState = () => {
       if (typeof window === 'undefined') return;
+      const params = new URLSearchParams(window.location.search);
+
+      // 1. Sync view mode
+      const viewParam = params.get('view');
+      if (viewParam === 'list' || viewParam === 'table') {
+        setViewMode(viewParam);
+      } else {
+        setViewMode('board');
+      }
+
+      // 2. Sync card modal
+      const cardId = params.get('card');
+      if (!cardId) {
+        setSelectedTask(prev => {
+          if (prev && !('isNew' in prev)) {
+            setIsModalArchivedTask(false);
+            return null;
+          }
+          return prev;
+        });
+      } else {
+        let foundTask: Task | null = null;
+        let foundColId: string | undefined = undefined;
+        let isArch = false;
+
+        for (const col of columnsRef.current) {
+          const t = col.tasks.find(task => task.id === cardId);
+          if (t) {
+            foundTask = t;
+            foundColId = col.id;
+            break;
+          }
+        }
+
+        if (!foundTask) {
+          const arch = archivedTasksRef.current.find(task => task.id === cardId);
+          if (arch) {
+            foundTask = arch;
+            isArch = true;
+          }
+        }
+
+        if (foundTask) {
+          setSelectedTask({ ...foundTask, columnId: foundColId || foundTask.columnId });
+          setIsModalArchivedTask(isArch);
+          if (isArch) setShowArchivedCards(true);
+        }
+      }
+    };
+
+    // On initial mount, sync view mode from URL
+    if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const viewParam = params.get('view');
       if (viewParam === 'list' || viewParam === 'table') {
@@ -72,11 +130,10 @@ export default function Home() {
       } else {
         setViewMode('board');
       }
-    };
+    }
 
-    syncViewFromUrl();
-    window.addEventListener('popstate', syncViewFromUrl);
-    return () => window.removeEventListener('popstate', syncViewFromUrl);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   // Initialize and persist theme mode
@@ -392,6 +449,40 @@ export default function Home() {
         const dTasksWithLabels = attachLabels(dTasks);
         setArchivedTasks(dTasksWithLabels);
         if (dTasks.length === 0) setShowArchivedCards(false);
+
+        // On initial board load, open card if ?card=<id> is present in URL
+        if (!initialCardCheckedRef.current && typeof window !== 'undefined') {
+          initialCardCheckedRef.current = true;
+          const params = new URLSearchParams(window.location.search);
+          const cardId = params.get('card');
+          if (cardId) {
+            let found = false;
+            for (const col of colsWithLabels) {
+              const t = col.tasks.find((task: Task) => task.id === cardId);
+              if (t) {
+                setSelectedTask({ ...t, columnId: col.id });
+                setIsModalArchivedTask(false);
+                found = true;
+                break;
+              }
+            }
+            if (!found) {
+              const arch = dTasksWithLabels.find((task: Task) => task.id === cardId);
+              if (arch) {
+                setSelectedTask({ ...arch, columnId: arch.columnId });
+                setIsModalArchivedTask(true);
+                setShowArchivedCards(true);
+                found = true;
+              }
+            }
+            if (!found) {
+              const url = new URL(window.location.href);
+              url.searchParams.delete('card');
+              const newUrl = url.pathname + (url.search ? url.search : '') + url.hash;
+              window.history.replaceState(null, '', newUrl);
+            }
+          }
+        }
       } else if (response.status === 401 || response.status === 403) {
         logout();
       }
@@ -549,16 +640,43 @@ export default function Home() {
     const taskCopy = { ...task, columnId: directColId || task.columnId };
     setSelectedTask(taskCopy);
     setIsModalArchivedTask(isArchived);
+
+    if (typeof window !== 'undefined' && task.id) {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('card') !== task.id) {
+        url.searchParams.set('card', task.id);
+        const newUrl = url.pathname + url.search + url.hash;
+        window.history.pushState({ cardModal: task.id }, '', newUrl);
+      }
+    }
   };
 
   const openNewTaskModal = (columnId: string) => {
     setSelectedTask({ isNew: true, columnId });
     setIsModalArchivedTask(false);
+
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('card')) {
+        url.searchParams.delete('card');
+        const newUrl = url.pathname + (url.search ? url.search : '') + url.hash;
+        window.history.replaceState(null, '', newUrl);
+      }
+    }
   };
 
   const closeTaskModal = () => {
     setSelectedTask(null);
     setIsModalArchivedTask(false);
+
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('card')) {
+        url.searchParams.delete('card');
+        const newUrl = url.pathname + (url.search ? url.search : '') + url.hash;
+        window.history.replaceState(null, '', newUrl);
+      }
+    }
   };
 
   const restoreTask = async (taskId: string, targetColId?: string) => {
